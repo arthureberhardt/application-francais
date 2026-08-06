@@ -1,0 +1,9 @@
+{
+  "name": "Français — Gymnasium Oberwil",
+  "short_name": "Français",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBFAF7",
+  "theme_color": "#16233A",
+  "lang": "fr"
+}
