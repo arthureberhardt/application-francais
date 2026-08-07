@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { enLigne, diagnostic } from "../lib/store.js";
+import { enLigne, diagnostic, codeValide } from "../lib/store.js";
 import { FILIERES } from "../donnees/index.js";
 
 function Diagnostic() {
@@ -36,10 +36,30 @@ function Diagnostic() {
   );
 }
 
-export default function Connexion({ onEntrer }) {
+export default function Connexion({ onEntrer, onEnseignant }) {
   const [v, setV] = useState("");
   const [filiere, setFiliere] = useState(null);
+  const [verif, setVerif] = useState(false);
+  const [erreur, setErreur] = useState(null);
   const valide = /^[A-Z0-9-]{3,16}$/.test(v.trim());
+
+  const entrer = async () => {
+    if (!valide || verif) return;
+    setErreur(null);
+    setVerif(true);
+    const c = v.trim();
+    const res = await codeValide(c);
+    setVerif(false);
+    if (!res.ok) {
+      setErreur("Ce code n'est pas reconnu. Vérifiez auprès de votre enseignant.");
+      return;
+    }
+    // si le serveur connaît la filière de ce code, elle prime sur le choix
+    // manuel — utile si l'élève s'est trompé de bouton
+    const f = res.filiere || filiere;
+    if (!f) { setErreur("Choisissez d'abord votre classe."); return; }
+    onEntrer(c, f);
+  };
 
   return (
     <div className="wrap" style={{ paddingTop: 64, maxWidth: 460 }}>
@@ -57,7 +77,7 @@ export default function Connexion({ onEntrer }) {
         {FILIERES.map((f) => (
           <button key={f.cle}
             className={"carteFiliere" + (filiere === f.cle ? " on" : "")}
-            onClick={() => setFiliere(f.cle)}>
+            onClick={() => { setFiliere(f.cle); setErreur(null); }}>
             <span className="carteFiliereNom">{f.nom}</span>
             <span className="carteFiliereSous">
               {f.semestres.length} semestres · niveau {f.sortie}
@@ -70,16 +90,21 @@ export default function Connexion({ onEntrer }) {
         className="champ mono"
         value={v}
         autoFocus
-        onChange={(e) => setV(e.target.value.toUpperCase())}
-        onKeyDown={(e) => e.key === "Enter" && valide && filiere && onEntrer(v.trim(), filiere)}
+        onChange={(e) => { setV(e.target.value.toUpperCase()); setErreur(null); }}
+        onKeyDown={(e) => e.key === "Enter" && entrer()}
         placeholder="OB-3A-07"
         style={{ letterSpacing: ".1em", marginBottom: 12 }}
       />
-      <button className="btn" disabled={!valide || !filiere}
-        onClick={() => onEntrer(v.trim(), filiere)}>
-        Commencer
+      <button className="btn" disabled={!valide || verif} onClick={entrer}>
+        {verif ? "Vérification…" : "Commencer"}
       </button>
-      {!filiere && (
+
+      {erreur && (
+        <p className="note" style={{ marginTop: 10, fontSize: 12.5, color: "var(--rouge)" }}>
+          {erreur}
+        </p>
+      )}
+      {!erreur && !filiere && (
         <p className="note" style={{ marginTop: 10, fontSize: 12.5 }}>
           Choisissez d'abord votre classe. En cas de doute, demandez à votre enseignant.
         </p>
@@ -92,6 +117,11 @@ export default function Connexion({ onEntrer }) {
       ) : (
         <Diagnostic />
       )}
+
+      <button className="lienTexte" style={{ marginTop: 26, fontSize: 12 }}
+        onClick={onEnseignant}>
+        Espace enseignant
+      </button>
     </div>
   );
 }

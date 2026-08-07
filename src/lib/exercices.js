@@ -159,12 +159,22 @@ export function masquerVerbe(inf, exemple) {
     if (!noyau.includes(radical)) continue;
 
     // on remonte pour absorber l'auxiliaire et le pronom réfléchi
+    // un adverbe s'intercale souvent entre l'auxiliaire et le participe
+    // (« a beaucoup grandi », « as bien dormi ») : on tolère un seul mot
+    // intermédiaire avant de renoncer à chercher plus loin en arrière.
+    const ADVERBES_INTERCALES = new Set([
+      "bien","mal","beaucoup","peu","déjà","encore","enfin","toujours",
+      "souvent","vraiment","presque","trop","si","tant","jamais","rarement",
+    ]);
     let debut = i;
+    let sauts = 0;
     for (let k = i - 2; k >= 0; k -= 2) {
-      // sans retirer les accents : « à » deviendrait « a », donc l'auxiliaire avoir
-      const m = propre(mots[k]).toLowerCase();
-      if (AUXILIAIRES.has(m) || (pronominal && REFLEXIFS.has(m))) debut = k;
-      else break;
+      let m = propre(mots[k]).toLowerCase();
+      const elide = m.match(/^[a-z]'(.+)/);
+      if (elide) m = elide[1];
+      if (AUXILIAIRES.has(m) || (pronominal && REFLEXIFS.has(m))) { debut = k; break; }
+      if (sauts === 0 && ADVERBES_INTERCALES.has(sansAcc(m))) { sauts = 1; continue; }
+      break;
     }
     const groupe = mots.slice(debut, i + 1).join("").trim();
     const avant = mots.slice(0, debut).join("");
@@ -182,16 +192,90 @@ export function masquerVerbe(inf, exemple) {
   return null;
 }
 
+/* Nommer le temps réel de la forme masquée.
+
+   Une collègue a fait remarquer, à raison, qu'« à la forme qui convient »
+   ne dit rien : parfois le contexte suffit à deviner le temps, souvent non
+   — surtout pour distinguer un imparfait d'un conditionnel, qui partagent
+   les mêmes terminaisons. On compare donc la forme trouvée aux tables de
+   conjugaison du verbe et on nomme le temps dans la consigne. */
+
+const NOMS_TEMPS = {
+  present: "présent", imparfait: "imparfait", futur: "futur simple",
+  conditionnel: "conditionnel présent", subjonctif: "subjonctif présent",
+  imperatif: "impératif", participepresent: "participe présent",
+};
+const AUX_PAR_FORME = {
+  ai: ["avoir", "present", 0], as: ["avoir", "present", 1], a: ["avoir", "present", 2],
+  avons: ["avoir", "present", 3], avez: ["avoir", "present", 4], ont: ["avoir", "present", 5],
+  suis: ["être", "present", 0], es: ["être", "present", 1], est: ["être", "present", 2],
+  sommes: ["être", "present", 3], êtes: ["être", "present", 4], sont: ["être", "present", 5],
+  avais: ["avoir", "imparfait", 0], avait: ["avoir", "imparfait", 2],
+  avions: ["avoir", "imparfait", 3], aviez: ["avoir", "imparfait", 4], avaient: ["avoir", "imparfait", 5],
+  étais: ["être", "imparfait", 0], était: ["être", "imparfait", 2],
+  étions: ["être", "imparfait", 3], étiez: ["être", "imparfait", 4], étaient: ["être", "imparfait", 5],
+};
+
+/* Un pronom sujet élidé (j'habite, n'exagère jamais…) colle au verbe sans
+   espace : split(/\s+/) laisse alors « j'habite » comme un seul jeton, et
+   « j'habite » ne correspond à aucune forme de la table. On l'enlève d'abord,
+   comme on enlève déjà « me/te/se » pour un pronominal. */
+const strip = (nu) => nu.replace(/^(me |te |se |nous |vous |m'|t'|s'|j'|n'|qu'|c')/i, "").trim();
+
+function identifierTemps(verbe, forme) {
+  const nu = sansAcc(strip(forme));
+  const mots = nu.split(" ");
+  if (mots.length > 1 && AUX_PAR_FORME[mots[0]]) {
+    const [, auxTemps] = AUX_PAR_FORME[mots[0]];
+    return auxTemps === "present" ? "passé composé" : "plus-que-parfait";
+  }
+  for (const cle of ["present", "imparfait", "futur", "conditionnel", "subjonctif"]) {
+    const formes = verbe[cle];
+    if (!formes) continue;
+    if (formes.some((f) => sansAcc(f) === nu)) return NOMS_TEMPS[cle];
+  }
+  if (verbe.imperatif && verbe.imperatif.some((f) => sansAcc(f) === nu)) return "impératif";
+  return null;
+}
+
+/* Repli pour les verbes hors des 220 du curriculum grammatical — la plupart
+   du vocabulaire. On reconnaît le temps à sa terminaison, ce qui marche bien
+   pour les verbes réguliers et pour l'essentiel des irréguliers, parce que
+   les terminaisons personnelles ne varient pas d'un verbe à l'autre. Cela ne
+   couvre pas le subjonctif, dont la terminaison chevauche le présent : dans
+   ce cas on préfère se taire plutôt que d'affirmer un temps qui n'est peut-
+   être pas le bon. */
+function identifierTempsParTerminaison(forme) {
+  const nu = sansAcc(strip(forme));
+  const mots = nu.split(" ");
+  if (mots.length > 1 && AUX_PAR_FORME[mots[0]]) {
+    const [, auxTemps] = AUX_PAR_FORME[mots[0]];
+    return auxTemps === "present" ? "passé composé" : "plus-que-parfait";
+  }
+  const dernier = mots[mots.length - 1];
+  if (/(rais|rait|rions|riez|raient)$/.test(dernier)) return "conditionnel présent";
+  if (/(rai|ras|ra|rons|rez|ront)$/.test(dernier)) return "futur simple";
+  if (/(ais|ait|ions|iez|aient)$/.test(dernier)) return "imparfait";
+  return null; // présent, subjonctif, impératif : trop ambigus sans la table
+}
+
 export const conjugaison = {
   cle: "conjugaison",
   nom: "Conjuguer dans la phrase",
-  sous: "Le verbe est enlevé de la phrase. À vous de le remettre au bon temps.",
+  sous: "Le verbe est enlevé de la phrase. Le temps est indiqué : à vous de le conjuguer.",
   eligible: (i) => i.cat === "V" && Boolean(masquerVerbe(i.fr, i.exemple)),
-  question: (item) => {
+  question: (item, tous, verbeParInf) => {
     const m = masquerVerbe(item.fr, item.exemple);
+    const infNu = item.fr.replace(/^(se |s')/, "");
+    const verbe = verbeParInf ? verbeParInf(infNu) : null;
+    const temps = verbe
+      ? identifierTemps(verbe, m.forme)
+      : identifierTempsParTerminaison(m.forme);
     return {
       type: "saisie",
-      consigne: "Mettez le verbe à la forme qui convient",
+      consigne: temps
+        ? `Conjuguez ce verbe au ${temps}`
+        : "Mettez le verbe à la forme qui convient",
       invite: m.phrase,
       aide: `${item.fr} · ${item.de}`,
       placeholder: "le verbe conjugué",

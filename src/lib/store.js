@@ -89,3 +89,78 @@ export const lireSemestre = () => Number(localStorage.getItem("fle:semestre") ||
 export const ecrireSemestre = (n) => {
   try { localStorage.setItem("fle:semestre", String(n)); } catch {}
 };
+
+/* ─────────── Espace enseignant ─────────── */
+
+/** Vérifie un code auprès de Supabase avant de laisser entrer.
+    Si la table des codes n'existe pas encore (avant que enseignant.sql soit
+    exécuté) ou si Supabase n'est pas branché, on laisse passer : c'est le
+    comportement d'avant, pour ne rien casser pendant la mise en place. */
+export async function codeValide(code) {
+  if (!enLigne) return { ok: true, classe: null, filiere: null };
+  const { data, error } = await sb.rpc("verifier_code", { p_code: code });
+  if (error) {
+    // fonction pas encore créée : on ne bloque personne pour autant
+    if (error.code === "42883" || /function .* does not exist/i.test(error.message)) {
+      return { ok: true, classe: null, filiere: null };
+    }
+    console.error("Vérification du code impossible :", error.message);
+    return { ok: true, classe: null, filiere: null };
+  }
+  if (!data || !data.length) return { ok: false, classe: null, filiere: null };
+  return { ok: true, classe: data[0].classe, filiere: data[0].filiere };
+}
+
+export async function connexionEnseignant(email, motDePasse) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: motDePasse });
+  if (error) return { erreur: error.message };
+  return { session: data.session };
+}
+
+export async function deconnexionEnseignant() {
+  if (sb) await sb.auth.signOut();
+}
+
+export async function sessionEnseignant() {
+  if (!sb) return null;
+  const { data } = await sb.auth.getSession();
+  return data.session;
+}
+
+export async function listerSuivi() {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { data, error } = await sb.from("suivi_classes").select("*");
+  if (error) return { erreur: error.message };
+  return { lignes: data };
+}
+
+export async function ajouterCodes(lignes) {
+  // lignes : [{ code, classe, filiere, annee }, …]
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { error } = await sb.from("codes").insert(lignes);
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}
+
+export async function activerCode(code, actif) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { error } = await sb.from("codes").update({ actif }).eq("code", code);
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}
+
+/** Toutes les lignes de progression des élèves d'une classe, non résumées —
+    nécessaire pour repérer ce qui résiste à l'ensemble de la classe, pas
+    seulement à un élève. Ne contient ni nom ni donnée personnelle : juste
+    des codes pseudonymes et des états de boîte. */
+export async function listerProgressionClasse(codes) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  if (!codes.length) return { lignes: [] };
+  const { data, error } = await sb
+    .from("progression")
+    .select("code, cle, boite, ok")
+    .in("code", codes);
+  if (error) return { erreur: error.message };
+  return { lignes: data };
+}

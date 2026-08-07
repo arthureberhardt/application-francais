@@ -6,6 +6,7 @@ import Liste from "./ecrans/Liste.jsx";
 import Badges from "./ecrans/Badges.jsx";
 import Aide from "./ecrans/Aide.jsx";
 import Examen from "./ecrans/Examen.jsx";
+import Enseignant from "./ecrans/Enseignant.jsx";
 import { chargerProgression, lireSemestre, ecrireSemestre, lireFiliere, ecrireFiliere } from "./lib/store.js";
 import { choisirFiliere, filiereActive } from "./lib/items.js";
 
@@ -20,6 +21,7 @@ export default function App() {
   const [aide, setAide] = useState(false);
   const [examen, setExamen] = useState(false);
   const [chargement, setChargement] = useState(false);
+  const [enseignant, setEnseignant] = useState(false);
 
   const entrer = useCallback(async (c, cleFiliere) => {
     setChargement(true);
@@ -49,13 +51,15 @@ export default function App() {
 
   return (
     <div className="fle">
-      {!code ? (
+      {enseignant ? (
+        <Enseignant onFin={() => setEnseignant(false)} />
+      ) : !code ? (
         chargement ? (
           <div className="wrap" style={{ paddingTop: 90 }}>
             <div className="note">Chargement…</div>
           </div>
         ) : (
-          <Connexion onEntrer={entrer} />
+          <Connexion onEntrer={entrer} onEnseignant={() => setEnseignant(true)} />
         )
       ) : seance ? (
         <Seance

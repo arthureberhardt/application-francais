@@ -5,6 +5,7 @@ import { composer } from "../lib/seance.js";
 import { evalue, diff } from "../lib/correction.js";
 import { question } from "../lib/questions.js";
 import { exercicePar } from "../lib/exercices.js";
+import { VERBE_PAR_INF } from "../donnees/index.js";
 import { enregistrerItem } from "../lib/store.js";
 import { Rail, Ligne } from "./Commun.jsx";
 import { Ecouter, BarreAccents } from "./Outils.jsx";
@@ -63,7 +64,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   const q = useMemo(
     () => {
       if (!item) return null;
-      if (exo) return exo.question(item, bassinComplet);
+      if (exo) return exo.question(item, bassinComplet, (inf) => VERBE_PAR_INF[inf]);
       return question(item, progression[item.cle], vocabDuSemestre, semestre, mode);
     },
     [item] // eslint-disable-line
