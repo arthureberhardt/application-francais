@@ -151,6 +151,18 @@ export async function activerCode(code, actif) {
   return { ok: true };
 }
 
+/** Efface une classe entière : sa progression, puis ses codes. Irréversible —
+    l'écran qui l'appelle doit faire confirmer avant. */
+export async function supprimerClasse(codes) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  if (!codes.length) return { ok: true };
+  const p = await sb.from("progression").delete().in("code", codes);
+  if (p.error) return { erreur: p.error.message };
+  const c = await sb.from("codes").delete().in("code", codes);
+  if (c.error) return { erreur: c.error.message };
+  return { ok: true };
+}
+
 /** Attache ou retire le nom d'un élève sur son code. Réservé à votre compte,
     comme le reste de la table « codes » ; jamais exposé côté élève. */
 export async function renommerCode(code, nom) {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   connexionEnseignant, deconnexionEnseignant, sessionEnseignant,
-  listerSuivi, ajouterCodes, activerCode, renommerCode, listerProgressionClasse, enLigne,
+  listerSuivi, ajouterCodes, activerCode, renommerCode, supprimerClasse,
+  listerProgressionClasse, enLigne,
 } from "../lib/store.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
 import { categorie } from "../lib/leitner.js";
@@ -267,12 +268,24 @@ function CreerClasse({ onFait }) {
 
 function Classe({ nom, eleves, onChange }) {
   const [ouvert, setOuvert] = useState(false);
+  const [confirmSuppr, setConfirmSuppr] = useState(false);
+  const [suppression, setSuppression] = useState(false);
   const actifs = eleves.filter((e) => e.actif);
   const travaillent = actifs.filter((e) => e.elements_travailles > 0).length;
 
+  const basculer = () => { setOuvert(!ouvert); setConfirmSuppr(false); };
+
+  const supprimer = async () => {
+    if (!confirmSuppr) { setConfirmSuppr(true); return; }
+    setSuppression(true);
+    const res = await supprimerClasse(eleves.map((e) => e.code));
+    setSuppression(false);
+    if (!res.erreur) onChange();
+  };
+
   return (
     <div className="carte" style={{ marginBottom: 14 }}>
-      <button style={{ width: "100%", textAlign: "left" }} onClick={() => setOuvert(!ouvert)}>
+      <button style={{ width: "100%", textAlign: "left" }} onClick={basculer}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
           <span className="h2">{nom}</span>
           <span className="mono" style={{ fontSize: 12, color: "var(--ardoise)" }}>
@@ -293,10 +306,26 @@ function Classe({ nom, eleves, onChange }) {
               <LigneEleve key={e.code} e={e} onChange={onChange} />
             ))}
           </div>
-          <button className="btn2" style={{ marginTop: 12 }}
-            onClick={() => exporterCodes(nom, eleves)}>
-            Copier la liste des codes
-          </button>
+
+          <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+            <button className="btn2" onClick={() => exporterCodes(nom, eleves)}>
+              Copier la liste des codes
+            </button>
+            <button className="btn2"
+              style={confirmSuppr ? { borderColor: "var(--rouge)", color: "var(--rouge)" } : undefined}
+              disabled={suppression} onClick={supprimer}>
+              {suppression
+                ? "Suppression…"
+                : confirmSuppr
+                ? `Confirmer : effacer ${nom} et ses ${eleves.length} élève${eleves.length > 1 ? "s" : ""}`
+                : "Supprimer la classe"}
+            </button>
+          </div>
+          {confirmSuppr && (
+            <p className="note" style={{ color: "var(--rouge)", fontSize: 12, marginTop: 8 }}>
+              Cela efface aussi tout l'historique de progression des {eleves.length} élèves. Irréversible.
+            </p>
+          )}
         </div>
       )}
     </div>
