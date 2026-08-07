@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   connexionEnseignant, deconnexionEnseignant, sessionEnseignant,
-  listerSuivi, ajouterCodes, activerCode, renommerCode, supprimerClasse,
+  listerSuivi, ajouterCodes, activerCode, renommerCode, supprimerCodes,
   listerProgressionClasse, enLigne,
 } from "../lib/store.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
@@ -48,6 +48,17 @@ const agregerParTheme = (lignes) =>
    établissement entier : pas de rôles, pas de permissions déléguées. */
 
 const AUJOURDHUI = () => new Date().toISOString().slice(0, 10).replace(/^20/, "");
+
+/* Le nom d'une classe est libre — « Enseignants — test » doit rester lisible
+   à l'écran. Le code d'un élève, lui, doit rester court : c'est ce préfixe,
+   dérivé automatiquement du nom mais éditable, qui sert à construire les
+   codes plutôt que le nom entier. */
+function slugCode(s) {
+  return (
+    s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10) || "CLASSE"
+  );
+}
 
 export default function Enseignant({ onFin }) {
   const [session, setSession] = useState(undefined); // undefined = en cours de vérification
@@ -203,22 +214,32 @@ function TableauDeBord() {
 
 function CreerClasse({ onFait }) {
   const [classe, setClasse] = useState("");
+  const [prefixe, setPrefixe] = useState("");
+  const [prefixeTouche, setPrefixeTouche] = useState(false);
   const [filiere, setFiliere] = useState("gymnase");
   const [nb, setNb] = useState(20);
   const [noms, setNoms] = useState("");
   const [attente, setAttente] = useState(false);
 
+  // Le préfixe suit le nom tant qu'on n'y a pas touché soi-même — comme un
+  // champ d'URL qui se déduit d'un titre, mais reste modifiable.
+  const changerClasse = (v) => {
+    setClasse(v);
+    if (!prefixeTouche) setPrefixe(slugCode(v));
+  };
+
   // Une liste collée (un nom par ligne) prime sur le nombre saisi : c'est
   // elle qui fixe combien de codes créer, dans le même ordre.
   const listeNoms = noms.split("\n").map((n) => n.trim()).filter(Boolean);
   const total = listeNoms.length || nb;
+  const prefixeFinal = (prefixe || slugCode(classe)).slice(0, 12);
 
   const creer = async () => {
     if (!classe.trim()) return;
     setAttente(true);
     const annee = AUJOURDHUI();
     const lignes = Array.from({ length: total }, (_, i) => ({
-      code: `${annee}-${classe.trim().toUpperCase()}-${String(i + 1).padStart(2, "0")}`,
+      code: `${annee}-${prefixeFinal}-${String(i + 1).padStart(2, "0")}`,
       classe: classe.trim(), filiere, annee,
       nom: listeNoms[i] || null,
     }));
@@ -231,8 +252,20 @@ function CreerClasse({ onFait }) {
     <div className="carte" style={{ marginBottom: 20 }}>
       <div className="sur" style={{ marginBottom: 12 }}>Nouvelle classe</div>
       <div style={{ display: "grid", gap: 10 }}>
-        <input className="champ" placeholder="nom de classe, ex. 4a"
-          value={classe} onChange={(e) => setClasse(e.target.value)} style={{ fontSize: 15 }} />
+        <input className="champ" placeholder="nom de classe ou de groupe, ex. 4a"
+          value={classe} onChange={(e) => changerClasse(e.target.value)} style={{ fontSize: 15 }} />
+
+        <div>
+          <input className="champ mono" maxLength={12}
+            value={prefixeFinal}
+            onChange={(e) => { setPrefixe(e.target.value.toUpperCase()); setPrefixeTouche(true); }}
+            style={{ fontSize: 14, letterSpacing: ".05em" }} />
+          <p className="note" style={{ fontSize: 12, margin: "5px 0 0" }}>
+            Ce préfixe apparaît dans le code de chaque élève, ex. {AUJOURDHUI()}-{prefixeFinal}-01.
+            Raccourcissez-le si le nom de classe est long.
+          </p>
+        </div>
+
         <div className="tab">
           {FILIERES.map((f) => (
             <button key={f.cle} className={filiere === f.cle ? "on" : ""}
@@ -258,7 +291,7 @@ function CreerClasse({ onFait }) {
           </div>
         )}
 
-        <button className="btn" disabled={attente || !classe.trim()} onClick={creer}>
+        <button className="btn" disabled={attente || !classe.trim() || !prefixeFinal} onClick={creer}>
           {attente ? "Création…" : `Créer ${total} code${total > 1 ? "s" : ""}`}
         </button>
       </div>
@@ -268,17 +301,18 @@ function CreerClasse({ onFait }) {
 
 function Classe({ nom, eleves, onChange }) {
   const [ouvert, setOuvert] = useState(false);
+  const [ajout, setAjout] = useState(false);
   const [confirmSuppr, setConfirmSuppr] = useState(false);
   const [suppression, setSuppression] = useState(false);
   const actifs = eleves.filter((e) => e.actif);
   const travaillent = actifs.filter((e) => e.elements_travailles > 0).length;
 
-  const basculer = () => { setOuvert(!ouvert); setConfirmSuppr(false); };
+  const basculer = () => { setOuvert(!ouvert); setConfirmSuppr(false); setAjout(false); };
 
   const supprimer = async () => {
     if (!confirmSuppr) { setConfirmSuppr(true); return; }
     setSuppression(true);
-    const res = await supprimerClasse(eleves.map((e) => e.code));
+    const res = await supprimerCodes(eleves.map((e) => e.code));
     setSuppression(false);
     if (!res.erreur) onChange();
   };
@@ -307,7 +341,15 @@ function Classe({ nom, eleves, onChange }) {
             ))}
           </div>
 
+          {ajout && (
+            <AjouterEleves nom={nom} filiere={eleves[0].filiere} eleves={eleves}
+              onFait={() => { setAjout(false); onChange(); }} />
+          )}
+
           <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+            <button className="btn2" onClick={() => setAjout(!ajout)}>
+              {ajout ? "Fermer" : "+ Ajouter des élèves"}
+            </button>
             <button className="btn2" onClick={() => exporterCodes(nom, eleves)}>
               Copier la liste des codes
             </button>
@@ -328,6 +370,62 @@ function Classe({ nom, eleves, onChange }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function AjouterEleves({ nom, filiere, eleves, onFait }) {
+  const [noms, setNoms] = useState("");
+  const [nb, setNb] = useState(5);
+  const [attente, setAttente] = useState(false);
+
+  // On reprend exactement le même préfixe que les codes déjà créés pour
+  // cette classe, en repartant du premier numéro libre — pas d'année ni de
+  // préfixe à ressaisir, et aucun risque de collision avec un élève existant,
+  // même désactivé, puisque son numéro reste réservé.
+  const prefixe = eleves[0].code.replace(/-\d+$/, "");
+  const annee = prefixe.split("-")[0];
+  const dernier = Math.max(
+    0, ...eleves.map((e) => parseInt(e.code.match(/-(\d+)$/)?.[1] || "0", 10))
+  );
+
+  const listeNoms = noms.split("\n").map((n) => n.trim()).filter(Boolean);
+  const total = listeNoms.length || nb;
+
+  const ajouter = async () => {
+    setAttente(true);
+    const lignes = Array.from({ length: total }, (_, i) => ({
+      code: `${prefixe}-${String(dernier + i + 1).padStart(2, "0")}`,
+      classe: nom, filiere, annee,
+      nom: listeNoms[i] || null,
+    }));
+    const res = await ajouterCodes(lignes);
+    setAttente(false);
+    if (!res.erreur) onFait();
+  };
+
+  return (
+    <div className="carte" style={{ margin: "14px 0", background: "#FAFBFC" }}>
+      <div className="sur" style={{ marginBottom: 10 }}>
+        Ajouter à {nom} — à partir de {prefixe}-{String(dernier + 1).padStart(2, "0")}
+      </div>
+      <div style={{ display: "grid", gap: 10 }}>
+        <textarea className="champ" rows={4}
+          placeholder={"Liste de noms, un par ligne (facultatif)\nDupont Élise\n…"}
+          value={noms} onChange={(e) => setNoms(e.target.value)}
+          style={{ fontSize: 13.5, resize: "vertical", lineHeight: 1.6 }} />
+        {!listeNoms.length && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span className="note" style={{ fontSize: 13 }}>Nombre d'élèves à ajouter</span>
+            <input className="champ" type="number" min="1" max="40" value={nb}
+              onChange={(e) => setNb(Number(e.target.value))}
+              style={{ width: 80, fontSize: 15, padding: "10px 12px" }} />
+          </div>
+        )}
+        <button className="btn" disabled={attente} onClick={ajouter}>
+          {attente ? "Ajout…" : `Ajouter ${total} élève${total > 1 ? "s" : ""}`}
+        </button>
+      </div>
     </div>
   );
 }
@@ -402,6 +500,7 @@ function Jauges({ titre, lignes }) {
 function LigneEleve({ e, onChange }) {
   const [nom, setNom] = useState(e.nom || "");
   const [sauve, setSauve] = useState(false);
+  const [confirmSuppr, setConfirmSuppr] = useState(false);
   useEffect(() => { setNom(e.nom || ""); }, [e.nom]);
 
   const bascule = async () => { await activerCode(e.code, !e.actif); onChange(); };
@@ -410,6 +509,11 @@ function LigneEleve({ e, onChange }) {
     setSauve(true);
     await renommerCode(e.code, nom);
     setSauve(false);
+    onChange();
+  };
+  const supprimer = async () => {
+    if (!confirmSuppr) { setConfirmSuppr(true); return; }
+    await supprimerCodes([e.code]);
     onChange();
   };
   const derniereActivite = e.derniere_activite
@@ -437,13 +541,19 @@ function LigneEleve({ e, onChange }) {
           {e.code}{sauve ? " · …" : ""}
         </span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <span className="rangDe" style={{ fontSize: 12.5 }}>
           {e.parfaitement_connus} acquis · dernier examen {examen} · vu le {derniereActivite}
         </span>
-        <button className="lien" style={{ fontSize: 12, flexShrink: 0 }} onClick={bascule}>
-          {e.actif ? "Retirer" : "Réactiver"}
-        </button>
+        <span style={{ display: "flex", gap: 12, flexShrink: 0 }}>
+          <button className="lien" style={{ fontSize: 12 }} onClick={bascule}>
+            {e.actif ? "Retirer" : "Réactiver"}
+          </button>
+          <button className="lien" style={{ fontSize: 12, color: confirmSuppr ? "var(--rouge)" : undefined }}
+            onClick={supprimer}>
+            {confirmSuppr ? "Confirmer ?" : "Supprimer"}
+          </button>
+        </span>
       </div>
     </div>
   );

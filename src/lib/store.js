@@ -151,9 +151,11 @@ export async function activerCode(code, actif) {
   return { ok: true };
 }
 
-/** Efface une classe entière : sa progression, puis ses codes. Irréversible —
-    l'écran qui l'appelle doit faire confirmer avant. */
-export async function supprimerClasse(codes) {
+/** Efface définitivement une liste de codes : leur progression, puis les
+    codes eux-mêmes. Fonctionne pour une classe entière comme pour un seul
+    élève — c'est l'appelant qui décide de la portée. Irréversible : l'écran
+    qui l'appelle doit faire confirmer avant. */
+export async function supprimerCodes(codes) {
   if (!sb) return { erreur: "Supabase n'est pas configuré." };
   if (!codes.length) return { ok: true };
   const p = await sb.from("progression").delete().in("code", codes);
