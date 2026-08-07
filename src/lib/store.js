@@ -136,7 +136,8 @@ export async function listerSuivi() {
 }
 
 export async function ajouterCodes(lignes) {
-  // lignes : [{ code, classe, filiere, annee }, …]
+  // lignes : [{ code, classe, filiere, annee, nom? }, …] — nom est facultatif
+  // et n'est jamais lu par le parcours élève, seulement par ce tableau de bord.
   if (!sb) return { erreur: "Supabase n'est pas configuré." };
   const { error } = await sb.from("codes").insert(lignes);
   if (error) return { erreur: error.message };
@@ -146,6 +147,15 @@ export async function ajouterCodes(lignes) {
 export async function activerCode(code, actif) {
   if (!sb) return { erreur: "Supabase n'est pas configuré." };
   const { error } = await sb.from("codes").update({ actif }).eq("code", code);
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}
+
+/** Attache ou retire le nom d'un élève sur son code. Réservé à votre compte,
+    comme le reste de la table « codes » ; jamais exposé côté élève. */
+export async function renommerCode(code, nom) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { error } = await sb.from("codes").update({ nom: nom.trim() || null }).eq("code", code);
   if (error) return { erreur: error.message };
   return { ok: true };
 }

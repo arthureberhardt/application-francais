@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   connexionEnseignant, deconnexionEnseignant, sessionEnseignant,
-  listerSuivi, ajouterCodes, activerCode, listerProgressionClasse, enLigne,
+  listerSuivi, ajouterCodes, activerCode, renommerCode, listerProgressionClasse, enLigne,
 } from "../lib/store.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
 import { categorie } from "../lib/leitner.js";
@@ -204,15 +204,22 @@ function CreerClasse({ onFait }) {
   const [classe, setClasse] = useState("");
   const [filiere, setFiliere] = useState("gymnase");
   const [nb, setNb] = useState(20);
+  const [noms, setNoms] = useState("");
   const [attente, setAttente] = useState(false);
+
+  // Une liste collée (un nom par ligne) prime sur le nombre saisi : c'est
+  // elle qui fixe combien de codes créer, dans le même ordre.
+  const listeNoms = noms.split("\n").map((n) => n.trim()).filter(Boolean);
+  const total = listeNoms.length || nb;
 
   const creer = async () => {
     if (!classe.trim()) return;
     setAttente(true);
     const annee = AUJOURDHUI();
-    const lignes = Array.from({ length: nb }, (_, i) => ({
+    const lignes = Array.from({ length: total }, (_, i) => ({
       code: `${annee}-${classe.trim().toUpperCase()}-${String(i + 1).padStart(2, "0")}`,
       classe: classe.trim(), filiere, annee,
+      nom: listeNoms[i] || null,
     }));
     const res = await ajouterCodes(lignes);
     setAttente(false);
@@ -231,14 +238,27 @@ function CreerClasse({ onFait }) {
               onClick={() => setFiliere(f.cle)}>{f.nom}</button>
           ))}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span className="note" style={{ fontSize: 13 }}>Nombre d'élèves</span>
-          <input className="champ" type="number" min="1" max="40" value={nb}
-            onChange={(e) => setNb(Number(e.target.value))}
-            style={{ width: 80, fontSize: 15, padding: "10px 12px" }} />
-        </div>
+
+        <textarea className="champ" rows={5}
+          placeholder={"Liste de noms, un par ligne (facultatif)\nDupont Élise\nMartin Noah\n…"}
+          value={noms} onChange={(e) => setNoms(e.target.value)}
+          style={{ fontSize: 13.5, resize: "vertical", lineHeight: 1.6 }} />
+        <p className="note" style={{ fontSize: 12, margin: 0 }}>
+          Les noms restent visibles seulement par vous. Les codes ne les
+          contiennent jamais et sont ceux que les élèves saisiront.
+        </p>
+
+        {!listeNoms.length && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span className="note" style={{ fontSize: 13 }}>Nombre d'élèves</span>
+            <input className="champ" type="number" min="1" max="40" value={nb}
+              onChange={(e) => setNb(Number(e.target.value))}
+              style={{ width: 80, fontSize: 15, padding: "10px 12px" }} />
+          </div>
+        )}
+
         <button className="btn" disabled={attente || !classe.trim()} onClick={creer}>
-          {attente ? "Création…" : `Créer ${nb} codes`}
+          {attente ? "Création…" : `Créer ${total} code${total > 1 ? "s" : ""}`}
         </button>
       </div>
     </div>
@@ -351,7 +371,18 @@ function Jauges({ titre, lignes }) {
 }
 
 function LigneEleve({ e, onChange }) {
+  const [nom, setNom] = useState(e.nom || "");
+  const [sauve, setSauve] = useState(false);
+  useEffect(() => { setNom(e.nom || ""); }, [e.nom]);
+
   const bascule = async () => { await activerCode(e.code, !e.actif); onChange(); };
+  const sauver = async () => {
+    if (nom === (e.nom || "")) return;
+    setSauve(true);
+    await renommerCode(e.code, nom);
+    setSauve(false);
+    onChange();
+  };
   const derniereActivite = e.derniere_activite
     ? new Date(e.derniere_activite).toLocaleDateString("fr-CH")
     : "jamais";
@@ -360,14 +391,31 @@ function LigneEleve({ e, onChange }) {
     : "—";
 
   return (
-    <div className="rang" style={{ opacity: e.actif ? 1 : 0.45 }}>
-      <span className="mono rangFr" style={{ fontSize: 13 }}>{e.code}</span>
-      <span className="rangDe" style={{ fontSize: 12.5 }}>
-        {e.parfaitement_connus} acquis · dernier examen {examen} · vu le {derniereActivite}
-      </span>
-      <button className="lien" style={{ fontSize: 12, flexShrink: 0 }} onClick={bascule}>
-        {e.actif ? "Retirer" : "Réactiver"}
-      </button>
+    <div className="rang" style={{ flexDirection: "column", alignItems: "stretch", gap: 6, opacity: e.actif ? 1 : 0.45 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <input
+          value={nom} placeholder="Nom (facultatif, visible par vous seul)"
+          onChange={(ev) => setNom(ev.target.value)}
+          onBlur={sauver}
+          onKeyDown={(ev) => ev.key === "Enter" && ev.target.blur()}
+          style={{
+            flex: 1, border: "none", borderBottom: "1px solid var(--trait)",
+            background: "transparent", fontSize: 13.5, padding: "2px 0",
+            color: nom ? "var(--encre)" : "var(--ardoise)",
+          }}
+        />
+        <span className="mono" style={{ fontSize: 11.5, color: "var(--ardoise)", flexShrink: 0 }}>
+          {e.code}{sauve ? " · …" : ""}
+        </span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span className="rangDe" style={{ fontSize: 12.5 }}>
+          {e.parfaitement_connus} acquis · dernier examen {examen} · vu le {derniereActivite}
+        </span>
+        <button className="lien" style={{ fontSize: 12, flexShrink: 0 }} onClick={bascule}>
+          {e.actif ? "Retirer" : "Réactiver"}
+        </button>
+      </div>
     </div>
   );
 }
