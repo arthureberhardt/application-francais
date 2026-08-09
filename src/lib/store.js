@@ -97,18 +97,21 @@ export const ecrireSemestre = (n) => {
     exécuté) ou si Supabase n'est pas branché, on laisse passer : c'est le
     comportement d'avant, pour ne rien casser pendant la mise en place. */
 export async function codeValide(code) {
-  if (!enLigne) return { ok: true, classe: null, filiere: null };
+  if (!enLigne) return { ok: true, classe: null, filiere: null, semestreMax: null };
   const { data, error } = await sb.rpc("verifier_code", { p_code: code });
   if (error) {
     // fonction pas encore créée : on ne bloque personne pour autant
     if (error.code === "42883" || /function .* does not exist/i.test(error.message)) {
-      return { ok: true, classe: null, filiere: null };
+      return { ok: true, classe: null, filiere: null, semestreMax: null };
     }
     console.error("Vérification du code impossible :", error.message);
-    return { ok: true, classe: null, filiere: null };
+    return { ok: true, classe: null, filiere: null, semestreMax: null };
   }
-  if (!data || !data.length) return { ok: false, classe: null, filiere: null };
-  return { ok: true, classe: data[0].classe, filiere: data[0].filiere };
+  if (!data || !data.length) return { ok: false, classe: null, filiere: null, semestreMax: null };
+  return {
+    ok: true, classe: data[0].classe, filiere: data[0].filiere,
+    semestreMax: data[0].semestre_max ?? null,
+  };
 }
 
 export async function connexionEnseignant(email, motDePasse) {
@@ -162,6 +165,18 @@ export async function supprimerCodes(codes) {
   if (p.error) return { erreur: p.error.message };
   const c = await sb.from("codes").delete().in("code", codes);
   if (c.error) return { erreur: c.error.message };
+  return { ok: true };
+}
+
+/** Fixe (ou lève, avec null) la limite de semestre d'une classe entière.
+    Un élève ne peut alors plus ouvrir un semestre au-delà de cette valeur,
+    ni depuis le sélecteur ni en modifiant l'adresse ou son stockage local :
+    la limite est revérifiée à chaque tentative, pas seulement à l'écran. */
+export async function definirSemestreMax(codes, semestreMax) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  if (!codes.length) return { ok: true };
+  const { error } = await sb.from("codes").update({ semestre_max: semestreMax }).in("code", codes);
+  if (error) return { erreur: error.message };
   return { ok: true };
 }
 

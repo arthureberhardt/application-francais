@@ -14,6 +14,7 @@ export default function App() {
   const [code, setCode] = useState(null);
   const [filiere, setFiliere] = useState(() => choisirFiliere(lireFiliere() || "gymnase").cle);
   const [semestre, setSem] = useState(lireSemestre());
+  const [semestreMax, setSemestreMax] = useState(null);
   const [progression, setProgression] = useState({});
   const [seance, setSeance] = useState(null); // { mode, unite }
   const [liste, setListe] = useState(false);
@@ -23,7 +24,7 @@ export default function App() {
   const [chargement, setChargement] = useState(false);
   const [enseignant, setEnseignant] = useState(false);
 
-  const entrer = useCallback(async (c, cleFiliere) => {
+  const entrer = useCallback(async (c, cleFiliere, semMax) => {
     setChargement(true);
     if (cleFiliere) {
       choisirFiliere(cleFiliere);
@@ -33,6 +34,10 @@ export default function App() {
       const max = filiereActive().semestres.length;
       if (lireSemestre() > max) { ecrireSemestre(1); setSem(1); }
     }
+    setSemestreMax(semMax ?? null);
+    // si l'enseignant a resserré la limite depuis la dernière visite, le
+    // semestre déjà mémorisé sur cet appareil peut la dépasser : on le ramène
+    if (semMax && lireSemestre() > semMax) { ecrireSemestre(semMax); setSem(semMax); }
     setProgression(await chargerProgression(c));
     setCode(c);
     setChargement(false);
@@ -46,8 +51,11 @@ export default function App() {
     } catch {}
   }, []);
 
-  const setSemestre = (n) => { setSem(n); ecrireSemestre(n); };
-  const quitter = () => { setCode(null); setProgression({}); setSeance(null); setListe(false); setBadges(false); setAide(false); setExamen(false); };
+  const setSemestre = (n) => {
+    if (semestreMax && n > semestreMax) return; // barrière silencieuse, en plus des boutons désactivés
+    setSem(n); ecrireSemestre(n);
+  };
+  const quitter = () => { setCode(null); setProgression({}); setSemestreMax(null); setSeance(null); setListe(false); setBadges(false); setAide(false); setExamen(false); };
 
   return (
     <div className="fle">
@@ -78,7 +86,7 @@ export default function App() {
         <Badges semestre={semestre} progression={progression} onFin={() => setBadges(false)} />
       ) : (
         <Accueil
-          code={code} semestre={semestre} setSemestre={setSemestre}
+          code={code} semestre={semestre} setSemestre={setSemestre} semestreMax={semestreMax}
           progression={progression}
           onLancer={(mode, filtre) => setSeance({ mode, filtre })}
           onConsulter={() => setListe(true)}

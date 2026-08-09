@@ -58,7 +58,7 @@ export default function Connexion({ onEntrer, onEnseignant }) {
     // manuel — utile si l'élève s'est trompé de bouton
     const f = res.filiere || filiere;
     if (!f) { setErreur("Choisissez d'abord votre classe."); return; }
-    onEntrer(c, f);
+    onEntrer(c, f, res.semestreMax);
   };
 
   return (

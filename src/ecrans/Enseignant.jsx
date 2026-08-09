@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   connexionEnseignant, deconnexionEnseignant, sessionEnseignant,
   listerSuivi, ajouterCodes, activerCode, renommerCode, supprimerCodes,
-  listerProgressionClasse, enLigne,
+  definirSemestreMax, listerProgressionClasse, enLigne,
 } from "../lib/store.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
 import { categorie } from "../lib/leitner.js";
@@ -333,6 +333,8 @@ function Classe({ nom, eleves, onChange }) {
 
       {ouvert && (
         <div style={{ marginTop: 16, borderTop: "1px solid var(--trait)", paddingTop: 14 }}>
+          <LimiteSemestre eleves={eleves} onChange={onChange} />
+
           <PointsFaibles codes={actifs.map((e) => e.code)} />
 
           <div className="listeC" style={{ boxShadow: "none", marginTop: 18 }}>
@@ -398,6 +400,7 @@ function AjouterEleves({ nom, filiere, eleves, onFait }) {
       code: `${prefixe}-${String(dernier + i + 1).padStart(2, "0")}`,
       classe: nom, filiere, annee,
       nom: listeNoms[i] || null,
+      semestre_max: eleves[0].semestre_max ?? null, // hérite de la limite déjà en place
     }));
     const res = await ajouterCodes(lignes);
     setAttente(false);
@@ -424,6 +427,56 @@ function AjouterEleves({ nom, filiere, eleves, onFait }) {
         )}
         <button className="btn" disabled={attente} onClick={ajouter}>
           {attente ? "Ajout…" : `Ajouter ${total} élève${total > 1 ? "s" : ""}`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function LimiteSemestre({ eleves, onChange }) {
+  const [attente, setAttente] = useState(false);
+  const filiereDef = FILIERES.find((f) => f.cle === eleves[0].filiere) || FILIERES[0];
+  const actuel = eleves[0].semestre_max ?? null; // valeur commune à la classe
+
+  const choisir = async (valeur) => {
+    if (valeur === actuel) return;
+    setAttente(true);
+    await definirSemestreMax(eleves.map((e) => e.code), valeur);
+    setAttente(false);
+    onChange();
+  };
+
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div className="sur" style={{ marginBottom: 9 }}>Semestres accessibles</div>
+      <p className="note" style={{ fontSize: 12.5, marginBottom: 10 }}>
+        Les élèves ne peuvent pas ouvrir un semestre au-delà de celui-ci —
+        utile pour ne pas montrer d'avance ce qui n'a pas encore été enseigné.
+      </p>
+      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+        {filiereDef.semestres.map((s) => (
+          <button key={s.numero} disabled={attente}
+            className={"btn2" + (actuel === s.numero ? " on" : "")}
+            style={{
+              padding: "7px 12px", fontSize: 13,
+              ...(actuel === s.numero
+                ? { background: "var(--encre)", color: "#fff", borderColor: "var(--encre)" }
+                : {}),
+            }}
+            onClick={() => choisir(s.numero)}>
+            S{s.numero}
+          </button>
+        ))}
+        <button disabled={attente}
+          className="btn2"
+          style={{
+            padding: "7px 12px", fontSize: 13,
+            ...(actuel === null
+              ? { background: "var(--encre)", color: "#fff", borderColor: "var(--encre)" }
+              : {}),
+          }}
+          onClick={() => choisir(null)}>
+          Illimité
         </button>
       </div>
     </div>

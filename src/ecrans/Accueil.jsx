@@ -12,7 +12,7 @@ import { Statistiques, Anneau, ObjectifJour } from "./Commun.jsx";
 
 const SEUIL_EXAMEN = 85;
 
-export default function Accueil({ code, semestre, setSemestre, progression, onLancer, onConsulter, onBadges, onAide, onExamen, onQuitter }) {
+export default function Accueil({ code, semestre, setSemestre, semestreMax, progression, onLancer, onConsulter, onBadges, onAide, onExamen, onQuitter }) {
   const [ouvert, setOuvert] = useState(null); // "lexique" | "verbes" | "bilan"
   const { lexique, approfondissement, verbes, tous } = itemsDe(semestre);
   const infos = infosSemestre(semestre);
@@ -86,16 +86,21 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
 
           <div className="sur" style={{ marginBottom: 7 }}>Semestre</div>
           <div className="semestres">
-            {listeSemestres().map((s) => (
-              <button
-                key={s.numero}
-                className={"semBtn" + (s.numero === semestre ? " on" : "")}
-                onClick={() => { setSemestre(s.numero); setOuvert(null); }}
-                title={`${s.niveau} · ${s.temps}`}
-              >
-                S{s.numero}
-              </button>
-            ))}
+            {listeSemestres().map((s) => {
+              const verrouille = Boolean(semestreMax) && s.numero > semestreMax;
+              return (
+                <button
+                  key={s.numero}
+                  className={"semBtn" + (s.numero === semestre ? " on" : "") + (verrouille ? " verrouille" : "")}
+                  onClick={() => { if (!verrouille) { setSemestre(s.numero); setOuvert(null); } }}
+                  title={verrouille
+                    ? "Pas encore ouvert par votre enseignant"
+                    : `${s.niveau} · ${s.temps}`}
+                >
+                  {verrouille ? "🔒" : `S${s.numero}`}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
