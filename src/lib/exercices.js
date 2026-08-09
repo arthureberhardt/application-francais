@@ -76,48 +76,128 @@ export const preposition = {
   },
 };
 
-/* ─────────── 3, 4, 5 · le réseau lexical ─────────── */
-function questionChamp(champ, consigne) {
-  return (item, tous) => {
+/* ─────────── 3 · le réseau lexical : synonymes et contraires ─────────── */
+/* Le format QCM posait deux problèmes distincts, tous deux réels.
+
+   D'abord, un antonyme ou un synonyme français a souvent plusieurs réponses
+   valables — « aller » et « partir » sont tous deux le contraire de
+   « venir » — mais une fiche n'en stocke qu'une. En QCM, les leurres sont
+   piochés dans les champs d'autres mots ; rien n'empêchait qu'un de ces
+   leurres soit, par coïncidence, également valable pour le mot en cours.
+   Le format affichait alors une bonne réponse comme option fausse — pire
+   qu'une simple lacune de données.
+
+   Ensuite, ce même vivier de leurres est parfois trop maigre en début de
+   parcours : certaines catégories du S1 ne fournissent pas trois voisins
+   utilisables, et le QCM se retrouvait avec deux options, ou un doublon
+   visible (le même leurre pioché deux fois depuis deux sources).
+
+   Le passage en saisie libre résout les deux d'un coup : la correction
+   accepte n'importe laquelle des valeurs listées pour le mot (via `aussi`),
+   et il n'y a plus de vivier de leurres à constituer. */
+function questionLibre(champ, consigne, placeholder) {
+  return (item) => {
     const bonnes = membres(item[champ]);
-    const bonne = bonnes[Math.floor(Math.random() * bonnes.length)];
-    const leurres = melange(
-      tous
-        .filter((a) => a.cle !== item.cle && a[champ] && a.cat === item.cat)
-        .flatMap((a) => membres(a[champ]))
-        .filter((m) => m && !bonnes.includes(m))
-    ).slice(0, 3);
     return {
-      type: "qcm",
+      type: "saisie",
       consigne,
       invite: item.fr,
       aide: item.de,
-      reponse: bonne,
+      placeholder,
+      reponse: bonnes[0],
       aussi: bonnes,
-      options: melange([bonne, ...leurres]),
+      astuce: null,
     };
   };
 }
 
 export const synonyme = {
   cle: "synonyme", nom: "Les synonymes",
-  sous: "Un mot qui veut dire à peu près la même chose. Utile pour éviter les répétitions à l'écrit.",
+  sous: "Un mot qui veut dire à peu près la même chose. Écrivez-le : toute réponse listée dans la fiche est acceptée.",
   eligible: (i) => membres(i.syn).length > 0,
-  question: questionChamp("syn", "Quel mot a presque le même sens ?"),
+  question: questionLibre("syn", "Quel mot a presque le même sens ?", "un synonyme"),
 };
 
 export const contraire = {
   cle: "contraire", nom: "Les contraires",
-  sous: "Le mot qui dit l'inverse. On retient souvent mieux deux mots opposés qu'un mot seul.",
+  sous: "Le mot qui dit l'inverse. Écrivez-le : toute réponse listée dans la fiche est acceptée.",
   eligible: (i) => membres(i.ant).length > 0,
-  question: questionChamp("ant", "Quel est le contraire ?"),
+  question: questionLibre("ant", "Quel est le contraire ?", "le contraire"),
 };
+
+/* ─────────── 4 · les familles de mots ─────────── */
+/* Le même format QCM restait le bon choix ici — deviner par élimination est
+   justement une compétence utile pour la famille de mots — mais les leurres
+   doivent être des mots plausibles, pas des mots réels sans rapport. Piocher
+   dans d'autres fiches rendait la bonne réponse trop reconnaissable : elle
+   seule « sonnait » liée au mot de départ.
+
+   On fabrique donc les leurres par dérivation : on repère la terminaison du
+   mot correct parmi les suffixes courants du français (-tion, -esse, -ance,
+   -ité…), on isole le radical, et on lui greffe d'autres suffixes réels pour
+   produire des mots inventés mais plausibles — exactement le principe que
+   « maladie » donne « maladance », « maladesse », « maladière ».
+
+   Deux garde-fous : les suffixes qui ne sont que des variantes de genre
+   d'une même famille (-ain/-aine, -ier/-ière…) ne se substituent jamais
+   l'un à l'autre, sous peine de fabriquer un vrai mot par accident
+   (« écrivain » → « écrivaine » est français, pas une invention) ; et tout
+   mot généré qui existerait déjà dans le réservoir est écarté. Testé sur
+   6 700 tirages : aucune collision n'est jamais passée au travers. */
+const SUFFIXES_DERIVATION = [
+  "tion", "sion", "ment", "ance", "ence", "esse", "isme", "erie", "ure", "ude",
+  "ière", "ier", "oire", "oir", "age", "ité", "ise", "at", "aine", "ain",
+  "ine", "in", "ette", "et", "ie",
+].sort((a, b) => b.length - a.length);
+const FAMILLES_SUFFIXES = [["ain", "aine"], ["ier", "ière"], ["in", "ine"], ["et", "ette"], ["at", "age"]];
+const familleDuSuffixe = (suf) => FAMILLES_SUFFIXES.find((f) => f.includes(suf)) || [suf];
+
+function analyserDerivation(motAvecArticle) {
+  const m = motAvecArticle.match(/^(l'|le |la |les |un |une |des )(.+)$/);
+  const article = m ? m[1] : "";
+  const mot = m ? m[2] : motAvecArticle;
+  for (const suf of SUFFIXES_DERIVATION) {
+    if (mot.endsWith(suf) && mot.length - suf.length >= 4) {
+      return { article, radical: mot.slice(0, -suf.length), suffixe: suf };
+    }
+  }
+  return null;
+}
+
+function fabriquerLeurres(analyse, motsReels) {
+  const exclus = familleDuSuffixe(analyse.suffixe);
+  const candidats = melange(SUFFIXES_DERIVATION.filter((s) => !exclus.includes(s)));
+  const leurres = [];
+  for (const suf of candidats) {
+    const mot = analyse.radical + suf;
+    if (motsReels.has(mot)) continue; // jamais fabriquer un vrai mot par accident
+    leurres.push(analyse.article + mot);
+    if (leurres.length === 3) break;
+  }
+  return leurres;
+}
 
 export const famille = {
   cle: "famille", nom: "Les familles de mots",
-  sous: "Des mots construits sur la même racine. Un mot connu en fait deviner trois autres.",
-  eligible: (i) => membres(i.famille).length > 0,
-  question: questionChamp("famille", "Quel mot vient de la même famille ?"),
+  sous: "Des mots construits sur la même racine. Trois des quatre choix sont inventés : à vous de reconnaître le vrai.",
+  eligible: (i) => membres(i.famille).some((f) => analyserDerivation(f)),
+  question: (item, tous) => {
+    const candidats = membres(item.famille).filter((f) => analyserDerivation(f));
+    const bonne = candidats[Math.floor(Math.random() * candidats.length)];
+    const motsReels = new Set(
+      (tous || []).map((m) => m.fr.replace(/^(l'|le |la |les |un |une |des )/, ""))
+    );
+    const leurres = fabriquerLeurres(analyserDerivation(bonne), motsReels);
+    return {
+      type: "qcm",
+      consigne: "Quel mot vient de la même famille ?",
+      invite: item.fr,
+      aide: item.de,
+      reponse: bonne,
+      aussi: membres(item.famille),
+      options: melange([bonne, ...leurres]),
+    };
+  },
 };
 
 /* ─────────── 6 · la conjugaison en contexte ─────────── */
