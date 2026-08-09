@@ -41,7 +41,8 @@ export default function Connexion({ onEntrer, onEnseignant }) {
   const [filiere, setFiliere] = useState(null);
   const [verif, setVerif] = useState(false);
   const [erreur, setErreur] = useState(null);
-  const valide = /^[A-Z0-9-]{3,16}$/.test(v.trim());
+  const valide = /^[A-Z0-9-]{3,32}$/.test(v.trim());
+  const troplong = v.trim().length > 32;
 
   const entrer = async () => {
     if (!valide || verif) return;
@@ -102,6 +103,13 @@ export default function Connexion({ onEntrer, onEnseignant }) {
       {erreur && (
         <p className="note" style={{ marginTop: 10, fontSize: 12.5, color: "var(--rouge)" }}>
           {erreur}
+        </p>
+      )}
+      {!erreur && v.trim() && !valide && (
+        <p className="note" style={{ marginTop: 10, fontSize: 12.5, color: "var(--rouge)" }}>
+          {troplong
+            ? "Ce code est trop long (32 caractères maximum)."
+            : "Le code ne peut contenir que des lettres, des chiffres et des tirets, sur au moins 3 caractères."}
         </p>
       )}
       {!erreur && !filiere && (
