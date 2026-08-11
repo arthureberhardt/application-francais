@@ -2802,7 +2802,7 @@ export const MOTS = [
  {
   "id": "S1-A051",
   "fr": "la cantine",
-  "de": "Mensa",
+  "de": "Kantine",
   "cat": "N",
   "unite": "École",
   "gram": "",
@@ -34722,7 +34722,7 @@ export const MOTS = [
  {
   "id": "JOU-007",
   "fr": "le chiffre",
-  "de": "Zahl",
+  "de": "Ziffer",
   "cat": "N",
   "unite": "Reportage et journalisme",
   "gram": "masculin",

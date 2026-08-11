@@ -28,21 +28,35 @@ const PART_LEXIQUE = 0.5;
 const chrono = (s) =>
   `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-/** Aucune question à choix multiple : un examen se passe en production. */
+/** Aucune question à choix multiple : un examen se passe en production.
+    Le QCM d'origine peut venir d'un mot ou d'un verbe (le seul QCM verbe est
+    le choix de l'auxiliaire) — il ne faut jamais traiter l'un comme l'autre :
+    un item verbe n'a ni `fr` ni `cat`, et les y chercher produit une question
+    cassée dont la réponse attendue est `undefined`. */
 function questionExamen(item, semestre, vocab) {
   const q = question(item, { boite: 3, ok: 3, essais: 5 }, vocab, semestre);
-  if (q.type === "qcm") {
+  if (q.type !== "qcm") return { ...q, astuce: null };
+
+  if (item.module === "verbes") {
     return {
       type: "saisie",
-      consigne: "Écrivez ce mot en français",
-      invite: item.de,
-      aide: NOM_CATEGORIE[item.cat],
-      placeholder: "écrivez en français",
-      reponse: item.fr,
+      consigne: "Donnez le participe passé",
+      invite: item.inf,
+      aide: item.de,
+      placeholder: "le participe passé",
+      reponse: item.participe,
       aussi: [],
     };
   }
-  return { ...q, astuce: null };
+  return {
+    type: "saisie",
+    consigne: "Écrivez ce mot en français",
+    invite: item.de,
+    aide: NOM_CATEGORIE[item.cat],
+    placeholder: "écrivez en français",
+    reponse: item.fr,
+    aussi: [],
+  };
 }
 
 export default function Examen({ semestre, code, progression, onFin }) {
@@ -266,9 +280,9 @@ function Resultat({ serie, saisies, semestre, code, progression, onFin }) {
                   <div style={{ fontSize: 13.5, color: "var(--ardoise)", marginBottom: 3 }}>
                     {c.q.invite}
                   </div>
-                  {c.rep ? (
+                  {c.rep && c.q.reponse ? (
                     <div style={{ fontSize: 15, marginBottom: 2 }}>
-                      {diff(c.rep, c.q.reponse.split(/[,·]/)[0].trim()).map((s, j) => (
+                      {diff(c.rep, String(c.q.reponse).split(/[,·]/)[0].trim()).map((s, j) => (
                         <span key={j} className={s.t === "trop" ? "dTrop" : s.t === "accent" ? "dAcc" : ""}>
                           {s.ch}
                         </span>
