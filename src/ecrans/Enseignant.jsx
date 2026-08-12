@@ -5,6 +5,7 @@ import {
   definirSemestreMax, listerProgressionClasse, enLigne,
 } from "../lib/store.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
+import { itemsCumules, choisirFiliere } from "../lib/items.js";
 import { categorie } from "../lib/leitner.js";
 
 /* Repère ce qui résiste à toute une classe, pas seulement à un élève.
@@ -35,6 +36,23 @@ const agregerParTemps = (lignes) =>
 
 const agregerParTheme = (lignes) =>
   agreger(lignes, { prefixe: "v:", nommer: (cle) => PAR_ID[cle.slice(2)]?.unite });
+
+/** Le même calcul que l'écran d'accueil de l'élève : la part des éléments
+    « acquis » parmi tout ce qui est cumulé jusqu'au semestre donné. Si la
+    classe n'a pas de limite fixée, on prend le programme complet de la
+    filière — il n'existe alors aucun point de référence côté serveur pour
+    savoir où l'élève se trouve personnellement, seul son appareil le sait. */
+function pourcentageSemestre(lignesEleve, filiereCle, semestreMax) {
+  const f = FILIERES.find((x) => x.cle === filiereCle);
+  if (!f) return null;
+  const dernier = semestreMax || f.semestres.length;
+  choisirFiliere(filiereCle);
+  const items = itemsCumules(dernier).filter((i) => i.module !== "approfondissement");
+  if (!items.length) return null;
+  const parCle = Object.fromEntries(lignesEleve.map((l) => [l.cle, l]));
+  const acquis = items.filter((i) => categorie(parCle[i.cle]) === "acquis").length;
+  return { pct: Math.round((acquis / items.length) * 100), dernier, plafonne: Boolean(semestreMax) };
+}
 
 /* Espace enseignant.
 
@@ -304,10 +322,24 @@ function Classe({ nom, eleves, onChange }) {
   const [ajout, setAjout] = useState(false);
   const [confirmSuppr, setConfirmSuppr] = useState(false);
   const [suppression, setSuppression] = useState(false);
+  const [lignes, setLignes] = useState(null);
+  const [erreurLignes, setErreurLignes] = useState(null);
   const actifs = eleves.filter((e) => e.actif);
   const travaillent = actifs.filter((e) => e.elements_travailles > 0).length;
 
-  const basculer = () => { setOuvert(!ouvert); setConfirmSuppr(false); setAjout(false); };
+  const basculer = async () => {
+    const ouvrir = !ouvert;
+    setOuvert(ouvrir);
+    setConfirmSuppr(false);
+    setAjout(false);
+    // une seule requête pour toute la classe, partagée entre le diagnostic
+    // collectif et le pourcentage individuel de chaque élève
+    if (ouvrir && !lignes) {
+      const res = await listerProgressionClasse(actifs.map((e) => e.code));
+      if (res.erreur) setErreurLignes(res.erreur);
+      else setLignes(res.lignes);
+    }
+  };
 
   const supprimer = async () => {
     if (!confirmSuppr) { setConfirmSuppr(true); return; }
@@ -316,6 +348,13 @@ function Classe({ nom, eleves, onChange }) {
     setSuppression(false);
     if (!res.erreur) onChange();
   };
+
+  const lignesParCode = useMemo(() => {
+    if (!lignes) return {};
+    const par = {};
+    for (const l of lignes) (par[l.code] = par[l.code] || []).push(l);
+    return par;
+  }, [lignes]);
 
   return (
     <div className="carte" style={{ marginBottom: 14 }}>
@@ -335,11 +374,15 @@ function Classe({ nom, eleves, onChange }) {
         <div style={{ marginTop: 16, borderTop: "1px solid var(--trait)", paddingTop: 14 }}>
           <LimiteSemestre eleves={eleves} onChange={onChange} />
 
-          <PointsFaibles codes={actifs.map((e) => e.code)} />
+          {erreurLignes && (
+            <p className="note" style={{ color: "var(--rouge)", marginBottom: 12 }}>{erreurLignes}</p>
+          )}
+          <PointsFaibles lignes={lignes} />
 
           <div className="listeC" style={{ boxShadow: "none", marginTop: 18 }}>
             {eleves.map((e) => (
-              <LigneEleve key={e.code} e={e} onChange={onChange} />
+              <LigneEleve key={e.code} e={e} onChange={onChange}
+                lignesEleve={lignesParCode[e.code] || []} />
             ))}
           </div>
 
@@ -435,14 +478,17 @@ function AjouterEleves({ nom, filiere, eleves, onFait }) {
 
 function LimiteSemestre({ eleves, onChange }) {
   const [attente, setAttente] = useState(false);
+  const [erreur, setErreur] = useState(null);
   const filiereDef = FILIERES.find((f) => f.cle === eleves[0].filiere) || FILIERES[0];
   const actuel = eleves[0].semestre_max ?? null; // valeur commune à la classe
 
   const choisir = async (valeur) => {
     if (valeur === actuel) return;
     setAttente(true);
-    await definirSemestreMax(eleves.map((e) => e.code), valeur);
+    setErreur(null);
+    const res = await definirSemestreMax(eleves.map((e) => e.code), valeur);
     setAttente(false);
+    if (res.erreur) { setErreur(res.erreur); return; }
     onChange();
   };
 
@@ -453,6 +499,13 @@ function LimiteSemestre({ eleves, onChange }) {
         Les élèves ne peuvent pas ouvrir un semestre au-delà de celui-ci —
         utile pour ne pas montrer d'avance ce qui n'a pas encore été enseigné.
       </p>
+      {erreur && (
+        <p className="note" style={{ fontSize: 12.5, marginBottom: 10, color: "var(--rouge)" }}>
+          {erreur.includes("column") || erreur.includes("does not exist")
+            ? "La colonne « semestre_max » n'existe pas encore dans Supabase. Exécutez supabase/semestre_max.sql, puis réessayez."
+            : erreur}
+        </p>
+      )}
       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
         {filiereDef.semestres.map((s) => (
           <button key={s.numero} disabled={attente}
@@ -483,30 +536,20 @@ function LimiteSemestre({ eleves, onChange }) {
   );
 }
 
-function PointsFaibles({ codes }) {
-  const [lignes, setLignes] = useState(null);
+function PointsFaibles({ lignes }) {
   const [ouvert, setOuvert] = useState(false);
-  const [erreur, setErreur] = useState(null);
-
-  const charger = async () => {
-    if (lignes) { setOuvert(!ouvert); return; }
-    const res = await listerProgressionClasse(codes);
-    if (res.erreur) { setErreur(res.erreur); return; }
-    setLignes(res.lignes);
-    setOuvert(true);
-  };
-
   const temps = useMemo(() => (lignes ? agregerParTemps(lignes) : []), [lignes]);
   const themes = useMemo(() => (lignes ? agregerParTheme(lignes) : []), [lignes]);
 
+  if (!lignes) return null;
+
   return (
     <div>
-      <button className="btn2" onClick={charger}>
+      <button className="btn2" onClick={() => setOuvert(!ouvert)}>
         {ouvert ? "Masquer les points faibles" : "Voir les points faibles de la classe"}
       </button>
-      {erreur && <p className="note" style={{ color: "var(--rouge)", marginTop: 8 }}>{erreur}</p>}
 
-      {ouvert && lignes && (
+      {ouvert && (
         <div style={{ marginTop: 16 }}>
           {temps.length === 0 && themes.length === 0 ? (
             <p className="note">
@@ -550,7 +593,7 @@ function Jauges({ titre, lignes }) {
   );
 }
 
-function LigneEleve({ e, onChange }) {
+function LigneEleve({ e, onChange, lignesEleve }) {
   const [nom, setNom] = useState(e.nom || "");
   const [sauve, setSauve] = useState(false);
   const [confirmSuppr, setConfirmSuppr] = useState(false);
@@ -570,11 +613,15 @@ function LigneEleve({ e, onChange }) {
     onChange();
   };
   const derniereActivite = e.derniere_activite
-    ? new Date(e.derniere_activite).toLocaleDateString("fr-CH")
+    ? new Date(e.derniere_activite).toLocaleDateString("fr-CH", { day: "numeric", month: "short" })
     : "jamais";
   const examen = e.dernier_examen_total
     ? `${Math.round((e.dernier_examen_score / e.dernier_examen_total) * 100)} %`
     : "—";
+  const sem = useMemo(
+    () => pourcentageSemestre(lignesEleve, e.filiere, e.semestre_max),
+    [lignesEleve, e.filiere, e.semestre_max]
+  );
 
   return (
     <div className="rang" style={{ flexDirection: "column", alignItems: "stretch", gap: 6, opacity: e.actif ? 1 : 0.45 }}>
@@ -594,19 +641,28 @@ function LigneEleve({ e, onChange }) {
           {e.code}{sauve ? " · …" : ""}
         </span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-        <span className="rangDe" style={{ fontSize: 12.5 }}>
-          {e.parfaitement_connus} acquis · dernier examen {examen} · vu le {derniereActivite}
-        </span>
-        <span style={{ display: "flex", gap: 12, flexShrink: 0 }}>
-          <button className="lien" style={{ fontSize: 12 }} onClick={bascule}>
-            {e.actif ? "Retirer" : "Réactiver"}
-          </button>
-          <button className="lien" style={{ fontSize: 12, color: confirmSuppr ? "var(--rouge)" : undefined }}
-            onClick={supprimer}>
-            {confirmSuppr ? "Confirmer ?" : "Supprimer"}
-          </button>
-        </span>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 10px", fontSize: 12.5, color: "var(--ardoise)" }}>
+        {sem && (
+          <span>
+            <b style={{ color: "var(--encre)" }}>{sem.pct} %</b>
+            {" "}{sem.plafonne ? `du programme jusqu'à S${sem.dernier}` : "du programme complet"}
+          </span>
+        )}
+        <span>{e.parfaitement_connus} acquis</span>
+        <span>{e.essais_totaux || 0} exercices faits</span>
+        <span>dernier examen {examen}</span>
+        <span>connecté le {derniereActivite}</span>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 12 }}>
+        <button className="lien" style={{ fontSize: 12 }} onClick={bascule}>
+          {e.actif ? "Retirer" : "Réactiver"}
+        </button>
+        <button className="lien" style={{ fontSize: 12, color: confirmSuppr ? "var(--rouge)" : undefined }}
+          onClick={supprimer}>
+          {confirmSuppr ? "Confirmer ?" : "Supprimer"}
+        </button>
       </div>
     </div>
   );
