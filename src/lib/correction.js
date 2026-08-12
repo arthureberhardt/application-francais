@@ -21,8 +21,12 @@ const ARTICLES =
   /^(le |la |les |l'|un |une |des |du |de la |der |die |das |den |dem |des |ein |eine |einen |einem |eines )/;
 
 const sansAccents = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+// La Suisse n'utilise jamais le ß : « gross » y est la graphie normale, pas
+// une simplification tolérée. On l'aligne avant toute comparaison, des deux
+// côtés, pour que le verdict soit "exact" — pas "proche" avec un avertissement.
+const sansEszett = (s) => s.replace(/ß/g, "ss");
 const nettoie = (s) =>
-  s.toLowerCase().trim().replace(/\s+/g, " ").replace(/[.!?;:]+$/g, "").replace(/['']/g, "'");
+  sansEszett(s).toLowerCase().trim().replace(/\s+/g, " ").replace(/[.!?;:]+$/g, "").replace(/['']/g, "'");
 const sansArticle = (s) => s.replace(ARTICLES, "");
 
 /** Un champ peut contenir plusieurs réponses acceptables : « lieben, mögen ». */

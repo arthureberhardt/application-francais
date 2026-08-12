@@ -21,6 +21,7 @@ export const FORMATS = {
   difficiles: { longueur: 10, nouveaux: 0 },
   dictee: { longueur: 12, nouveaux: 3 },
   special: { longueur: 12, nouveaux: 4 },
+  rattrapage: { longueur: 99, nouveaux: 0 },
 };
 
 const melange = (a) => [...a].sort(() => Math.random() - 0.5);

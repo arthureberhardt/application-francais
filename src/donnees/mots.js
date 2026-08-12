@@ -25748,7 +25748,7 @@ export const MOTS = [
  {
   "id": "S7-A099",
   "fr": "péremptoire",
-  "de": "apodiktisch",
+  "de": "kategorisch",
   "cat": "A",
   "unite": "Nuance",
   "gram": "invariable au masc./fém.",

@@ -74,6 +74,7 @@ export default function App() {
           mode={seance.mode} filtre={seance.filtre} semestre={semestre} code={code}
           progression={progression} setProgression={setProgression}
           onFin={() => setSeance(null)}
+          onLancerRattrapage={(items) => setSeance({ mode: "rattrapage", filtre: { items } })}
         />
       ) : liste ? (
         <Liste semestre={semestre} progression={progression} onFin={() => setListe(false)} />

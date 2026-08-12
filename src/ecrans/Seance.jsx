@@ -11,11 +11,16 @@ import { Rail, Ligne } from "./Commun.jsx";
 import { Ecouter, BarreAccents } from "./Outils.jsx";
 import { lire, taire, sonDisponible } from "../lib/voix.js";
 
-export default function Seance({ mode, filtre = {}, semestre, code, progression, setProgression, onFin }) {
+export default function Seance({ mode, filtre = {}, semestre, code, progression, setProgression, onFin, onLancerRattrapage }) {
   const { unite, tempsCle, semestreCible, exercice } = filtre;
   const exo = exercice ? exercicePar(exercice) : null;
 
   const bassin = useMemo(() => {
+    // le rattrapage porte sur une liste précise — les mots ratés à l'instant
+    // — pas sur une sélection recalculée : composer() choisirait selon les
+    // dates d'échéance, ce qui n'a aucun sens juste après une faute.
+    if (mode === "rattrapage") return [...(filtre.items || [])].sort(() => Math.random() - 0.5);
+
     let source;
     if (mode === "bilan") {
       source = semestreCible ? itemsDe(semestreCible).lexique : itemsCumules(semestre);
@@ -38,7 +43,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   const NOM_MODE = {
     lexique: "les mots", verbes: "les verbes", bilan: "tout revoir",
     difficiles: "mots difficiles", approfondissement: "pour aller plus loin",
-    dictee: "dictée", special: "exercice spécial",
+    dictee: "dictée", special: "exercice spécial", rattrapage: "vos fautes de tout à l'heure",
   };
   const etiquette =
     (exo && exo.nom.toLowerCase()) || unite || tempsCle ||
@@ -57,6 +62,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   const [retour, setRetour] = useState(null);
   const [flash, setFlash] = useState(null);
   const [justes, setJustes] = useState(0);
+  const [rates, setRates] = useState([]);
   const champ = useRef(null);
   const son = sonDisponible();
 
@@ -89,7 +95,8 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
 
   useEffect(() => () => taire(), []);
 
-  if (!item) return <Fin justes={justes} total={bassin.length} onFin={onFin} />;
+  if (!item) return <Fin justes={justes} total={bassin.length} rates={rates} onFin={onFin}
+    onRattrapage={(items) => onLancerRattrapage(items)} />;
 
   const valider = (reponse) => {
     if (retour) return;
@@ -107,6 +114,9 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     setRetour({ verdict, reponse, boite: etat.boite });
     setFlash(etat.boite);
     if (juste) setJustes((x) => x + 1);
+    // en rattrapage on ne re-signale pas une faute : sinon un mot raté deux
+    // fois de suite s'empilerait sans fin dans sa propre liste de reprise
+    else if (mode !== "rattrapage") setRates((r) => [...r, item]);
     setTimeout(() => setFlash(null), 500);
   };
 
@@ -317,8 +327,9 @@ function Correction({ retour, q, item }) {
   );
 }
 
-function Fin({ justes, total, onFin }) {
+function Fin({ justes, total, rates, onFin, onRattrapage }) {
   const p = total ? Math.round((justes / total) * 100) : 0;
+  const uniques = [...new Map(rates.map((i) => [i.cle, i])).values()]; // un mot raté deux fois ne compte qu'une fois
   return (
     <div className="main wrap" style={{ paddingTop: 60, maxWidth: 460 }}>
       <div className="sur">Exercice terminé</div>
@@ -332,6 +343,12 @@ function Fin({ justes, total, onFin }) {
           ? "Pas mal. Les mots ratés sont retournés dans la boîte 1. Ils reviendront vite."
           : "C'était difficile. Faites plutôt plusieurs petits exercices qu'un seul long."}
       </p>
+      {uniques.length > 0 && (
+        <button className="btn2" style={{ marginBottom: 12 }}
+          onClick={() => onRattrapage(uniques)}>
+          Refaire {uniques.length === 1 ? "le mot raté" : `les ${uniques.length} mots ratés`}
+        </button>
+      )}
       <button className="btn" onClick={onFin}>Retour à l'accueil</button>
     </div>
   );
