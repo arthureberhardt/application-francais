@@ -56,6 +56,32 @@ export async function chargerProgression(code) {
       maj: l.maj ? new Date(l.maj).getTime() : 0,
     };
   }
+
+  // Rattrapage : tout ce qui existe en local mais pas sur le serveur — ou en
+  // local avec une mise à jour plus récente — vient d'une période où
+  // l'écriture avait échoué (ex. colonne manquante). On le pousse d'un coup,
+  // silencieusement, sans attendre que l'élève retombe un jour sur ces mots.
+  const local = lireLocal(code);
+  const aEnvoyer = Object.entries(local).filter(([cle, etat]) => {
+    const distant = out[cle];
+    return !distant || (etat.maj || 0) > (distant.maj || 0);
+  });
+  if (aEnvoyer.length) {
+    const lignes = aEnvoyer.map(([cle, etat]) => ({
+      code, cle,
+      boite: etat.boite, ok: etat.ok, essais: etat.essais,
+      echecs: etat.echecs || 0, du: etat.du,
+      maj: new Date(etat.maj || Date.now()).toISOString(),
+    }));
+    const { error: errRattrapage } = await sb
+      .from("progression").upsert(lignes, { onConflict: "code,cle" });
+    if (errRattrapage) {
+      console.error("Rattrapage impossible :", errRattrapage.message);
+    } else {
+      for (const [cle, etat] of aEnvoyer) out[cle] = etat;
+    }
+  }
+
   return out;
 }
 
