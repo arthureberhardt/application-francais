@@ -7,7 +7,7 @@ import Badges from "./ecrans/Badges.jsx";
 import Aide from "./ecrans/Aide.jsx";
 import Examen from "./ecrans/Examen.jsx";
 import Enseignant from "./ecrans/Enseignant.jsx";
-import { chargerProgression, lireSemestre, ecrireSemestre, lireFiliere, ecrireFiliere } from "./lib/store.js";
+import { chargerProgression, chargerSynonymesValides, lireSemestre, ecrireSemestre, lireFiliere, ecrireFiliere } from "./lib/store.js";
 import { choisirFiliere, filiereActive } from "./lib/items.js";
 
 export default function App() {
@@ -16,6 +16,7 @@ export default function App() {
   const [semestre, setSem] = useState(lireSemestre());
   const [semestreMax, setSemestreMax] = useState(null);
   const [progression, setProgression] = useState({});
+  const [motsValides, setMotsValides] = useState({});
   const [seance, setSeance] = useState(null); // { mode, unite }
   const [liste, setListe] = useState(false);
   const [badges, setBadges] = useState(false);
@@ -39,6 +40,7 @@ export default function App() {
     // semestre déjà mémorisé sur cet appareil peut la dépasser : on le ramène
     if (semMax && lireSemestre() > semMax) { ecrireSemestre(semMax); setSem(semMax); }
     setProgression(await chargerProgression(c));
+    chargerSynonymesValides().then(setMotsValides);
     setCode(c);
     setChargement(false);
     // À la toute première connexion, on montre l'aide : personne ne devine
@@ -72,7 +74,7 @@ export default function App() {
       ) : seance ? (
         <Seance
           mode={seance.mode} filtre={seance.filtre} semestre={semestre} code={code}
-          progression={progression} setProgression={setProgression}
+          progression={progression} setProgression={setProgression} motsValides={motsValides}
           onFin={() => setSeance(null)}
           onLancerRattrapage={(items) => setSeance({ mode: "rattrapage", filtre: { items } })}
         />

@@ -26,8 +26,9 @@ export const FORMATS = {
 
 const melange = (a) => [...a].sort(() => Math.random() - 0.5);
 
-export function composer(source, progression, mode = "lexique") {
-  const { longueur, nouveaux: maxNouveaux } = FORMATS[mode] || FORMATS.lexique;
+export function composer(source, progression, mode = "lexique", longueurForcee) {
+  const { longueur: longueurDefaut, nouveaux: maxNouveaux } = FORMATS[mode] || FORMATS.lexique;
+  const longueur = longueurForcee || longueurDefaut;
 
   const nouveaux = [];
   const dus = [];

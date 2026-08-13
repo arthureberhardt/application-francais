@@ -6,12 +6,12 @@ import { evalue, diff } from "../lib/correction.js";
 import { question } from "../lib/questions.js";
 import { exercicePar } from "../lib/exercices.js";
 import { VERBE_PAR_INF } from "../donnees/index.js";
-import { enregistrerItem } from "../lib/store.js";
+import { enregistrerItem, proposerMot } from "../lib/store.js";
 import { Rail, Ligne } from "./Commun.jsx";
 import { Ecouter, BarreAccents } from "./Outils.jsx";
 import { lire, taire, sonDisponible } from "../lib/voix.js";
 
-export default function Seance({ mode, filtre = {}, semestre, code, progression, setProgression, onFin, onLancerRattrapage }) {
+export default function Seance({ mode, filtre = {}, semestre, code, progression, setProgression, motsValides = {}, onFin, onLancerRattrapage }) {
   const { unite, tempsCle, semestreCible, exercice } = filtre;
   const exo = exercice ? exercicePar(exercice) : null;
 
@@ -36,9 +36,11 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     }
     if (unite) source = source.filter((i) => i.unite === unite);
     if (tempsCle) source = source.filter((i) => i.tempsCle === tempsCle);
-    return composer(source, progression, mode);
+    if (filtre.unites?.length) source = source.filter((i) => filtre.unites.includes(i.unite));
+    if (filtre.tempsCles?.length) source = source.filter((i) => filtre.tempsCles.includes(i.tempsCle));
+    return composer(source, progression, mode, filtre.illimite ? source.length : undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, semestre, unite, tempsCle, semestreCible]);
+  }, [mode, semestre, unite, tempsCle, semestreCible, filtre.unites, filtre.tempsCles, filtre.illimite]);
 
   const NOM_MODE = {
     lexique: "les mots", verbes: "les verbes", bilan: "tout revoir",
@@ -70,7 +72,15 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   const q = useMemo(
     () => {
       if (!item) return null;
-      if (exo) return exo.question(item, bassinComplet, (inf) => VERBE_PAR_INF[inf]);
+      if (exo) {
+        const q = exo.question(item, bassinComplet, (inf) => VERBE_PAR_INF[inf]);
+        // les propositions d'élèves déjà validées par l'enseignant élargissent
+        // silencieusement les réponses acceptées, sans jamais toucher au
+        // contenu de l'application elle-même
+        const extra = motsValides[item.cle];
+        if (extra?.length) return { ...q, aussi: [...(q.aussi || []), ...extra] };
+        return q;
+      }
       return question(item, progression[item.cle], vocabDuSemestre, semestre, mode);
     },
     [item] // eslint-disable-line
@@ -209,7 +219,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
             </button>
           )}
 
-          {retour && <Correction retour={retour} q={q} item={item} />}
+          {retour && <Correction retour={retour} q={q} item={item} exo={exo} code={code} />}
         </div>
 
         {retour && (
@@ -232,9 +242,23 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   );
 }
 
-function Correction({ retour, q, item }) {
+function Correction({ retour, q, item, exo, code }) {
   const bon = retour.verdict !== "faux";
   const attendu = q.reponse.split(/[,·]/)[0].trim();
+  const [propose, setPropose] = useState(false);
+  const [envoye, setEnvoye] = useState(false);
+
+  // Le signalement n'a de sens que pour synonymes et contraires : ce sont
+  // les deux exercices où plusieurs réponses différentes peuvent être
+  // également valables, et où la fiche n'en liste souvent qu'une seule.
+  const peutProposer =
+    !bon && retour.reponse && ["synonyme", "contraire"].includes(exo?.cle);
+
+  const envoyerProposition = async () => {
+    setPropose(true);
+    await proposerMot(code, item.cle, retour.reponse, item.fr);
+    setEnvoye(true);
+  };
 
   return (
     <div className="apparait" style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--trait)" }}>
@@ -271,6 +295,21 @@ function Correction({ retour, q, item }) {
             {q.reponse}
             <Ecouter texte={q.reponse} />
           </div>
+
+          {peutProposer && (
+            <div style={{ marginTop: 10 }}>
+              {envoye ? (
+                <p className="note" style={{ fontSize: 13, color: "var(--vert, #2F7A5E)" }}>
+                  Transmis à votre enseignant — merci !
+                </p>
+              ) : (
+                <button className="lien" style={{ fontSize: 13 }}
+                  disabled={propose} onClick={envoyerProposition}>
+                  « {retour.reponse} » devrait être accepté — le signaler à l'enseignant
+                </button>
+              )}
+            </div>
+          )}
         </>
       )}
 

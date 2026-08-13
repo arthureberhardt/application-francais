@@ -9,7 +9,7 @@
    proposer « les contraires » sur un vocabulaire qui n'en a pas. */
 
 const nettoieRegistre = (s) => s.replace(/\s*\([^)]*\)/g, "").trim();
-const membres = (champ) =>
+export const membres = (champ) =>
   (champ || "").split("·").map(nettoieRegistre).filter(Boolean);
 const sansArticle = (s) =>
   s.split(",")[0].trim().replace(/^(le |la |les |l'|un |une |des )/, "");

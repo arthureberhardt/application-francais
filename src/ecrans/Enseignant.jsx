@@ -3,6 +3,7 @@ import {
   connexionEnseignant, deconnexionEnseignant, sessionEnseignant,
   listerSuivi, ajouterCodes, activerCode, renommerCode, supprimerCodes,
   definirSemestreMax, listerProgressionClasse, enLigne,
+  listerSuggestions, validerSuggestion, rejeterSuggestion,
 } from "../lib/store.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
 import { itemsCumules, choisirFiliere } from "../lib/items.js";
@@ -172,6 +173,70 @@ function FormulaireConnexion({ onConnecte, erreur, setErreur }) {
   );
 }
 
+/** Ce que les élèves ont signalé — visible seulement s'il y a quelque chose
+    en attente, pour ne pas encombrer l'écran le reste du temps. */
+function Suggestions() {
+  const [lignes, setLignes] = useState(null);
+  const [enCours, setEnCours] = useState(null);
+
+  const charger = async () => {
+    const res = await listerSuggestions();
+    if (!res.erreur) setLignes(res.lignes);
+  };
+  useEffect(() => { charger(); }, []);
+
+  const valider = async (s) => {
+    setEnCours(s.id);
+    await validerSuggestion(s.id, s.cle, s.mot);
+    setEnCours(null);
+    charger();
+  };
+  const rejeter = async (s) => {
+    setEnCours(s.id);
+    await rejeterSuggestion(s.id);
+    setEnCours(null);
+    charger();
+  };
+
+  if (!lignes || !lignes.length) return null;
+
+  return (
+    <div className="carte" style={{ marginBottom: 20, borderColor: "var(--bleu)" }}>
+      <div className="sur" style={{ marginBottom: 12 }}>
+        Mots proposés par les élèves — {lignes.length} en attente
+      </div>
+      <div style={{ display: "grid", gap: 10 }}>
+        {lignes.map((s) => {
+          const mot = PAR_ID[s.cle.replace(/^v:/, "")];
+          return (
+            <div key={s.id} style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              gap: 12, padding: "10px 12px", background: "var(--bleu-clair, #EAF1FB)", borderRadius: 8,
+            }}>
+              <div style={{ fontSize: 14 }}>
+                <b>{s.mot}</b>
+                <span style={{ color: "var(--ardoise)" }}>
+                  {" "}pour « {s.fr || mot?.fr || s.cle} »
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+                <button className="lien" style={{ fontSize: 13 }}
+                  disabled={enCours === s.id} onClick={() => valider(s)}>
+                  Valider
+                </button>
+                <button className="lien" style={{ fontSize: 13, color: "var(--rouge)" }}
+                  disabled={enCours === s.id} onClick={() => rejeter(s)}>
+                  Rejeter
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function TableauDeBord() {
   const [lignes, setLignes] = useState(null);
   const [erreur, setErreur] = useState(null);
@@ -208,6 +273,8 @@ function TableauDeBord() {
 
   return (
     <>
+      <Suggestions />
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <p className="note" style={{ margin: 0 }}>
           {lignes.length} élève{lignes.length > 1 ? "s" : ""} · {classes.length} classe{classes.length > 1 ? "s" : ""}

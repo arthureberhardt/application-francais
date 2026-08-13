@@ -196,6 +196,16 @@ body { margin: 0; background: #F7F6F2; }
 .filtreBtn:hover { border-color: var(--bleu); background: var(--bleu-clair); transform: translateX(2px); }
 .filtreBtn .mono { font-size: 11px; color: var(--ardoise); flex-shrink: 0; }
 .filtreBtn.tout { font-weight: 700; }
+.filtreBtn.coche { border-color: var(--bleu); background: var(--bleu-clair); }
+.filtreCase { width: 16px; height: 16px; border: 1.5px solid var(--trait); border-radius: 4px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-size: 11px; color: var(--bleu); }
+.filtreBtn.coche .filtreCase { border-color: var(--bleu); background: #fff; }
+.selectionMultiple { margin-top: 8px; padding: 12px 14px; background: var(--bleu-clair);
+  border-radius: 10px; }
+.illimiteCase { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--encre);
+  cursor: pointer; }
+.illimiteCase input { width: 16px; height: 16px; accent-color: var(--bleu); }
 
 /* ═══ rail des boîtes ═══ */
 .pied { border-top: 1px solid var(--trait); background: var(--carte);

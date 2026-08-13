@@ -14,6 +14,10 @@ const SEUIL_EXAMEN = 85;
 
 export default function Accueil({ code, semestre, setSemestre, semestreMax, progression, onLancer, onConsulter, onBadges, onAide, onExamen, onQuitter }) {
   const [ouvert, setOuvert] = useState(null); // "lexique" | "verbes" | "bilan"
+  const [selLex, setSelLex] = useState([]);   // thèmes cochés en attente de lancement
+  const [selVerb, setSelVerb] = useState([]); // temps cochés en attente de lancement
+  const [illimiteLex, setIllimiteLex] = useState(false);
+  const [illimiteVerb, setIllimiteVerb] = useState(false);
   const { lexique, approfondissement, verbes, tous } = itemsDe(semestre);
   const infos = infosSemestre(semestre);
   const cumul = itemsCumules(semestre);
@@ -133,9 +137,15 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
                 return (
                   <Filtre key={u.nom} libelle={u.nom}
                     valeur={`${compte(items)}/${u.mots}`}
-                    onClick={() => onLancer("lexique", { unite: u.nom })} />
+                    coche={selLex.includes(u.nom)}
+                    onClick={() => setSelLex((s) =>
+                      s.includes(u.nom) ? s.filter((x) => x !== u.nom) : [...s, u.nom])} />
                 );
               })}
+              <SelectionMultiple
+                n={selLex.length} illimite={illimiteLex} setIllimite={setIllimiteLex}
+                onLancer={() => onLancer("lexique", { unites: selLex, illimite: illimiteLex })}
+              />
             </div>
           )}
 
@@ -160,9 +170,15 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
                 return (
                   <Filtre key={t.cle} libelle={t.nom}
                     valeur={`${compte(items)}/${items.length}`}
-                    onClick={() => onLancer("verbes", { tempsCle: t.cle })} />
+                    coche={selVerb.includes(t.cle)}
+                    onClick={() => setSelVerb((s) =>
+                      s.includes(t.cle) ? s.filter((x) => x !== t.cle) : [...s, t.cle])} />
                 );
               })}
+              <SelectionMultiple
+                n={selVerb.length} illimite={illimiteVerb} setIllimite={setIllimiteVerb}
+                onLancer={() => onLancer("verbes", { tempsCles: selVerb, illimite: illimiteVerb })}
+              />
             </div>
           )}
 
@@ -313,9 +329,29 @@ function Mode({ couleur, titre, detail, sous, compteur, onClick, inactif }) {
   );
 }
 
-const Filtre = ({ libelle, valeur, onClick, tout }) => (
-  <button className={"filtreBtn" + (tout ? " tout" : "")} onClick={onClick}>
+const Filtre = ({ libelle, valeur, onClick, tout, coche }) => (
+  <button className={"filtreBtn" + (tout ? " tout" : "") + (coche ? " coche" : "")} onClick={onClick}>
+    {!tout && (
+      <span className="filtreCase" aria-hidden="true">{coche ? "✓" : ""}</span>
+    )}
     <span>{libelle}</span>
     <span className="mono">{valeur}</span>
   </button>
 );
+
+/** Sous « tout » et les thèmes un par un : cocher plusieurs thèmes à la fois,
+    et choisir une séance longue plutôt que la longueur habituelle de 12. */
+function SelectionMultiple({ n, illimite, setIllimite, onLancer }) {
+  if (!n) return null;
+  return (
+    <div className="selectionMultiple">
+      <label className="illimiteCase">
+        <input type="checkbox" checked={illimite} onChange={(e) => setIllimite(e.target.checked)} />
+        <span>Séance longue, sans limite de questions</span>
+      </label>
+      <button className="btn" style={{ marginTop: 10 }} onClick={onLancer}>
+        Lancer avec {n} thème{n > 1 ? "s" : ""} sélectionné{n > 1 ? "s" : ""}
+      </button>
+    </div>
+  );
+}

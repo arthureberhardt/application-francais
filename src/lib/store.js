@@ -229,3 +229,53 @@ export async function listerProgressionClasse(codes) {
   if (error) return { erreur: error.message };
   return { lignes: data };
 }
+
+/* ─────────── Mots proposés par les élèves ─────────── */
+
+/** Un élève signale qu'un mot devrait être accepté. `fr` est purement
+    informatif — ça évite à l'enseignant de devoir rouvrir la fiche pour
+    savoir de quel mot il s'agit en la validant. */
+export async function proposerMot(code, cle, mot, fr) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { error } = await sb.from("suggestions").insert({ code, cle, mot, fr });
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}
+
+export async function listerSuggestions() {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { data, error } = await sb
+    .from("suggestions").select("*")
+    .eq("statut", "attente").order("cree", { ascending: false });
+  if (error) return { erreur: error.message };
+  return { lignes: data };
+}
+
+/** Valider une proposition l'ajoute immédiatement aux mots acceptés, sans
+    toucher au contenu de l'application ni redéploiement. */
+export async function validerSuggestion(id, cle, mot) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const up = await sb.from("synonymes_valides").upsert({ cle, mot });
+  if (up.error) return { erreur: up.error.message };
+  const { error } = await sb.from("suggestions").update({ statut: "validee" }).eq("id", id);
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}
+
+export async function rejeterSuggestion(id) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { error } = await sb.from("suggestions").update({ statut: "rejetee" }).eq("id", id);
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}
+
+/** Chargée une fois à la connexion, comme la progression : tous les mots
+    déjà validés par l'enseignant, groupés par fiche. */
+export async function chargerSynonymesValides() {
+  if (!sb) return {};
+  const { data, error } = await sb.from("synonymes_valides").select("cle, mot");
+  if (error) { console.error("Chargement des mots validés impossible :", error.message); return {}; }
+  const out = {};
+  for (const l of data) (out[l.cle] = out[l.cle] || []).push(l.mot);
+  return out;
+}

@@ -3,6 +3,7 @@ import { itemsCumules, itemsDe, NOM_CATEGORIE } from "../lib/items.js";
 import { evalue, diff } from "../lib/correction.js";
 import { question } from "../lib/questions.js";
 import { enregistrerItem } from "../lib/store.js";
+import { conjugaison, synonyme, contraire, famille, preposition, disponibilite } from "../lib/exercices.js";
 
 /* Examen blanc.
 
@@ -22,8 +23,25 @@ const SECONDES_PAR_QUESTION = 30;
 /* Le vivier compte beaucoup plus de couples verbe × temps que de mots :
    en S5, 1 360 contre 600. Un tirage au hasard donnerait un examen aux deux
    tiers grammatical, et ne toucherait qu'une partie des thèmes. On tire donc
-   séparément, moitié mots, moitié verbes, en couvrant tous les thèmes. */
-const PART_LEXIQUE = 0.5;
+   séparément entre trois parts : mots, verbes, et compétences ciblées
+   (synonymes, contraires, familles, prépositions, conjugaison en contexte). */
+const PART_LEXIQUE = 0.4;
+const PART_VERBES = 0.3;
+// le reste (0.3) va aux compétences ciblées
+
+/* Les exercices spéciaux tournent en QCM à l'entraînement — c'est voulu, ça
+   entraîne à reconnaître par élimination. Un examen, lui, se passe toujours
+   en production, sans aucun choix multiple : on réutilise leur logique de
+   génération telle quelle (le calcul du trou, les réponses acceptées) et on
+   force simplement le rendu en saisie libre plutôt qu'en QCM. Le genre
+   (« le » ou « la ») reste à l'entraînement seulement : converti en saisie,
+   ce ne serait plus qu'un tirage à pile ou face, sans valeur de mesure. */
+const EXOS_COMPETENCES = [conjugaison, synonyme, contraire, famille, preposition];
+
+function questionCompetence(exo, item, tous) {
+  const q = exo.question(item, tous);
+  return { ...q, type: "saisie", options: undefined, placeholder: "votre réponse", astuce: null };
+}
 
 const chrono = (s) =>
   `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -69,7 +87,8 @@ export default function Examen({ semestre, code, progression, onFin }) {
     const mots = tout.filter((i) => i.module === "lexique");
     const verbes = tout.filter((i) => i.module === "verbes");
     const nMots = Math.min(mots.length, Math.round(NB_QUESTIONS * PART_LEXIQUE));
-    const nVerbes = Math.min(verbes.length, NB_QUESTIONS - nMots);
+    const nVerbes = Math.min(verbes.length, Math.round(NB_QUESTIONS * PART_VERBES));
+    const nCompetences = NB_QUESTIONS - nMots - nVerbes;
 
     // les mots : au moins un par thème, puis complément au hasard
     const parTheme = {};
@@ -97,8 +116,30 @@ export default function Examen({ semestre, code, progression, onFin }) {
       if (!choisisV.includes(v)) choisisV.push(v);
     }
 
-    return melange([...choisis, ...choisisV])
-      .map((item) => ({ item, q: questionExamen(item, semestre, vocab) }));
+    // les compétences ciblées : réparties le plus possible entre les cinq
+    // types disponibles, chacun tiré parmi les mots qui s'y prêtent
+    const parExo = {};
+    for (const exo of EXOS_COMPETENCES) {
+      const eligibles = melange(mots.filter(exo.eligible));
+      if (eligibles.length) parExo[exo.cle] = { exo, pool: eligibles };
+    }
+    const choisisC = [];
+    let tour = 0;
+    while (choisisC.length < nCompetences) {
+      const actifs = Object.values(parExo).filter((g) => g.pool.length > tour);
+      if (!actifs.length) break;
+      for (const g of actifs) {
+        if (choisisC.length >= nCompetences) break;
+        choisisC.push({ exo: g.exo, item: g.pool[tour] });
+      }
+      tour++;
+    }
+
+    const q3 = choisisC.map(({ exo, item }) => ({ item, q: questionCompetence(exo, item, mots) }));
+    const q1 = choisis.map((item) => ({ item, q: questionExamen(item, semestre, vocab) }));
+    const q2 = choisisV.map((item) => ({ item, q: questionExamen(item, semestre, vocab) }));
+
+    return melange([...q1, ...q2, ...q3]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [semestre]);
 
