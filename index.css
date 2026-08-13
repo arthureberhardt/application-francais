@@ -139,6 +139,27 @@ body { margin: 0; background: #F7F6F2; }
 .carteMode:hover { box-shadow: var(--e3); transform: translateY(-2px); border-color: var(--trait-fort); }
 .carteMode:active { transform: translateY(0) scale(.995); box-shadow: var(--e1); }
 .carteMode:disabled { opacity: .42; box-shadow: none; transform: none; cursor: default; }
+
+/* L'unique action proposée d'emblée : elle doit dominer visuellement tout
+   le reste, pour qu'un élève peu motivé n'ait rien à choisir au premier
+   regard — un seul geste, pas dix cartes à comparer. */
+.carteAction {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: 22px 24px 20px; margin-top: 22px;
+  background: linear-gradient(155deg, var(--encre) 0%, var(--bleu-fonce, var(--encre)) 100%);
+  border: none; border-radius: var(--r); box-shadow: var(--e3);
+  transition: transform .18s cubic-bezier(.2,.8,.3,1), box-shadow .18s;
+}
+.carteAction:hover { transform: translateY(-2px); box-shadow: var(--e4, var(--e3)); }
+.carteAction:active { transform: translateY(0) scale(.995); }
+.carteActionSur { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: 6px; }
+.carteActionTitre { display: block; font-size: 21px; font-weight: 700; color: #fff;
+  line-height: 1.25; margin-bottom: 5px; }
+.carteActionSous { display: block; font-size: 13.5px; color: rgba(255,255,255,.72);
+  line-height: 1.45; margin-bottom: 14px; }
+.carteActionFleche { display: inline-block; font-size: 14px; font-weight: 700; color: #fff;
+  background: rgba(255,255,255,.16); padding: 8px 16px; border-radius: 999px; }
 .modeIn { display: flex; gap: 15px; padding: 18px 19px; align-items: stretch; }
 .modeBarre { width: 4px; border-radius: 4px; flex-shrink: 0; }
 .modeCorps { flex: 1; min-width: 0; }

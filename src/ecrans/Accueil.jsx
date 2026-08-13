@@ -45,6 +45,33 @@ export default function Accueil({ code, semestre, setSemestre, semestreMax, prog
     : part > 0 ? "Vous avez commencé. Bravo."
     : "Vous n'avez pas encore commencé.";
 
+  // Une seule question à trancher : que faire maintenant ? Le reste de
+  // l'écran existe toujours, mais il ne doit pas concurrencer cette réponse
+  // dès l'ouverture — surtout pour un élève qui n'a pas envie de choisir.
+  const action = useMemo(() => {
+    if (domaines.length) return {
+      mode: "adaptatif", filtre: { domaines },
+      titre: `Travailler « ${domaines[0].nom} »`,
+      sous: "C'est ce qui vous résiste le plus en ce moment.",
+    };
+    if (dus > 0) return {
+      mode: "bilan", filtre: {},
+      titre: `Réviser ${dus} mot${dus > 1 ? "s" : ""} en attente`,
+      sous: "Le moment où l'on revient compte plus que la durée de la séance.",
+    };
+    if (acquisMots < lexique.length) return {
+      mode: "lexique", filtre: {},
+      titre: "Continuer les mots du semestre",
+      sous: `${lexique.length - acquisMots} mot${lexique.length - acquisMots > 1 ? "s" : ""} restent à découvrir.`,
+    };
+    return {
+      mode: "bilan", filtre: {},
+      titre: "Réviser librement",
+      sous: "Tout est à jour pour l'instant — bravo.",
+    };
+  }, [domaines, dus, acquisMots, lexique.length]);
+
+  const [toutAfficher, setToutAfficher] = useState(false);
   const bascule = (k) => setOuvert(ouvert === k ? null : k);
   const compte = (items) => items.filter((i) => categorie(progression[i.cle]) === "acquis").length;
 
@@ -118,8 +145,21 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
         <div className="sur" style={{ marginBottom: 9 }}>Vos résultats</div>
         <Statistiques progression={progression} items={lexique} verbes={verbesGr} />
 
-        <div className="sur" style={{ margin: "26px 0 10px" }}>Choisissez un exercice</div>
-        <div style={{ display: "grid", gap: 9 }}>
+        {/* ── l'unique action proposée d'emblée ── */}
+        <button className="carteAction" onClick={() => onLancer(action.mode, action.filtre)}>
+          <span className="carteActionSur">Aujourd'hui</span>
+          <span className="carteActionTitre">{action.titre}</span>
+          <span className="carteActionSous">{action.sous}</span>
+          <span className="carteActionFleche">Commencer →</span>
+        </button>
+
+        <button className="lienTexte" style={{ margin: "18px 0 4px", display: "block" }}
+          onClick={() => setToutAfficher(!toutAfficher)}>
+          {toutAfficher ? "Masquer les autres exercices" : "Voir tous les exercices"}
+        </button>
+
+        {toutAfficher && (
+        <div style={{ display: "grid", gap: 9, marginTop: 10 }}>
 
           {/* ── mode adaptatif ── */}
           {domaines.length > 0 && (
@@ -268,11 +308,9 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
               })}
             </div>
           )}
-        </div>
 
-        {approfondissement.length > 0 && (
-          <>
-            <div className="sur" style={{ margin: "26px 0 10px" }}>Pour aller plus loin</div>
+          {/* ── pour aller plus loin ── */}
+          {approfondissement.length > 0 && (
             <Mode
               couleur="var(--ambre)" titre="Pour aller plus loin"
               detail={`${approfondissement.length} mots en plus`}
@@ -280,30 +318,29 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
               compteur={`${compte(approfondissement)}/${approfondissement.length}`}
               onClick={() => onLancer("approfondissement", {})}
             />
-          </>
-        )}
+          )}
 
-        <div className="sur" style={{ margin: "26px 0 10px" }}>Vous tester</div>
-        <Mode
-          couleur="var(--encre)" titre="Examen blanc"
-          detail="40 questions · 20 minutes"
-          sous="Comme un vrai test : pas d'aide, pas de correction avant la fin. Vos réponses ici ne changent pas vos résultats habituels."
-          onClick={onExamen}
-        />
+          {/* ── examen blanc ── */}
+          <Mode
+            couleur="var(--encre)" titre="Examen blanc"
+            detail="40 questions · 20 minutes"
+            sous="Comme un vrai test : pas d'aide, pas de correction avant la fin. Vos réponses ici ne changent pas vos résultats habituels."
+            onClick={onExamen}
+          />
 
-        <div className="sur" style={{ margin: "26px 0 10px" }}>Regarder sans être interrogé</div>
-        <div style={{ display: "grid", gap: 9 }}>
-        <Mode
-          couleur="var(--vert)" titre="Vos récompenses" detail="ce que vous avez déjà gagné"
-          sous="Elles récompensent votre travail à vous. Il n'y a aucun classement entre élèves."
-          onClick={onBadges}
-        />
-        <Mode
-          couleur="var(--ardoise)" titre="Tous les mots et tous les verbes" detail="la liste complète"
-          sous="Regardez la liste, cherchez un mot, ouvrez une fiche. Personne ne vous interroge."
-          onClick={onConsulter}
-        />
+          {/* ── regarder sans être interrogé ── */}
+          <Mode
+            couleur="var(--vert)" titre="Vos récompenses" detail="ce que vous avez déjà gagné"
+            sous="Elles récompensent votre travail à vous. Il n'y a aucun classement entre élèves."
+            onClick={onBadges}
+          />
+          <Mode
+            couleur="var(--ardoise)" titre="Tous les mots et tous les verbes" detail="la liste complète"
+            sous="Regardez la liste, cherchez un mot, ouvrez une fiche. Personne ne vous interroge."
+            onClick={onConsulter}
+          />
         </div>
+        )}
 
         <p className="note" style={{ marginTop: 24, fontSize: 12.5 }}>
           Un mot devient « vu » dès la première bonne réponse. Il devient
