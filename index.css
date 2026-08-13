@@ -50,7 +50,12 @@ body { margin: 0; background: #F7F6F2; }
 }
 
 .fle * { box-sizing: border-box; }
-.fle button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+/* :where() donne une spécificité nulle à cette réinitialisation — sans ça,
+   elle l'emportait sur toute règle à classe unique (.btn, .carteAction,
+   .opt, .filtreBtn…), leur retirant silencieusement fond et bordure sur
+   toute l'application. Un bug invisible mais réel, présent depuis le début :
+   c'était probablement la vraie cause de l'aspect « non fini ». */
+.fle :where(button) { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 .fle input { font-family: inherit; }
 .fle code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .92em;
   background: #EEF1F6; padding: 1px 5px; border-radius: 4px; }
@@ -160,8 +165,11 @@ body { margin: 0; background: #F7F6F2; }
   line-height: 1.45; margin-bottom: 14px; }
 .carteActionFleche { display: inline-block; font-size: 14px; font-weight: 700; color: #fff;
   background: rgba(255,255,255,.16); padding: 8px 16px; border-radius: 999px; }
-.modeIn { display: flex; gap: 15px; padding: 18px 19px; align-items: stretch; }
-.modeBarre { width: 4px; border-radius: 4px; flex-shrink: 0; }
+.modeIn { display: flex; gap: 15px; padding: 17px 19px; align-items: flex-start; }
+.modePuce {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
 .modeCorps { flex: 1; min-width: 0; }
 .modeTitre { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 

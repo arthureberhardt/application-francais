@@ -9,6 +9,8 @@ import { sonDisponible } from "../lib/voix.js";
 import { filiereActive } from "../lib/items.js";
 import { disponibilite } from "../lib/exercices.js";
 import { Statistiques, Anneau, ObjectifJour } from "./Commun.jsx";
+import { IconCible, IconLivre, IconVerbe, IconMelange, IconEtoile, IconAlerte,
+  IconOreille, IconPlus, IconChrono, IconTrophee, IconListe } from "./Icones.jsx";
 
 const SEUIL_EXAMEN = 85;
 
@@ -164,7 +166,7 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
           {/* ── mode adaptatif ── */}
           {domaines.length > 0 && (
             <Mode
-              couleur="var(--vert, #2F7A5E)" titre="Session adaptée à vous"
+              icone={IconCible} couleur="var(--vert, #2F7A5E)" titre="Session adaptée à vous"
               detail={domaines.map((d) => d.nom).join(" · ")}
               sous="Basée sur ce qui vous résiste le plus jusqu'ici, pas seulement sur ce qui est dû aujourd'hui."
               compteur="→"
@@ -174,7 +176,7 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
 
           {/* ── lexique ── */}
           <Mode
-            couleur="var(--bleu)" titre="Les mots"
+            icone={IconLivre} couleur="var(--bleu)" titre="Les mots"
             detail={`${lexique.length} mots · ${unitesDe(semestre).length} thèmes`}
             sous="Apprenez les mots du semestre. Vous pouvez choisir un seul thème."
             compteur={`${compte(lexique)}/${lexique.length}`}
@@ -203,7 +205,7 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
 
           {/* ── verbes ── */}
           <Mode
-            couleur="var(--rouge)" titre="Les verbes"
+            icone={IconVerbe} couleur="var(--rouge)" titre="Les verbes"
             detail={verbesGr.length
               ? `${verbesGr.length} verbes · ${tempsJusqua(semestre).length} temps`
               : "bientôt disponible"}
@@ -238,7 +240,7 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
           {exos.length > 0 && (
             <>
               <Mode
-                couleur="var(--ambre)" titre="Exercices spéciaux"
+                icone={IconMelange} couleur="var(--ambre)" titre="Exercices spéciaux"
                 detail={`${exos.length} sortes d'exercices`}
                 sous="Conjuguer dans une phrase, le genre des noms, les prépositions, les synonymes, les contraires, les familles de mots."
                 onClick={() => bascule("special")}
@@ -265,7 +267,7 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
           {/* ── dictée ── */}
           {son && (
             <Mode
-              couleur="var(--bleu-fonce)" titre="Dictée"
+              icone={IconOreille} couleur="var(--bleu-fonce)" titre="Dictée"
               detail={`${lexique.length} mots · vous écoutez et vous écrivez`}
               sous="Le mot est lu à voix haute. Écrivez ce que vous entendez. C'est le seul exercice qui travaille l'orthographe à partir du son."
               onClick={() => onLancer("dictee", {})}
@@ -275,7 +277,7 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
           {/* ── mots difficiles ── */}
           {difficiles.length > 0 && (
             <Mode
-              couleur="var(--ambre)" titre="Mots difficiles"
+              icone={IconAlerte} couleur="var(--ambre)" titre="Mots difficiles"
               detail={`${difficiles.length} mot${difficiles.length > 1 ? "s" : ""} vous résiste${difficiles.length > 1 ? "nt" : ""}`}
               sous="Vous faites souvent des fautes avec ces mots. Ici, on vous montre d'abord la réponse."
               onClick={() => onLancer("difficiles", {})}
@@ -284,7 +286,7 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
 
           {/* ── bilan ── */}
           <Mode
-            couleur="var(--vert)" titre="Tout revoir"
+            icone={IconMelange} couleur="var(--vert)" titre="Tout revoir"
             detail={dus > 0
               ? `${dus} mot${dus > 1 ? "s" : ""} à revoir aujourd'hui`
               : "rien d'urgent aujourd'hui"}
@@ -312,7 +314,7 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
           {/* ── pour aller plus loin ── */}
           {approfondissement.length > 0 && (
             <Mode
-              couleur="var(--ambre)" titre="Pour aller plus loin"
+              icone={IconPlus} couleur="var(--ambre)" titre="Pour aller plus loin"
               detail={`${approfondissement.length} mots en plus`}
               sous="Ces mots ne sont pas obligatoires. Il suffit de les comprendre : on ne vous demande jamais de les écrire."
               compteur={`${compte(approfondissement)}/${approfondissement.length}`}
@@ -322,7 +324,7 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
 
           {/* ── examen blanc ── */}
           <Mode
-            couleur="var(--encre)" titre="Examen blanc"
+            icone={IconChrono} couleur="var(--encre)" titre="Examen blanc"
             detail="40 questions · 20 minutes"
             sous="Comme un vrai test : pas d'aide, pas de correction avant la fin. Vos réponses ici ne changent pas vos résultats habituels."
             onClick={onExamen}
@@ -330,12 +332,12 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
 
           {/* ── regarder sans être interrogé ── */}
           <Mode
-            couleur="var(--vert)" titre="Vos récompenses" detail="ce que vous avez déjà gagné"
+            icone={IconTrophee} couleur="var(--vert)" titre="Vos récompenses" detail="ce que vous avez déjà gagné"
             sous="Elles récompensent votre travail à vous. Il n'y a aucun classement entre élèves."
             onClick={onBadges}
           />
           <Mode
-            couleur="var(--ardoise)" titre="Tous les mots et tous les verbes" detail="la liste complète"
+            icone={IconListe} couleur="var(--ardoise)" titre="Tous les mots et tous les verbes" detail="la liste complète"
             sous="Regardez la liste, cherchez un mot, ouvrez une fiche. Personne ne vous interroge."
             onClick={onConsulter}
           />
@@ -358,11 +360,13 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
   );
 }
 
-function Mode({ couleur, titre, detail, sous, compteur, onClick, inactif }) {
+function Mode({ icone: Icone, couleur, titre, detail, sous, compteur, onClick, inactif }) {
   return (
     <button className="carteMode" disabled={inactif} onClick={onClick}>
       <div className="modeIn">
-        <div className="modeBarre" style={{ background: couleur }} />
+        <div className="modePuce" style={{ background: couleur + "18", color: couleur }}>
+          {Icone && <Icone />}
+        </div>
         <div className="modeCorps">
           <div className="modeTitre">
             <span className="h2">{titre}</span>
