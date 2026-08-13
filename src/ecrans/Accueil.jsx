@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   itemsDe, itemsCumules, listeSemestres, infosSemestre, unitesDe, tempsJusqua, verbesGroupes,
 } from "../lib/items.js";
 import { categorie, SEUIL, estDu, estDifficile, joursActifs, travailleAujourdhui,
-  etatVerbe, travailAujourdhui, OBJECTIF_JOUR } from "../lib/leitner.js";
+  etatVerbe, travailAujourdhui, OBJECTIF_JOUR, domainesFaibles } from "../lib/leitner.js";
 import { enLigne } from "../lib/store.js";
 import { sonDisponible } from "../lib/voix.js";
 import { filiereActive } from "../lib/items.js";
@@ -35,6 +35,7 @@ export default function Accueil({ code, semestre, setSemestre, semestreMax, prog
   const exos = disponibilite(motsCumules);
   const dus = cumul.filter((i) => estDu(progression[i.cle]) && categorie(progression[i.cle]) !== "acquis").length;
   const difficiles = cumul.filter((i) => estDifficile(progression[i.cle]));
+  const domaines = useMemo(() => domainesFaibles(cumul, progression), [cumul, progression]);
   const jours = joursActifs(progression);
   const aujourdhui = travailleAujourdhui(progression);
 
@@ -119,6 +120,17 @@ Vous avez travaillé {jours} jour{jours > 1 ? "s" : ""} sur les 14 derniers
 
         <div className="sur" style={{ margin: "26px 0 10px" }}>Choisissez un exercice</div>
         <div style={{ display: "grid", gap: 9 }}>
+
+          {/* ── mode adaptatif ── */}
+          {domaines.length > 0 && (
+            <Mode
+              couleur="var(--vert, #2F7A5E)" titre="Session adaptée à vous"
+              detail={domaines.map((d) => d.nom).join(" · ")}
+              sous="Basée sur ce qui vous résiste le plus jusqu'ici, pas seulement sur ce qui est dû aujourd'hui."
+              compteur="→"
+              onClick={() => onLancer("adaptatif", { domaines })}
+            />
+          )}
 
           {/* ── lexique ── */}
           <Mode

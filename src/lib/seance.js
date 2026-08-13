@@ -22,7 +22,32 @@ export const FORMATS = {
   dictee: { longueur: 12, nouveaux: 3 },
   special: { longueur: 12, nouveaux: 4 },
   rattrapage: { longueur: 99, nouveaux: 0 },
+  adaptatif: { longueur: 15, nouveaux: 2 },
 };
+
+/* Une séance adaptative n'est pas juste « ce qui est dû » : elle force la
+   moitié de la séance à venir des domaines les plus faibles de l'élève,
+   même quand ces éléments ne sont pas encore dus selon Leitner — parce que
+   « pas encore dû » et « pas encore su » sont deux choses différentes, et
+   un domaine vraiment faible mérite d'être revu plus tôt que prévu. L'autre
+   moitié suit le fonctionnement normal, pour ne pas abandonner la
+   discipline de répétition espacée sur le reste du programme. */
+const PART_DOMAINES_FAIBLES = 0.6;
+
+export function composerAdaptatif(source, progression, domaines, longueurForcee) {
+  const { longueur: longueurDefaut, nouveaux: maxNouveaux } = FORMATS.adaptatif;
+  const longueur = longueurForcee || longueurDefaut;
+  const nDomaines = Math.round(longueur * PART_DOMAINES_FAIBLES);
+
+  const clesDomaines = new Set(domaines.flatMap((d) => d.items.map((i) => i.cle)));
+  const cachePoolFaible = melange(source.filter((i) => clesDomaines.has(i.cle)));
+  const choisisFaibles = cachePoolFaible.slice(0, nDomaines);
+
+  const reste = source.filter((i) => !choisisFaibles.includes(i));
+  const complement = composer(reste, progression, "lexique", longueur - choisisFaibles.length);
+
+  return melange([...choisisFaibles, ...complement]);
+}
 
 const melange = (a) => [...a].sort(() => Math.random() - 0.5);
 

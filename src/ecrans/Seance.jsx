@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { itemsDe, itemsCumules, infosSemestre } from "../lib/items.js";
-import { apresReponse, etatInitial, estDifficile } from "../lib/leitner.js";
-import { composer } from "../lib/seance.js";
+import { apresReponse, etatInitial, estDifficile, domainesFaibles } from "../lib/leitner.js";
+import { composer, composerAdaptatif } from "../lib/seance.js";
 import { evalue, diff } from "../lib/correction.js";
 import { question } from "../lib/questions.js";
 import { exercicePar } from "../lib/exercices.js";
@@ -20,6 +20,12 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     // — pas sur une sélection recalculée : composer() choisirait selon les
     // dates d'échéance, ce qui n'a aucun sens juste après une faute.
     if (mode === "rattrapage") return [...(filtre.items || [])].sort(() => Math.random() - 0.5);
+
+    if (mode === "adaptatif") {
+      const tout = itemsCumules(semestre).filter((i) => i.module !== "approfondissement");
+      const domaines = filtre.domaines || domainesFaibles(tout, progression);
+      return composerAdaptatif(tout, progression, domaines);
+    }
 
     let source;
     if (mode === "bilan") {
@@ -46,6 +52,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     lexique: "les mots", verbes: "les verbes", bilan: "tout revoir",
     difficiles: "mots difficiles", approfondissement: "pour aller plus loin",
     dictee: "dictée", special: "exercice spécial", rattrapage: "vos fautes de tout à l'heure",
+    adaptatif: "session adaptée à vous",
   };
   const etiquette =
     (exo && exo.nom.toLowerCase()) || unite || tempsCle ||

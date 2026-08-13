@@ -102,3 +102,35 @@ export function etatVerbe(couples, progression) {
   if (a === couples.length) return "acquis";
   return couples.some((c) => categorie(progression[c.cle]) !== "inconnu") ? "vu" : "inconnu";
 }
+
+/* ─────────── Domaines faibles — pour le mode adaptatif ─────────── */
+/* Le même principe que le diagnostic de classe côté enseignant, mais tourné
+   vers l'élève lui-même : repérer, parmi les thèmes et les temps déjà
+   travaillés, ceux où le taux de réussite est le plus bas — pas seulement
+   ce qui est dû aujourd'hui, mais ce qui résiste vraiment. Un domaine
+   n'apparaît que s'il compte au moins SEUIL_DOMAINE éléments essayés,
+   pour qu'un seul mot raté ne fausse pas le diagnostic. */
+export const SEUIL_DOMAINE = 5;
+const SEUIL_FAIBLESSE = 0.7; // en dessous de 70 % de réussite, un domaine compte comme faible
+
+export function domainesFaibles(items, progression, { seuil = SEUIL_DOMAINE, top = 3 } = {}) {
+  const parDomaine = {};
+  for (const i of items) {
+    const cle = i.module === "verbes" ? `temps:${i.tempsCle}` : `unite:${i.unite}`;
+    const p = progression[i.cle];
+    if (!p || p.essais === 0) continue; // jamais tenté : ne renseigne rien sur une faiblesse
+    const d = (parDomaine[cle] = parDomaine[cle] || { total: 0, reussis: 0, items: [] });
+    d.total++;
+    if (categorie(p) === "acquis") d.reussis++;
+    d.items.push(i);
+  }
+  return Object.entries(parDomaine)
+    .filter(([, d]) => d.total >= seuil)
+    .map(([cle, d]) => {
+      const [type, nom] = cle.split(/:(.+)/);
+      return { type, nom, taux: d.reussis / d.total, items: d.items };
+    })
+    .filter((d) => d.taux < SEUIL_FAIBLESSE) // un domaine déjà solide n'est pas une faiblesse
+    .sort((a, b) => a.taux - b.taux)
+    .slice(0, top);
+}
