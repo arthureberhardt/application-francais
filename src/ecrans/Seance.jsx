@@ -73,6 +73,16 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   const [justes, setJustes] = useState(0);
   const [rates, setRates] = useState([]);
   const champ = useRef(null);
+  const boutonSuivant = useRef(null);
+  // Le focus est donné au bouton Suivant sur un cycle séparé de la touche
+  // Entrée qui vient de valider — sinon le relâchement de cette même touche,
+  // encore en vol, arrive sur le bouton fraîchement focalisé et avance tout
+  // seul à la question suivante avant que la correction soit lisible.
+  useEffect(() => {
+    if (!retour) return;
+    const id = requestAnimationFrame(() => boutonSuivant.current?.focus());
+    return () => cancelAnimationFrame(id);
+  }, [retour]);
   const son = sonDisponible();
 
   const item = bassin[k];
@@ -213,7 +223,11 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
               style={{ marginTop: 18 }}
               placeholder={q.placeholder}
               onChange={(e) => setSaisie(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && valider(saisie)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                e.preventDefault(); // empêche tout comportement natif résiduel de la touche
+                valider(saisie);
+              }}
             />
           )}
           {!retour && q.type !== "qcm" && (
@@ -230,7 +244,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
         </div>
 
         {retour && (
-          <button className="btn" style={{ marginTop: 14 }} onClick={suivant} autoFocus>
+          <button ref={boutonSuivant} className="btn" style={{ marginTop: 14 }} onClick={suivant}>
             Suivant
           </button>
         )}
@@ -304,15 +318,28 @@ function Correction({ retour, q, item, exo, code }) {
           </div>
 
           {peutProposer && (
-            <div style={{ marginTop: 10 }}>
+            <div style={{ marginTop: 12 }}>
               {envoye ? (
-                <p className="note" style={{ fontSize: 13, color: "var(--vert, #2F7A5E)" }}>
-                  Transmis à votre enseignant — merci !
-                </p>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 8, fontSize: 14,
+                  color: "var(--vert, #2F7A5E)", background: "var(--vert-clair, #E6F2EC)",
+                  padding: "10px 14px", borderRadius: 10, fontWeight: 600,
+                }}>
+                  ✓ Transmis à votre enseignant — merci !
+                </div>
               ) : (
-                <button className="lien" style={{ fontSize: 13 }}
-                  disabled={propose} onClick={envoyerProposition}>
-                  « {retour.reponse} » devrait être accepté — le signaler à l'enseignant
+                <button
+                  disabled={propose} onClick={envoyerProposition}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    background: "var(--ambre-clair)", color: "var(--ambre)",
+                    border: "1.5px solid var(--ambre)", borderRadius: 10,
+                    padding: "10px 14px", fontSize: 14, fontWeight: 700,
+                    textAlign: "left", cursor: propose ? "default" : "pointer",
+                    opacity: propose ? 0.6 : 1,
+                  }}
+                >
+                  💡 « {retour.reponse} » devrait être accepté — le signaler à l'enseignant
                 </button>
               )}
             </div>
