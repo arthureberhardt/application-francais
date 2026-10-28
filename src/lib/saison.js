@@ -36,7 +36,9 @@ export const ETAPES = [
 export const ETAPES_LECTURE = [
   { cle: "decouvrir", nom: "Découvrir", sous: "Les mots du livre et les notions de lecture" },
   { cle: "entrainer", nom: "S'entraîner", sous: "Jusqu'à les savoir" },
+  { cle: "grammaire", nom: "Outils de lecture", sous: "Une notion, puis des exercices" },
   { cle: "tournures", nom: "Tournures", sous: "Pour parler du livre" },
+  { cle: "phrases", nom: "Phrases et textes", sous: "Comprendre et reformuler" },
   { cle: "carnet", nom: "Carnet de lecture", sous: "Un court texte sur ce que vous avez lu" },
   { cle: "evaluation", nom: "Préparer l'évaluation", sous: "Les critères, un modèle, un entraînement" },
 ];
@@ -164,7 +166,10 @@ function construireSaison(saison, sem) {
         ...(st.mots || []).map((id) => itemMot(id, sem, st.id)),
         ...cours(st.id),
       ].filter(Boolean),
-      verbes: [], grammaire: [], points: [], phrases: [],
+      verbes: [],
+      grammaire: grammaire(st.grammaire, st.id),
+      points: (st.grammaire || []).map((g) => POINTS[g]).filter(Boolean),
+      phrases: [...phrases(st.id), ...textes(st.id)],
       tournures: tournures(st.id),
       defi: null,
       evaluation: evaluation(st.evaluation),
@@ -221,6 +226,8 @@ export function etapesDisponibles(u) {
       e.cle === "decouvrir" ? u.lexique.length
       : e.cle === "entrainer" ? u.lexique.length
       : e.cle === "tournures" ? u.tournures.length
+      : e.cle === "grammaire" ? u.grammaire.length
+      : e.cle === "phrases" ? u.phrases.length
       : e.cle === "carnet" ? Boolean(u.carnet)
       : e.cle === "evaluation" ? Boolean(u.evaluation) : false);
   }

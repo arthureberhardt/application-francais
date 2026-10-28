@@ -9,15 +9,15 @@ export default function Unite({ unite: u, code, progression, decouverts, onEtape
   const [retours, setRetours] = useState([]);
   const compte = (f) => u.lexique.filter((i) => i.fil === f).length;
   const fils = [
-    ["mots", u.lexique.filter((i) => !i.fil).length],
-    ["verbes", new Set(u.verbes.map((v) => v.inf)).size],
-    ["adjectifs", compte("adjectifs")],
-    ["notions de littérature", compte("notions")],
-    ["outils pour argumenter", compte("argumentation")],
-    ["points de grammaire", u.points.length],
-    ["tournures", u.tournures.length],
-    ["phrases et textes", u.phrases.length],
-  ].filter(([, n]) => n > 0);
+    ["mot", "mots", u.lexique.filter((i) => !i.fil).length],
+    ["verbe", "verbes", new Set(u.verbes.map((v) => v.inf)).size],
+    ["adjectif", "adjectifs", compte("adjectifs")],
+    ["notion de littérature", "notions de littérature", compte("notions")],
+    ["outil pour argumenter", "outils pour argumenter", compte("argumentation")],
+    ["point de grammaire", "points de grammaire", u.points.length],
+    ["tournure", "tournures", u.tournures.length],
+    ["phrase ou texte", "phrases et textes", u.phrases.length],
+  ].filter(([, , n]) => n > 0).map(([un, plusieurs, n]) => [n > 1 ? plusieurs : un, n]);
   useEffect(() => {
     mesProductions(code).then((l) => setRetours(l.filter((p) => p.unite === u.id)));
   }, [code, u.id]);

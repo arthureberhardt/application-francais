@@ -48,8 +48,10 @@ function appliquerSaisons(filiere) {
     const saison = SAISONS[sem.numero];
     if (saison) {
       const anciens = [...sem.mots, ...sem.appro];
-      sem.mots = [...new Set(saison.unites.filter((u) => !u.facultative).flatMap((u) =>
-        [...(u.mots || []), ...Object.values(u.fils || {}).flat()]))];
+      sem.mots = [...new Set([
+        ...saison.unites.filter((u) => !u.facultative).flatMap((u) => [...(u.mots || []), ...Object.values(u.fils || {}).flat()]),
+        ...(saison.lecture?.stations || []).flatMap((st) => [...(st.notions || []), ...(st.mots || [])]),
+      ])];
       sem.appro = [...new Set(anciens.filter((id) => !pris.has(id)))];
       sem.verbes = verbesSaison(saison);
       if (saison.temps) sem.tempsCles = saison.temps;

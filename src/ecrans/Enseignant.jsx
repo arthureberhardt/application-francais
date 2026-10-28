@@ -8,7 +8,7 @@ import {
   listerCibles, fixerCible,
 } from "../lib/store.js";
 import { stationsDe, stationValidee, tousItems } from "../lib/saison.js";
-import { UNITES_S1 } from "../donnees/saisons/s1.js";
+import { SAISONS } from "../donnees/saisons/index.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
 import { itemsCumules, choisirFiliere } from "../lib/items.js";
 import { categorie } from "../lib/leitner.js";
@@ -838,7 +838,16 @@ function exporterCodes(nom, eleves) {
 
 /* ─────────── Textes des défis ─────────── */
 
-const NOM_UNITE = Object.fromEntries(UNITES_S1.map((u) => [u.id, `S1 · ${u.numero} ${u.titre}`]));
+/* Toutes les stations des saisons rédigées : unités et stations de lecture. */
+const STATIONS_TOUTES = Object.values(SAISONS).flatMap((sa) => [
+  ...sa.unites.map((u) => ({ id: u.id, nom: `S${sa.numero} · ${u.numero} ${u.titre}` })),
+  ...(sa.lecture?.stations || []).map((st) => ({ id: st.id, nom: `S${sa.numero} · lecture ${st.numero} ${st.titre}` })),
+]);
+const NOM_UNITE = {
+  ...Object.fromEntries(STATIONS_TOUTES.map((x) => [x.id, x.nom])),
+  ...Object.fromEntries(Object.values(SAISONS).flatMap((sa) => Object.entries(sa.evaluations || {})
+    .map(([id, ev]) => [`eval:${id}`, `S${sa.numero} · évaluation : ${ev.titre}`]))),
+};
 
 /** Les textes envoyés à la fin des défis. Par défaut, seulement ceux qui
     n'ont pas encore été lus ; un commentaire les marque comme lus et
@@ -958,7 +967,7 @@ function Productions({ eleves }) {
 function LexiqueCours() {
   const [lignes, setLignes] = useState(null);
   const [ouvert, setOuvert] = useState(false);
-  const [f, setF] = useState({ unite: "S1-U7", fr: "", de: "", exemple: "", cat: "N" });
+  const [f, setF] = useState({ unite: "S1-L1", fr: "", de: "", exemple: "", cat: "N" });
   const [erreur, setErreur] = useState(null);
 
   const charger = async () => setLignes(await chargerFichesCours());
@@ -987,7 +996,7 @@ function LexiqueCours() {
           <div style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 1fr" }}>
             <select className="champ" style={{ fontSize: 14, gridColumn: "1 / -1" }} value={f.unite}
               onChange={(e) => setF({ ...f, unite: e.target.value })}>
-              {UNITES_S1.map((u) => <option key={u.id} value={u.id}>{NOM_UNITE[u.id]}</option>)}
+              {STATIONS_TOUTES.map((u) => <option key={u.id} value={u.id}>{u.nom}</option>)}
             </select>
             <input className="champ" style={{ fontSize: 15 }} placeholder="français (avec l'article)" value={f.fr}
               onChange={(e) => setF({ ...f, fr: e.target.value })} />

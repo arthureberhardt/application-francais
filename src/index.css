@@ -756,7 +756,7 @@ body { background: #F4F5F7; }
 /* ── textes à trous ── */
 .trous { margin-top: 14px; }
 .trousTitre { font-weight: 700; margin: 0 0 6px; }
-.trousTexte { font-size: 17.5px; line-height: 2.2; margin: 0; }
+.trousTexte { font-size: 17.5px; line-height: 2.2; margin: 0; white-space: pre-line; }
 .blancBoite { display: inline-flex; align-items: baseline; gap: 6px; }
 .fle .blanc {
   font: inherit; font-size: 16.5px; padding: 3px 8px; margin: 0 2px; min-width: 4ch;

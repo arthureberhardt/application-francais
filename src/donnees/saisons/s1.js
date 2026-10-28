@@ -609,16 +609,46 @@ export const DEFIS_S1 = {
 };
 
 /* ─────────── La saison, au format commun (voir saisons/index.js) ─────────── */
+import {
+  MOTS_S1_SUITE, UNITE7_S1, FILS_S1, EVAL_UNITES_S1, EXERCICES_PLUS_S1, POINTS_PLUS_S1,
+  DEPLACEMENTS_POINTS_S1, TOURNURES_PLUS_S1, DEPLACEMENTS_TOURNURES_S1, DEPLACEMENTS_PHRASES_S1,
+  PHRASES_PLUS_S1, TEXTES_S1, DEFI_U7_S1, EVALUATIONS_S1, LECTURE_S1,
+} from "./s1_suite.js";
+
+const unitesS1 = UNITES_S1.map((u) => ({
+  ...(u.id === "S1-U7" ? UNITE7_S1 : u),
+  fils: FILS_S1[u.id] || {},
+  evaluation: EVAL_UNITES_S1[u.id],
+}));
+const grammaireS1 = [
+  ...GRAMMAIRE_S1.map((g) => ({
+    ...g,
+    unite: DEPLACEMENTS_POINTS_S1[g.id] || g.unite,
+    exercices: [...g.exercices, ...(EXERCICES_PLUS_S1[g.id] || [])],
+  })),
+  ...POINTS_PLUS_S1,
+];
+// le point « articles » partage l'unité 4 avec le nouveau point « quantités »
+const u4 = unitesS1.find((u) => u.id === "S1-U4");
+if (!u4.grammaire.includes("G4-QUANTITES")) u4.grammaire = [...u4.grammaire, "G4-QUANTITES"];
+
 export default {
   numero: 1,
   titre: "Se présenter, décrire, s'orienter",
-  unites: UNITES_S1,
-  grammaire: GRAMMAIRE_S1,
-  tournures: TOURNURES_S1,
-  phrases: PHRASES_S1,
-  textes: [],
-  defis: DEFIS_S1,
-  evaluations: {},
-  lecture: null,
+  unites: unitesS1,
+  grammaire: grammaireS1,
+  tournures: [
+    ...TOURNURES_S1.map((x) => ({ ...x, unite: DEPLACEMENTS_TOURNURES_S1[x.id] || x.unite })),
+    ...TOURNURES_PLUS_S1,
+  ],
+  phrases: [
+    ...PHRASES_S1.map((x) => ({ ...x, unite: DEPLACEMENTS_PHRASES_S1[x.id] || x.unite })),
+    ...PHRASES_PLUS_S1,
+  ],
+  textes: TEXTES_S1,
+  defis: { ...DEFIS_S1, "S1-U7": DEFI_U7_S1 },
+  evaluations: EVALUATIONS_S1,
+  lecture: LECTURE_S1,
+  motsAjouts: MOTS_S1_SUITE,
   surcharges: SURCHARGES_S1,
 };
