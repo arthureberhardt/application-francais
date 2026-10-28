@@ -21,7 +21,7 @@ const retourDans = (boite) => {
 import { Ecouter, BarreAccents } from "./Outils.jsx";
 import { lire, taire, sonDisponible } from "../lib/voix.js";
 
-export default function Seance({ mode, filtre = {}, semestre, code, progression, setProgression, motsValides = {}, onFin, onLancerRattrapage, onTermine }) {
+export default function Seance({ mode, filtre = {}, semestre, code, progression, setProgression, motsValides = {}, onFin, onLancerRattrapage, onTermine, serie = 0 }) {
   const { unite, tempsCle, semestreCible, exercice } = filtre;
   const exo = exercice ? exercicePar(exercice) : null;
 
@@ -85,6 +85,9 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   const [retour, setRetour] = useState(null);
   const [justes, setJustes] = useState(0);
   const [rates, setRates] = useState([]);
+  const [resultats, setResultats] = useState([]); // juste / faux, question par question (pour le trajet)
+  const [suite, setSuite] = useState(0);          // bonnes réponses d'affilée
+  const [serieDebut] = useState(serie);
   const champ = useRef(null);
   const boutonSuivant = useRef(null);
   // Le focus est donné au bouton Suivant sur un cycle séparé de la touche
@@ -141,7 +144,13 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   useEffect(() => () => taire(), []);
 
   if (!item) return <Fin justes={justes} total={bassin.length} rates={rates} onFin={onFin}
-    onRattrapage={(items) => onLancerRattrapage(items)} onTermine={onTermine} defi={mode === "defi"} />;
+    onRattrapage={(items) => onLancerRattrapage(items)} onTermine={onTermine} defi={mode === "defi"}
+    serie={serie} serieDebut={serieDebut} />;
+
+  const noter = (juste) => {
+    setResultats((r) => { const n = [...r]; n[k] = juste; return n; });
+    setSuite((x) => (juste ? x + 1 : 0));
+  };
 
   /* Un texte à trous est juste si tous ses blancs le sont ; chaque blanc
      est corrigé séparément pour que l'élève voie où il s'est trompé. */
@@ -158,6 +167,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     setProgression(suivante);
     enregistrerItem(code, item.cle, etat, suivante);
     setRetour({ verdict: juste ? "exact" : "faux", reponse: "", boite: etat.boite, resultats, nbJustes });
+    noter(juste);
     if (juste) setJustes((x) => x + 1);
     else if (mode !== "rattrapage") setRates((r) => [...r, item]);
   };
@@ -179,6 +189,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     enregistrerItem(code, item.cle, etat, suivante);
 
     setRetour({ verdict, reponse, boite: etat.boite });
+    noter(juste);
     if (juste) setJustes((x) => x + 1);
     // en rattrapage on ne re-signale pas une faute : sinon un mot raté deux
     // fois de suite s'empilerait sans fin dans sa propre liste de reprise
@@ -188,81 +199,77 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   const suivant = () => { setRetour(null); setSaisie(""); setChoisis([]); setTrous({}); setK(k + 1); };
   const phraseOrdre = q.type === "ordre" ? choisis.map((i) => q.mots[i]).join(" ") : "";
 
+  const bon = retour && retour.verdict !== "faux" && retour.verdict !== "accent";
   return (
     <>
-      <div className="bar">
+      <div className="bar barSeance">
         <div className="wrap barIn">
-          <button className="lien" onClick={() => onFin()}>← Arrêter</button>
+          <button className="lien" onClick={() => onFin()} aria-label="Arrêter la séance">← Arrêter</button>
           <span className="sur">{etiquette}</span>
-          <span className="mono" style={{ fontSize: 12.5, color: "var(--ardoise)" }}>
-            {k + 1} / {bassin.length}
-          </span>
+          {suite >= 3 ? (
+            <span className="suite" key={suite} aria-live="polite">{suite} de suite</span>
+          ) : (
+            <span className="compteurQ">{k + 1} / {bassin.length}</span>
+          )}
         </div>
         {bassin.length <= 24 ? (
           <div className="wrap">
             <ol className="trajet" aria-label={`Question ${k + 1} sur ${bassin.length}`}>
               {bassin.map((_, i) => (
-                <li key={i} className={i < k ? "passee" : i === k ? "ici" : ""}><span /></li>
+                <li key={i} className={(i < k || (i === k && retour) ? "passee" : i === k ? "ici" : "") + (resultats[i] === false ? " rate" : "")}><span /></li>
               ))}
             </ol>
           </div>
         ) : (
           <div className="prog">
-            <div className="progIn" style={{ width: `${(k / bassin.length) * 100}%` }} />
+            <div className="progIn" style={{ width: `${((k + (retour ? 1 : 0)) / bassin.length) * 100}%` }} />
           </div>
         )}
       </div>
 
-      <div className="main wrap">
+      <div className="main wrap" style={{ maxWidth: 640 }}>
         {devoile && !retour && item.module !== "verbes" && (
           <div className="carte rappelDifficile">
             <div className="sur">Ce mot vous résiste. Regardez-le bien.</div>
-            <div className="dsp" style={{ fontSize: 24, margin: "8px 0 3px" }}>{item.fr}</div>
+            <div className="dsp" style={{ fontSize: 28, margin: "8px 0 3px" }}>{item.fr}</div>
             <div className="note">{item.de}</div>
-            {item.exemple && (
-              <div style={{ fontSize: 14.5, fontStyle: "italic", marginTop: 8 }}>{item.exemple}</div>
-            )}
+            {item.exemple && <div className="exempleCorr" style={{ marginTop: 8 }}>{item.exemple}</div>}
             <button className="btn2" style={{ marginTop: 12 }} onClick={() => setDevoile(false)}>
               C'est bon, posez-moi la question
             </button>
           </div>
         )}
 
-        <div className="carte apparait" style={devoile && !retour ? { opacity: .35 } : null}>
+        <div key={k} className={"carte carteQuestion apparait" + (retour ? (bon ? " juste" : " faux") : "")}
+          style={devoile && !retour ? { opacity: .35 } : null}>
+          {retour && bon && <span className="tampon" aria-hidden="true">✓</span>}
           <div className="plaqueQ">{q.consigne}</div>
           {q.dictee ? (
             <div className="zoneEcoute">
               <Ecouter texte={q.dictee} grand libelle="Réécouter" />
-              <Ecouter texte={q.dictee} lent libelle="Plus lentement" />
+              <Ecouter texte={q.dictee} lent grand libelle="Plus lentement" />
             </div>
           ) : (
-            q.invite && <div className={"dsp questionMot" + (q.phraseLongue ? " questionPhrase" : "")}>
-              {q.invite}
+            q.invite && <div className={"questionMot" + (q.phraseLongue ? " questionPhrase" : "")}>
+              <span>{q.invite}</span>
               {son && item.module === "lexique" && !q.reponse.includes(q.invite) && (
                 <Ecouter texte={q.invite} />
               )}
             </div>
           )}
-          {q.aide && <div className="note" style={{ marginBottom: 4 }}>{q.aide}</div>}
-          {!retour && q.astuce && (
-            <div className="boiteL" style={{ marginTop: 6 }}>{q.astuce}</div>
-          )}
+          {q.aide && <p className="aideQ">{q.aide}</p>}
+          {!retour && q.astuce && <div className="astuce">{q.astuce}</div>}
 
           {q.type === "trous" ? (
             <Trous q={q} trous={trous} setTrous={setTrous} retour={retour} />
           ) : q.type === "ordre" ? (
             <Ordre q={q} choisis={choisis} setChoisis={setChoisis} retour={retour} />
           ) : q.type === "qcm" ? (
-            <div className="qcm" style={{ marginTop: 18 }}>
+            <div className="qcm">
               {q.options.map((o) => (
-                <button
-                  key={o}
-                  className={
-                    "opt" +
-                    (retour ? (o === q.reponse ? " j" : o === retour.reponse ? " f" : "") : "")
-                  }
-                  onClick={() => valider(o)}
-                >
+                <button key={o} disabled={Boolean(retour)}
+                  className={"opt" + (retour ? (o === q.reponse ? " j" : o === retour.reponse ? " f" : " attenue") : "")}
+                  onClick={() => valider(o)}>
                   {o}
                 </button>
               ))}
@@ -275,10 +282,11 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
               disabled={Boolean(retour)}
               style={{ marginTop: 18 }}
               placeholder={q.placeholder}
+              autoCapitalize="off" autoCorrect="off" spellCheck={false}
               onChange={(e) => setSaisie(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key !== "Enter") return;
-                e.preventDefault(); // empêche tout comportement natif résiduel de la touche
+                e.preventDefault();
                 valider(saisie);
               }}
             />
@@ -288,12 +296,18 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
           )}
 
           {!retour && q.type !== "qcm" && (
-            <button className="btn" style={{ marginTop: 12 }}
-              disabled={(q.type === "ordre" && choisis.length !== q.mots.length) ||
-                (q.type === "trous" && q.blancs.some((b) => !(trous[b.blanc] || "").trim()))}
-              onClick={() => (q.type === "trous" ? validerTrous() : valider(q.type === "ordre" ? phraseOrdre : saisie))}>
-              Vérifier
-            </button>
+            q.type !== "trous" && q.type !== "ordre" && !saisie.trim() ? (
+              <button className="btn2" style={{ marginTop: 14, width: "100%" }} onClick={() => valider("")}>
+                Je ne sais pas : voir la réponse
+              </button>
+            ) : (
+              <button className="btn" style={{ marginTop: 14 }}
+                disabled={(q.type === "ordre" && choisis.length !== q.mots.length) ||
+                  (q.type === "trous" && q.blancs.some((b) => !(trous[b.blanc] || "").trim()))}
+                onClick={() => (q.type === "trous" ? validerTrous() : valider(q.type === "ordre" ? phraseOrdre : saisie))}>
+                Vérifier
+              </button>
+            )
           )}
 
           {retour && <Correction retour={retour} q={q} item={item} exo={exo} code={code} />}
@@ -301,11 +315,10 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
 
         {retour && (
           <button ref={boutonSuivant} className="btn" style={{ marginTop: 14 }} onClick={suivant}>
-            Suivant
+            {k + 1 < bassin.length ? "Question suivante" : "Terminer"}
           </button>
         )}
       </div>
-
     </>
   );
 }
@@ -331,79 +344,50 @@ function Correction({ retour, q, item, exo, code }) {
     setEnvoye(true);
   };
 
+  const VERDICT = {
+    exact: ["Juste", "ok"],
+    proche: ["Presque : attention aux accents", "ok"],
+    accent: ["Il manque un accent", "err"],
+    faux: [retour.reponse || q.type === "trous" ? "Pas encore" : "La réponse", "err"],
+  };
+  const [mot, ton] = VERDICT[retour.verdict] || VERDICT.faux;
+
   return (
-    <div className="apparait" style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--trait)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <span
-          className={"pill " + (bon ? "ok" : "err")}
-          style={{ background: bon ? "#EDF5F2" : "#FCEDED" }}
-        >
-          {retour.verdict === "exact"
-            ? "Juste !"
-            : retour.verdict === "proche"
-            ? "Presque : attention aux accents"
-            : retour.verdict === "accent"
-            ? "Faux : il manque un accent"
-            : "Faux"}
-        </span>
-        <span className="note" style={{ fontSize: 12.5 }}>{retourDans(retour.boite)}</span>
+    <div className="correction">
+      <div className="verdict">
+        <span className={"verdictMot " + ton}>{mot}</span>
+        <span className="verdictRetour">{bon ? retourDans(retour.boite) : "revient bientôt"}</span>
       </div>
 
-      {q.explication && (
-        <div className="explication">{q.explication}</div>
-      )}
+      {q.explication && <div className="explication">{q.explication}</div>}
 
       {q.type === "trous" && (
         <p className="note" style={{ margin: "0 0 8px" }}>
           {retour.nbJustes} blanc{retour.nbJustes > 1 ? "s" : ""} juste{retour.nbJustes > 1 ? "s" : ""} sur {q.blancs.length}.
-          {retour.verdict !== "exact" && " Les bonnes réponses sont en vert à côté de vos erreurs."}
+          {retour.verdict !== "exact" && " La bonne réponse est en vert à côté de chaque erreur."}
         </p>
       )}
 
       {retour.verdict !== "exact" && q.type !== "trous" && (
         <>
           {retour.reponse && q.type !== "qcm" && (
-            <div style={{ fontSize: 18, marginBottom: 6 }}>
-              {diff(retour.reponse, attendu).map((s, i) => (
-                <span
-                  key={i}
-                  className={s.t === "trop" ? "dTrop" : s.t === "accent" ? "dAcc" : "dOk"}
-                >
-                  {s.ch}
-                </span>
+            <div className="diffLigne">
+              {diff(retour.reponse, attendu).map((x, i) => (
+                <span key={i} className={x.t === "trop" ? "dTrop" : x.t === "accent" ? "dAcc" : "dOk"}>{x.ch}</span>
               ))}
             </div>
           )}
-          <div style={{ fontSize: 19, fontWeight: 600, display: "flex",
-            alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <div className="reponseAttendue">
             {q.reponse}
             <Ecouter texte={q.reponse} />
           </div>
 
           {peutProposer && (
-            <div style={{ marginTop: 12 }}>
-              {envoye ? (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 8, fontSize: 14,
-                  color: "var(--vert, #2F7A5E)", background: "var(--vert-clair, #E6F2EC)",
-                  padding: "10px 14px", borderRadius: 10, fontWeight: 600,
-                }}>
-                  ✓ Transmis à votre enseignant — merci !
-                </div>
-              ) : (
-                <button
-                  disabled={propose} onClick={envoyerProposition}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    background: "var(--ambre-clair)", color: "var(--ambre)",
-                    border: "1.5px solid var(--ambre)", borderRadius: 10,
-                    padding: "10px 14px", fontSize: 14, fontWeight: 700,
-                    textAlign: "left", cursor: propose ? "default" : "pointer",
-                    opacity: propose ? 0.6 : 1,
-                  }}
-                >
-                  💡 « {retour.reponse} » devrait être accepté — le signaler à l'enseignant
-                </button>
+            <div className={"proposer" + (envoye ? " fait" : "")}>
+              {envoye ? "Transmis à votre enseignant. Merci !" : (
+                <>Votre réponse vous semble juste ?{" "}
+                  <button disabled={propose} onClick={envoyerProposition}>La signaler à l'enseignant</button>
+                </>
               )}
             </div>
           )}
@@ -411,10 +395,9 @@ function Correction({ retour, q, item, exo, code }) {
       )}
 
       {item.module === "lexique" && (
-        <div style={{ marginTop: 14, display: "grid", gap: 6 }}>
+        <div className="details">
           {item.exemple && (
-            <div style={{ fontSize: 15, fontStyle: "italic", display: "flex",
-              alignItems: "flex-start", gap: 8 }}>
+            <div className="exempleCorr">
               <span>{item.exemple}</span>
               <Ecouter texte={item.exemple} />
             </div>
@@ -428,45 +411,35 @@ function Correction({ retour, q, item, exo, code }) {
       )}
 
       {item.module === "tournure" && (
-        <div style={{ marginTop: 14, display: "grid", gap: 6 }}>
+        <div className="details">
           <Ligne libelle="Situation" valeur={item.situation} />
           <Ligne libelle="En allemand" valeur={item.de} />
         </div>
       )}
 
       {item.module === "phrase" && q.type === "ordre" && (
-        <div style={{ marginTop: 14 }}><Ligne libelle="En allemand" valeur={item.de} /></div>
+        <div className="details"><Ligne libelle="En allemand" valeur={item.de} /></div>
       )}
 
       {item.module === "verbes" && (
-        <div style={{ marginTop: 14 }}>
-          <div className="sur" style={{ marginBottom: 6 }}>
-            {item.inf} · {item.temps}
-          </div>
+        <div className="details">
+          <div className="sur">{item.inf}, {item.temps}</div>
           {item.type === "conjugaison" ? (
-            <div className="mono" style={{ fontSize: 13, lineHeight: 1.9, color: "var(--ardoise)" }}>
+            <div className="conjTable">
               {item.formes.map((f, i) => (
-                <div key={i}>
-                  <span style={{ display: "inline-block", minWidth: 82 }}>{item.personnes[i]}</span>
-                  <span style={{ color: "var(--encre)", fontWeight: 600 }}>{f}</span>
-                </div>
+                <div key={i}><span>{item.personnes[i]}</span><b>{f}</b></div>
               ))}
             </div>
           ) : (
-            <div style={{ display: "grid", gap: 5 }}>
+            <>
               <Ligne libelle="Participe" valeur={item.participe} />
               <Ligne libelle="Auxiliaire" valeur={item.aux} />
               {item.aux === "être" && (
-                <Ligne
-                  libelle="Accord"
-                  valeur={
-                    item.pronominal
-                      ? `il s'est ${item.participe} · elle s'est ${item.participe}e · elles se sont ${item.participe}es`
-                      : `il est ${item.participe} · elle est ${item.participe}e · elles sont ${item.participe}es`
-                  }
-                />
+                <Ligne libelle="Accord" valeur={item.pronominal
+                  ? `il s'est ${item.participe}, elle s'est ${item.participe}e, elles se sont ${item.participe}es`
+                  : `il est ${item.participe}, elle est ${item.participe}e, elles sont ${item.participe}es`} />
               )}
-            </div>
+            </>
           )}
         </div>
       )}
@@ -534,47 +507,69 @@ function Ordre({ q, choisis, setChoisis, retour }) {
   );
 }
 
-function Fin({ justes, total, rates, onFin, onRattrapage, onTermine, defi }) {
+/* Le compteur qui défile jusqu'au score. */
+function useDefile(cible, duree = 700) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setV(cible); return; }
+    let raf; const t0 = performance.now();
+    const pas = (t) => {
+      const p = Math.min(1, (t - t0) / duree);
+      setV(Math.round(cible * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) raf = requestAnimationFrame(pas);
+    };
+    raf = requestAnimationFrame(pas);
+    return () => cancelAnimationFrame(raf);
+  }, [cible, duree]);
+  return v;
+}
+
+function Fin({ justes, total, rates, onFin, onRattrapage, onTermine, defi, serie, serieDebut }) {
   const p = total ? Math.round((justes / total) * 100) : 0;
   // signalé une seule fois, au premier affichage de l'écran de fin
   useEffect(() => { onTermine && onTermine({ justes, total }); }, []); // eslint-disable-line
-  if (defi) {
-    return (
-      <div className="main wrap" style={{ paddingTop: 60, maxWidth: 460 }}>
-        <p className="note" style={{ margin: 0 }}>Test du défi terminé</p>
-        <div className="dsp" style={{ fontSize: 52, margin: "10px 0 2px" }}>{p} %</div>
-        <p className="note" style={{ marginBottom: 26 }}>
-          {p >= 70
-            ? "Réussi. Il reste à écrire votre texte : c'est lui que votre enseignant lira."
-            : "Pas encore. Revoyez les étapes de l'unité, puis retentez le défi : il faut 70 %."}
-        </p>
-        <button className="btn" onClick={() => onFin({ justes, total, part: p })}>
-          {p >= 70 ? "Écrire mon texte" : "Retour à l'unité"}
-        </button>
-      </div>
-    );
-  }
+  const n = useDefile(defi ? p : justes);
+  const serieMonte = serie > serieDebut;
   const uniques = [...new Map(rates.map((i) => [i.cle, i])).values()]; // un mot raté deux fois ne compte qu'une fois
+
   return (
-    <div className="main wrap" style={{ paddingTop: 60, maxWidth: 460 }}>
-      <div className="sur">Exercice terminé</div>
-      <div className="dsp" style={{ fontSize: 52, margin: "10px 0 2px" }}>
-        {justes} / {total}
+    <div className="mur terminusMur" style={{ flex: 1 }}>
+      <div className="wrap" style={{ maxWidth: 520 }}>
+        <div className="plaque terminus"><span className="plaqueNom">Terminus</span></div>
+        <div className="score" aria-label={defi ? `${p} %` : `${justes} sur ${total}`}>
+          {defi ? <>{n}<span className="scoreSur"> %</span></> : <>{n}<span className="scoreSur"> / {total}</span></>}
+        </div>
+        <p className="scoreL">
+          {defi
+            ? p >= 70
+              ? "Défi réussi. Il reste à écrire votre texte : c'est lui que votre enseignant lira."
+              : "Pas encore : il faut 70 %. Revoyez les étapes de l'unité, puis retentez le défi."
+            : p >= 80
+            ? "Très bien. Revenez demain : c'est en revenant souvent que les mots restent."
+            : p >= 50
+            ? "Pas mal. Ce qui est raté revient dès la prochaine séance."
+            : "C'était difficile. Plusieurs petites séances valent mieux qu'une longue."}
+        </p>
+        {defi && p >= 70 && <span className="valideTampon">Validé</span>}
+
+        {!defi && serieMonte && (
+          <div className="finSerie">
+            <span className="serieN flip"><span>{serie}</span></span>
+            <span className="serieL">{serie === 1 ? "premier jour de série" : `jours de suite`}</span>
+          </div>
+        )}
+
+        <div className="finActions">
+          <button className="btn" onClick={() => onFin(defi ? { justes, total, part: p } : undefined)}>
+            {defi ? (p >= 70 ? "Écrire mon texte" : "Retour à l'unité") : "Continuer"}
+          </button>
+          {!defi && uniques.length > 0 && (
+            <button className="btn2" onClick={() => onRattrapage(uniques)}>
+              Refaire {uniques.length === 1 ? "la question ratée" : `les ${uniques.length} questions ratées`}
+            </button>
+          )}
+        </div>
       </div>
-      <p className="note" style={{ marginBottom: 26 }}>
-        {p >= 80
-          ? "Très bien. Revenez demain : c'est en revenant souvent que les mots restent."
-          : p >= 50
-          ? "Pas mal. Les mots ratés sont retournés dans la boîte 1. Ils reviendront vite."
-          : "C'était difficile. Faites plutôt plusieurs petits exercices qu'un seul long."}
-      </p>
-      {uniques.length > 0 && (
-        <button className="btn2" style={{ marginBottom: 12 }}
-          onClick={() => onRattrapage(uniques)}>
-          Refaire {uniques.length === 1 ? "le mot raté" : `les ${uniques.length} mots ratés`}
-        </button>
-      )}
-      <button className="btn" onClick={() => onFin()}>Continuer</button>
     </div>
   );
 }

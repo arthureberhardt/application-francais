@@ -5,43 +5,89 @@ import { INTERVALLES } from "../lib/leitner.js";
    Ensuite, depuis la barre du bas : la légende du plan et les questions
    fréquentes, repliées. */
 
+/* Le message d'accueil existe en français et en allemand : il doit être
+   compris dès le premier jour, avant que le français le permette. */
 const ECRANS = [
   {
-    titre: "Une séance par jour",
-    texte: (
-      <>
-        Touchez <strong>Séance du jour</strong> : 12 questions, environ cinq minutes. Elle mélange ce qu'il
-        faut revoir aujourd'hui et la suite de votre unité. Revenir chaque jour compte plus que travailler
-        longtemps : un jour oublié par semaine ne casse pas la série.
-      </>
-    ),
     dessin: "trajet",
+    fr: {
+      titre: "Une séance par jour",
+      texte: (
+        <>
+          Touchez <strong>Séance du jour</strong> : 12 questions, environ cinq minutes. Elle mélange ce qu'il
+          faut revoir aujourd'hui et la suite de votre unité. Revenir chaque jour compte plus que travailler
+          longtemps : un jour oublié par semaine ne casse pas la série.
+        </>
+      ),
+    },
+    de: {
+      titre: "Eine Lektion pro Tag",
+      texte: (
+        <>
+          Tippen Sie auf <strong>Séance du jour</strong>: 12 Fragen, etwa fünf Minuten. Die Lektion mischt, was
+          Sie heute wiederholen sollten, mit dem nächsten Teil Ihrer Unité. Jeden Tag ein bisschen bringt mehr
+          als selten lange: Ein vergessener Tag pro Woche unterbricht Ihre Serie nicht.
+        </>
+      ),
+    },
   },
   {
-    titre: "Votre saison est une ligne de métro",
-    texte: (
-      <>
-        Chaque semestre est une <strong>saison</strong>. Ses stations sont les <strong>unités</strong> du
-        cours, deux semaines chacune : découvrir, s'entraîner, grammaire, tournures, phrases et textes,
-        puis le <strong>défi</strong>, qui finit par un petit texte que votre enseignant lit. En
-        correspondance, la <strong>ligne de lecture</strong> suit le livre lu en classe, avec un carnet de
-        lecture à chaque station.
-      </>
-    ),
     dessin: "ligne",
+    fr: {
+      titre: "Votre saison est une ligne de métro",
+      texte: (
+        <>
+          Chaque semestre est une <strong>saison</strong>. Ses stations sont les <strong>unités</strong> du
+          cours, deux semaines chacune : découvrir, s'entraîner, grammaire, tournures, phrases et textes,
+          puis le <strong>défi</strong>, qui finit par un petit texte que votre enseignant lit. En
+          correspondance, la <strong>ligne de lecture</strong> suit le livre lu en classe, avec un carnet de
+          lecture à chaque station.
+        </>
+      ),
+    },
+    de: {
+      titre: "Ihr Semester ist eine Metrolinie",
+      texte: (
+        <>
+          Jedes Semester ist eine <strong>Saison</strong>. Ihre Stationen sind die <strong>Unités</strong> des
+          Unterrichts, je zwei Wochen: entdecken, üben, Grammatik, Wendungen, Sätze und Texte, dann der
+          {" "}<strong>Défi</strong>, ein kurzer Test mit einem kleinen Text, den Ihre Lehrperson liest. Als
+          Umsteigelinie folgt die <strong>Leselinie</strong> dem Buch, das in der Klasse gelesen wird, mit
+          einem Lesejournal an jeder Station.
+        </>
+      ),
+    },
   },
   {
-    titre: "Les mots reviennent au bon moment",
-    texte: (
-      <>
-        Une bonne réponse espace la prochaine question ; une erreur fait revenir le mot dès la séance
-        suivante. Un mot est <strong>su</strong> après cinq bonnes réponses à des jours différents. Votre
-        code remplace nom et mot de passe : avec lui, vous retrouvez tout sur vos autres appareils.
-      </>
-    ),
     dessin: "intervalles",
+    fr: {
+      titre: "Les mots reviennent au bon moment",
+      texte: (
+        <>
+          Une bonne réponse espace la prochaine question ; une erreur fait revenir le mot dès la séance
+          suivante. Un mot est <strong>su</strong> après cinq bonnes réponses à des jours différents. Votre
+          code remplace nom et mot de passe : avec lui, vous retrouvez tout sur vos autres appareils.
+        </>
+      ),
+    },
+    de: {
+      titre: "Die Wörter kommen im richtigen Moment zurück",
+      texte: (
+        <>
+          Nach einer richtigen Antwort dauert es länger, bis die Frage wiederkommt; nach einem Fehler kommt
+          das Wort schon in der nächsten Lektion zurück. Ein Wort gilt als <strong>gelernt</strong> nach fünf
+          richtigen Antworten an verschiedenen Tagen. Ihr Code ersetzt Name und Passwort: Damit finden Sie
+          alles auf Ihren anderen Geräten wieder.
+        </>
+      ),
+    },
   },
 ];
+
+const BOUTONS = {
+  fr: { retour: "Retour", suivant: "Suivant", parti: "C'est parti", passer: "Passer l'introduction", ecran: "Écran" },
+  de: { retour: "Zurück", suivant: "Weiter", parti: "Los geht's", passer: "Einführung überspringen", ecran: "Seite" },
+};
 
 function Dessin({ type }) {
   if (type === "intervalles") {
@@ -73,34 +119,53 @@ function Dessin({ type }) {
   );
 }
 
-export default function Aide({ premiere = false, onFin, onInstaller }) {
+export default function Aide({ premiere = false, onFin, onInstaller, onQuitter, code }) {
   const [n, setN] = useState(0);
+  const [intro, setIntro] = useState(premiere);
+  const [langue, setLangue] = useState(() => {
+    try { return localStorage.getItem("fle:langueIntro") || "fr"; } catch { return "fr"; }
+  });
+  const choisirLangue = (l) => { setLangue(l); try { localStorage.setItem("fle:langueIntro", l); } catch {} };
+  const finIntro = () => { setN(0); if (premiere) onFin(); else setIntro(false); };
 
-  if (premiere) {
-    const e = ECRANS[n];
+  if (intro) {
+    const e = ECRANS[n][langue];
+    const t = BOUTONS[langue];
     const dernier = n === ECRANS.length - 1;
     return (
-      <div className="main wrap" style={{ maxWidth: 560 }}>
-        <ol className="aidePas" aria-label={`Écran ${n + 1} sur ${ECRANS.length}`}>
-          {ECRANS.map((_, i) => <li key={i} className={i <= n ? "on" : ""} />)}
-        </ol>
-        <div className="aideEcran apparait" key={n}>
-          <div className="plaque" style={{ marginBottom: 18 }}>
-            <span className="plaqueNom">{e.titre}</span>
+      <>
+        <header className="mur aideMur">
+          <div className="wrap" style={{ maxWidth: 560 }}>
+            <div className="langue" role="group" aria-label="Langue / Sprache">
+              {[["fr", "Français"], ["de", "Deutsch"]].map(([l, nom]) => (
+                <button key={l} className={langue === l ? "on" : ""} aria-pressed={langue === l}
+                  lang={l} onClick={() => choisirLangue(l)}>{nom}</button>
+              ))}
+            </div>
+            <ol className="aidePas" aria-label={`${t.ecran} ${n + 1} / ${ECRANS.length}`}>
+              {ECRANS.map((_, i) => <li key={i} className={i <= n ? "on" : ""} />)}
+            </ol>
+            <div className="plaque apparait" key={n + langue}>
+              <span className="plaqueNom" lang={langue}>{e.titre}</span>
+            </div>
           </div>
-          <Dessin type={e.dessin} />
-          <p className="aideTexte">{e.texte}</p>
+        </header>
+        <div className="main wrap" style={{ maxWidth: 560 }}>
+          <div className="apparait" key={n + langue}>
+            <Dessin type={ECRANS[n].dessin} />
+            <p className="aideTexte" lang={langue}>{e.texte}</p>
+          </div>
+          <div className="aideBoutons">
+            {n > 0 && <button className="btn2" onClick={() => setN(n - 1)}>{t.retour}</button>}
+            <button className="btn" onClick={() => (dernier ? finIntro() : setN(n + 1))}>
+              {dernier ? t.parti : t.suivant}
+            </button>
+          </div>
+          {!dernier && (
+            <button className="lienTexte" style={{ marginTop: 18, fontSize: 14 }} onClick={finIntro}>{t.passer}</button>
+          )}
         </div>
-        <div className="aideBoutons">
-          {n > 0 && <button className="btn2" onClick={() => setN(n - 1)}>Retour</button>}
-          <button className="btn" onClick={() => (dernier ? onFin() : setN(n + 1))}>
-            {dernier ? "C'est parti" : "Suivant"}
-          </button>
-        </div>
-        {!dernier && (
-          <button className="lienTexte" style={{ marginTop: 16, fontSize: 13 }} onClick={onFin}>Passer</button>
-        )}
-      </div>
+      </>
     );
   }
 
@@ -156,11 +221,20 @@ export default function Aide({ premiere = false, onFin, onInstaller }) {
         </details>
       </div>
 
-      {onInstaller && (
-        <button className="btn2" style={{ marginTop: 22 }} onClick={onInstaller}>
-          Mettre l'application sur mon écran d'accueil
+      <h2 className="planTitre">L'application</h2>
+      <div style={{ display: "grid", gap: 8 }}>
+        <button className="btn2 large" onClick={() => setIntro(true)}>
+          Revoir l'introduction <span lang="de" className="note">(auch auf Deutsch)</span>
         </button>
-      )}
+        {onInstaller && (
+          <button className="btn2 large" onClick={onInstaller}>Mettre l'application sur l'écran d'accueil</button>
+        )}
+        {onQuitter && (
+          <button className="btn2 large" onClick={onQuitter}>
+            Changer de code{code ? <span className="note"> (actuellement {code})</span> : null}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

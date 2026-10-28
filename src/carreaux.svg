@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="48" viewBox="0 0 96 48">
+  <defs>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset=".55" stop-color="#F8F8F5"/>
+      <stop offset="1" stop-color="#EDEEE9"/>
+    </linearGradient>
+    <linearGradient id="reflet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".9"/>
+      <stop offset=".45" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <g id="t">
+      <rect x="1" y="1" width="46" height="22" rx="3.2" fill="url(#face)"/>
+      <rect x="1.6" y="1.6" width="44.8" height="20.8" rx="2.8" fill="none" stroke="url(#reflet)" stroke-width="1.6"/>
+      <path d="M3 22.4 H45 Q46.4 22.4 46.4 21 V4" fill="none" stroke="#D4D6CF" stroke-width="1.1"/>
+    </g>
+  </defs>
+  <rect width="96" height="48" fill="#CDD0C8"/>
+  <use href="#t" x="0" y="0"/>
+  <use href="#t" x="48" y="0"/>
+  <use href="#t" x="-24" y="24"/>
+  <use href="#t" x="24" y="24"/>
+  <use href="#t" x="72" y="24"/>
+</svg>

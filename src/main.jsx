@@ -2,6 +2,14 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import Secours from "./Secours.jsx";
+import "@fontsource/fira-sans/latin-400.css";
+import "@fontsource/fira-sans/latin-400-italic.css";
+import "@fontsource/fira-sans/latin-500.css";
+import "@fontsource/fira-sans/latin-600.css";
+import "@fontsource/fira-sans/latin-700.css";
+import "@fontsource/fira-sans-condensed/latin-500.css";
+import "@fontsource/fira-sans-condensed/latin-600.css";
+import "@fontsource/fira-sans-condensed/latin-700.css";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
@@ -24,7 +32,7 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
       const urls = performance.getEntriesByType("resource")
         .map((r) => r.name)
         .filter((u) => u.startsWith(location.origin) && /\/assets\//.test(u));
-      if (urls.length && "caches" in window) caches.open("fle-v2026-1").then((c) => c.addAll(urls)).catch(() => {});
+      if (urls.length && "caches" in window) caches.open("fle-v2026-2").then((c) => c.addAll(urls)).catch(() => {});
     });
   });
 }

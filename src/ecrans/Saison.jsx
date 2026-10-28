@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from "react";
-import { listeSemestres, filiereActive, itemsCumules } from "../lib/items.js";
+import { listeSemestres, itemsCumules } from "../lib/items.js";
 import { estDu, categorie } from "../lib/leitner.js";
 import {
   unitesDe, lectureDe, avancementUnite, uniteCourante, stationLectureCourante, saisonDe, nomSemestre,
@@ -10,11 +10,22 @@ import { estInstallee } from "./Installer.jsx";
 
 const dateCourte = (d) => new Date(d).toLocaleDateString("fr-CH", { day: "numeric", month: "short" });
 
-/* L'accueil : la plaque de la saison, la séance du jour, puis le plan de la
-   ligne — les unités en stations, et la ligne de lecture en correspondance. */
+/* La série est affichée sur un indicateur à palettes. Quand elle a grandi
+   depuis la dernière visite, les palettes tournent une fois. */
+function useSerieAnimee(code, serie) {
+  const cle = `fle:serieVue:${code}`;
+  const [flip] = useState(() => {
+    try { return serie > Number(localStorage.getItem(cle) || 0); } catch { return false; }
+  });
+  useEffect(() => { try { localStorage.setItem(cle, String(serie)); } catch {} }, [cle, serie]);
+  return flip;
+}
+
+/* L'accueil : le mur de faïence avec la plaque de la saison et la série,
+   la séance du jour, puis le plan de la ligne et sa correspondance. */
 export default function Saison({
   code, semestre, setSemestre, semestreMax, progression, decouverts, jours,
-  onJour, onUnite, onCarnet, onInstaller, onQuitter,
+  onJour, onUnite, onInstaller,
 }) {
   const unites = unitesDe(semestre);
   const lecture = lectureDe(semestre);
@@ -27,6 +38,7 @@ export default function Saison({
   );
   const { serie, aujourdhui } = calculerSerie(jours);
   const points = quatorzeJours(jours);
+  const flip = useSerieAnimee(code, serie);
 
   const dus = useMemo(
     () => itemsCumules(semestre).filter((i) => estDu(progression[i.cle]) && categorie(progression[i.cle]) !== "acquis").length,
@@ -41,13 +53,27 @@ export default function Saison({
     ciblesClasse(code).then(setCibles);
   }, [code]);
 
+  const [installerVu, setInstallerVu] = useState(() => {
+    try { return Boolean(localStorage.getItem("fle:installerMasque")); } catch { return false; }
+  });
+  const masquerInstaller = (e) => {
+    e.stopPropagation();
+    setInstallerVu(true);
+    try { localStorage.setItem("fle:installerMasque", "1"); } catch {}
+  };
+
+  const detail = [
+    dus > 0 ? `${dus} élément${dus > 1 ? "s" : ""} à revoir` : null,
+    courante && etatCourante && !etatCourante.valide ? `la suite de « ${courante.titre} »` : null,
+    lectureCourante ? "les mots de la lecture" : null,
+  ].filter(Boolean);
+
   return (
     <>
-      <header className="bandeau bandeauSaison">
+      <header className="mur accueilMur">
         <div className="wrap">
-          <div className="teteHaut">
+          <div className="accueilHaut">
             <span className="ticketMini" title="Votre code">{code}</span>
-            <button className="lienClair" onClick={onQuitter}>Changer de code</button>
           </div>
 
           <div className="plaque plaqueSaison">
@@ -58,50 +84,43 @@ export default function Saison({
             </span>
           </div>
 
-          <div className="compteurs">
-            <div className="compteur">
-              <span className="compteurN">{serie}</span>
-              <span className="compteurL">{serie === 1 ? "jour de suite" : "jours de suite"}</span>
+          <div className="serie">
+            <span className={"serieN" + (flip ? " flip" : "")} aria-hidden="true"><span>{serie}</span></span>
+            <span className="serieTexte">
+              <span className="serieL">{serie === 1 ? "jour de suite" : `jours de suite`}</span>
               <span className="seriePoints" aria-label="Les 14 derniers jours">
                 {points.map((on, i) => <span key={i} className={"seriePoint" + (on ? " on" : "")} />)}
               </span>
-            </div>
-            {objectif && objectif.eleves > 0 && (
-              <div className="compteur">
-                <span className="compteurN">{objectif.seances_mois}<span className="compteurSur">/{objectif.objectif_mois}</span></span>
-                <span className="compteurL">séances de la {objectif.classe} ce mois</span>
-                <span className="objectifJauge">
-                  <span style={{ width: `${Math.min(100, Math.round((objectif.seances_mois / Math.max(1, objectif.objectif_mois)) * 100))}%` }} />
-                </span>
-              </div>
-            )}
+            </span>
           </div>
-          <p className="teteNote">
-            {aujourdhui
-              ? "Fait pour aujourd'hui. À demain !"
-              : serie > 0
-              ? "Une séance aujourd'hui et la série continue."
-              : "Une séance par jour suffit. Un oubli par semaine est pardonné."}
-          </p>
+          {objectif && objectif.eleves > 0 && (
+            <div className="objectifClasse">
+              <span>{objectif.classe} : {objectif.seances_mois} / {objectif.objectif_mois} séances ce mois</span>
+              <span className="objectifJauge">
+                <span style={{ width: `${Math.min(100, Math.round((objectif.seances_mois / Math.max(1, objectif.objectif_mois)) * 100))}%` }} />
+              </span>
+            </div>
+          )}
         </div>
       </header>
 
       <div className="main wrap mainSaison avecNav">
-        <button className="seanceJour" onClick={onJour}>
+        <div className={"seanceJour" + (aujourdhui ? " faite" : "")}>
           <span className="seanceJourTitre">Séance du jour</span>
           <span className="seanceJourDetail">
-            12 questions, environ 5 minutes.{" "}
-            {dus > 0 ? `${dus} élément${dus > 1 ? "s" : ""} à revoir` : "Rien d'urgent à revoir"}
-            {courante && etatCourante && !etatCourante.valide ? `, et la suite de « ${courante.titre} »` : ""}
-            {lectureCourante ? ` et de la lecture.` : "."}
+            {aujourdhui
+              ? "Faite pour aujourd'hui. Une deuxième séance est toujours possible."
+              : `12 questions, cinq minutes${detail.length ? " : " + detail.join(", ") : ""}.`}
           </span>
-          <span className="seanceJourBouton">Commencer</span>
-        </button>
+          <button className="btn" onClick={onJour}>{aujourdhui ? "Encore une séance" : "Commencer"}</button>
+        </div>
 
-        {!estInstallee() && (
-          <button className="bandeInstaller" onClick={onInstaller}>
-            Mettre l'application sur l'écran d'accueil
-          </button>
+        {!estInstallee() && !installerVu && (
+          <div className="bandeInstaller" role="button" tabIndex={0} onClick={onInstaller}
+            onKeyDown={(e) => e.key === "Enter" && onInstaller()}>
+            <span>Mettre l'application sur l'écran d'accueil</span>
+            <button className="bandeFermer" aria-label="Masquer" onClick={masquerInstaller}>×</button>
+          </div>
         )}
 
         <h2 className="planTitre">Plan de la ligne</h2>
@@ -118,7 +137,7 @@ export default function Saison({
               <span className="correspondanceSigne" aria-hidden="true" />
               <span>
                 <span className="correspondanceTitre">Correspondance : ligne de lecture</span>
-                <span className="correspondanceSous">{lecture.titre}{lecture.sous ? ` · ${lecture.sous}` : ""}</span>
+                <span className="correspondanceSous">{lecture.titre}</span>
               </span>
             </div>
             <ol className="ligne ligneLecture">
@@ -130,33 +149,26 @@ export default function Saison({
           </>
         )}
 
-        {!unites.some((u) => u.complete) && (
-          <p className="note">
-            Cette saison n'est pas encore découpée en unités complètes : vous y trouvez les mots et
-            les verbes par thème. Les exercices de grammaire et de phrases arrivent.
-          </p>
+        {listeSemestres().length > 1 && (
+          <>
+            <h2 className="planTitre">Changer de saison</h2>
+            <div className="saisonChoix" role="group" aria-label="Choisir la saison">
+              {listeSemestres().map((s) => {
+                const verrou = Boolean(semestreMax) && s.numero > semestreMax;
+                return (
+                  <button key={s.numero} disabled={verrou}
+                    className={"rond choix l" + s.numero + (s.numero === semestre ? " on" : "")}
+                    title={verrou ? "Pas encore ouvert par votre enseignant" : `Saison ${s.numero}`}
+                    aria-label={`Saison ${s.numero}${verrou ? " (fermée)" : ""}`}
+                    aria-pressed={s.numero === semestre}
+                    onClick={() => setSemestre(s.numero)}>
+                    {s.numero}
+                  </button>
+                );
+              })}
+            </div>
+          </>
         )}
-
-        <h2 className="planTitre">Autres saisons</h2>
-        <div className="saisonChoix" role="group" aria-label="Choisir la saison">
-          {listeSemestres().map((s) => {
-            const verrou = Boolean(semestreMax) && s.numero > semestreMax;
-            return (
-              <button key={s.numero} disabled={verrou}
-                className={"rond choix l" + s.numero + (s.numero === semestre ? " on" : "")}
-                title={verrou ? "Pas encore ouvert par votre enseignant" : `Saison ${s.numero}`}
-                aria-label={`Saison ${s.numero}${verrou ? " (fermée)" : ""}`}
-                onClick={() => setSemestre(s.numero)}>
-                {s.numero}
-              </button>
-            );
-          })}
-        </div>
-
-        <p className="note" style={{ marginTop: 22, fontSize: 12.5 }}>
-          Filière : {filiereActive().nom}. Vos progrès, la liste des mots et la grille des verbes sont dans le{" "}
-          <button className="lienTexte" onClick={onCarnet}>carnet</button>.
-        </p>
       </div>
     </>
   );
@@ -171,12 +183,15 @@ function Station({ u, e, courante, cible, onClick, lecture }) {
         <span className="stationPoint" aria-hidden="true" />
         <span className="stationCorps">
           <span className="stationTitre">
-            {u.complete && !u.facultative && <span className="stationNum">{u.numero}</span>}
-            {u.titre}
+            <span>
+              {u.complete && !u.facultative && <span className="stationNum">{u.numero} </span>}
+              {u.titre}
+              {courante && !e.valide && <span className="stationIci">Vous êtes ici</span>}
+            </span>
           </span>
           <span className="stationSous">
             {u.facultative ? "Facultatif · " : ""}
-            {lecture && u.semaines ? `Semaines ${u.semaines} · ` : ""}
+            {lecture && u.semaines ? `Semaines ${u.semaines} : ` : ""}
             {e.valide
               ? lecture ? "Carnet envoyé" : "Unité validée"
               : e.commencee && e.prochaine

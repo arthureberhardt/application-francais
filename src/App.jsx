@@ -25,6 +25,7 @@ import {
   definirFichesCours, stationLectureCourante, evalEnvoyee,
 } from "./lib/saison.js";
 import { composer, composerJour, composerDefi } from "./lib/seance.js";
+import { calculerSerie } from "./lib/serie.js";
 
 /* Chaque saison prend la couleur d'une ligne du métro parisien (lignes 1 à 8). */
 const LIGNES = {
@@ -177,7 +178,7 @@ export default function App() {
       <Seance
         mode={seance.mode} filtre={seance.filtre} semestre={semestre} code={code}
         progression={progression} setProgression={setProgression} motsValides={motsValides}
-        onFin={finSeance} onTermine={seanceTerminee}
+        onFin={finSeance} onTermine={seanceTerminee} serie={calculerSerie(jours).serie}
         onLancerRattrapage={(items) => setSeance({ mode: "rattrapage", filtre: { items }, retour: seance.retour })}
       />
     );
@@ -237,7 +238,7 @@ export default function App() {
         onExamen={() => setExamen(true)} />
     );
   } else if (vue.type === "aide") {
-    ecran = <Aide onInstaller={() => setVue({ type: "installer" })} />;
+    ecran = <Aide code={code} onQuitter={quitter} onInstaller={() => setVue({ type: "installer" })} />;
   } else {
     ecran = (
       <Saison

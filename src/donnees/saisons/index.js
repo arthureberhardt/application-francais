@@ -30,11 +30,21 @@ import s6 from "./s6.js";
 import s7 from "./s7.js";
 import s8 from "./s8.js";
 import { COMPLEMENTS } from "./complements.js";
+import { CONSTRUCTIONS } from "./constructions.js";
 
-const completer = (s) => ({
-  ...s,
-  unites: s.unites.map((u) => (COMPLEMENTS[u.id] ? { ...u, mots: [...u.mots, ...COMPLEMENTS[u.id]] } : u)),
-});
+// les constructions verbales (un point par saison) et les compléments d'exhaustivité
+function completer(s) {
+  const k = CONSTRUCTIONS[s.numero];
+  return {
+    ...s,
+    grammaire: k ? [...(s.grammaire || []), k.point] : s.grammaire,
+    unites: s.unites.map((u) => ({
+      ...u,
+      mots: COMPLEMENTS[u.id] ? [...u.mots, ...COMPLEMENTS[u.id]] : u.mots,
+      grammaire: k && k.unite === u.id ? [...(u.grammaire || []), k.point.id] : u.grammaire,
+    })),
+  };
+}
 
 export const SAISONS = Object.fromEntries(
   Object.entries({ 1: s1, 2: s2, 3: s3, 4: s4, 5: s5, 6: s6, 7: s7, 8: s8 }).map(([n, s]) => [n, completer(s)]),

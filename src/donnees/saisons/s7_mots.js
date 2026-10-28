@@ -32,6 +32,12 @@ export const MOTS_AJOUTS_S7 = [
   /* U7 · Construire un essai */
   f("N7-040", "le plan dialectique", "der dialektische Aufbau", "N", "Essai", "Le plan dialectique : thèse, antithèse, synthèse."),
   f("N7-041", "le dépassement", "die Überwindung (Synthese)", "N", "Essai", "La synthèse propose un dépassement de l'opposition."),
+  /* U1 · figures de style (1) */
+  f("N7-070", "la figure de style", "die Stilfigur", "N", "Analyse", "Nommez la figure de style, puis expliquez son effet."),
+  f("N7-071", "la comparaison (figure)", "der Vergleich (Stilfigur)", "N", "Analyse", "« Doux comme le miel » est une comparaison."),
+  f("N7-072", "l'anaphore (f.)", "die Anapher", "N", "Analyse", "L'anaphore de « Nous voulons » donne de la force au discours."),
+  f("N7-073", "la gradation", "die Steigerung", "N", "Analyse", "La gradation « Va, cours, vole » accélère le rythme."),
+  f("N7-074", "l'énumération (f.)", "die Aufzählung", "N", "Analyse", "Une longue énumération donne une impression d'abondance."),
   /* ligne de lecture */
   f("N7-060", "l'apologue (m.)", "das Lehrstück, die Lehrerzählung", "N", "Lire", "La fable et le conte philosophique sont des apologues."),
   f("N7-061", "la morale", "die Moral (einer Geschichte)", "N", "Lire", "La morale de la fable est à la fin."),
@@ -89,7 +95,8 @@ export const MOTS_S7 = {
 };
 
 export const FILS_S7 = {
-  "S7-U1": { adjectifs: ["AN-008", "AN-030", "AN-031"], argumentation: ["S6-109", "S6-110"] },
+  "S7-U1": { adjectifs: ["AN-008", "AN-030", "AN-031"], argumentation: ["S6-109", "S6-110"],
+    notions: ["N7-070", "N7-071", "N7-072", "N7-073", "N7-074"] },
   "S7-U2": { adjectifs: ["CI-033", "CI-034", "CI-037"], argumentation: ["S5-123", "S5-124"] },
   "S7-U3": { adjectifs: ["S7-090", "S7-092", "S7-100", "S7-101"], argumentation: ["S5-127", "S5-128", "S6-120"] },
   "S7-U4": { adjectifs: ["S5-A033", "AN-062", "AN-063"], argumentation: ["S5-129", "S5-130", "S6-132"] },

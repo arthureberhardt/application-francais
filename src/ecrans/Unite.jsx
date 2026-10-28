@@ -22,26 +22,36 @@ export default function Unite({ unite: u, code, progression, decouverts, onEtape
     mesProductions(code).then((l) => setRetours(l.filter((p) => p.unite === u.id)));
   }, [code, u.id]);
 
+  const part = a.total ? Math.round((a.vus / a.total) * 100) : 0;
   return (
     <>
       <div className="bar">
         <div className="wrap barIn">
           <button className="lien" onClick={onRetour}>← Saison {u.semestre}</button>
-          <span className="note" style={{ fontSize: 12.5 }}>{a.vus} / {a.total} éléments vus</span>
+          <span />
         </div>
       </div>
 
-      <div className="main wrap">
-        <div className="plaque plaqueUnite">
-          <span className="rond" aria-hidden="true">{u.semestre}</span>
-          <span>
-            <span className="plaqueSur">
-              {u.type === "lecture" ? `Ligne de lecture${u.semaines ? ` · semaines ${u.semaines}` : ""}`
-                : u.facultative ? "Unité facultative" : u.complete ? `Unité ${u.numero}${u.semaines ? ` · semaines ${u.semaines}` : ""}` : "Thème"}
+      <header className="mur uniteMur">
+        <div className="wrap">
+          <div className="plaque plaqueUnite">
+            <span className="rond" aria-hidden="true">{u.type === "lecture" ? "L" : u.complete && !u.facultative ? u.numero : u.semestre}</span>
+            <span>
+              <span className="plaqueSur">
+                {u.type === "lecture" ? `Ligne de lecture${u.semaines ? `, semaines ${u.semaines}` : ""}`
+                  : u.facultative ? "Unité facultative" : u.complete ? `Saison ${u.semestre}, unité ${u.numero}${u.semaines ? `, semaines ${u.semaines}` : ""}` : "Thème"}
+              </span>
+              <h1 className="plaqueNom">{u.titre}</h1>
             </span>
-            <h1 className="plaqueNom">{u.titre}</h1>
-          </span>
+          </div>
+          <div className="uniteJauge" aria-hidden="true"><span style={{ width: `${a.valide ? 100 : part}%` }} /></div>
+          <div className="uniteJaugeL">
+            {a.valide ? (u.type === "lecture" ? "Station validée : carnet envoyé." : "Unité validée.") : `${a.vus} éléments vus sur ${a.total}`}
+          </div>
         </div>
+      </header>
+
+      <div className="main wrap">
         <p className="uniteSous">{u.sous}</p>
 
         {u.type === "lecture" && u.chapitres && (
@@ -64,9 +74,10 @@ export default function Unite({ unite: u, code, progression, decouverts, onEtape
         <ol className="etapes">
           {a.etapes.map((e, k) => {
             const cours = !e.fait && e.part > 0;
+            const prochaine = a.prochaine && a.prochaine.cle === e.cle;
             return (
               <li key={e.cle}>
-                <button className={"etape" + (e.fait ? " faite" : cours ? " encours" : "")}
+                <button className={"etape" + (e.fait ? " faite" : cours ? " encours" : "") + (prochaine ? " prochaine" : "")}
                   onClick={() => onEtape(e.cle)}>
                   <span className="etapeNum" aria-hidden="true">{e.fait ? "✓" : k + 1}</span>
                   <span className="etapeCorps">

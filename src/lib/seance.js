@@ -23,7 +23,7 @@ export const FORMATS = {
   special: { longueur: 12, nouveaux: 4 },
   rattrapage: { longueur: 99, nouveaux: 0 },
   adaptatif: { longueur: 15, nouveaux: 2 },
-  unite: { longueur: 12, nouveaux: 6 },
+  unite: { longueur: 16, nouveaux: 8 },
   jour: { longueur: 12, nouveaux: 4 },
   defi: { longueur: 15, nouveaux: 15 },
 };

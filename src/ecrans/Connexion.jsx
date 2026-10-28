@@ -63,20 +63,22 @@ export default function Connexion({ onEntrer, onEnseignant }) {
   };
 
   return (
-    <div className="wrap connexion" style={{ paddingTop: 56, maxWidth: 460 }}>
-      <div className="marque">
-        <img src="/icone-192.png" alt="" width="56" height="56" />
-        <div>
-          <h1 className="marqueNom">Français</h1>
-          <p className="marqueSous">Gymnasium Oberwil</p>
+    <>
+    <header className="mur connexionMur">
+      <div className="wrap" style={{ maxWidth: 480 }}>
+        <div className="plaque marque">
+          <img src="/icone-192.png" alt="" width="48" height="48" />
+          <span>
+            <h1 className="marqueNom">Français</h1>
+            <p className="marqueSous">Gymnasium Oberwil</p>
+          </span>
         </div>
+        <p className="connexionIntro">Les mots, les verbes et les phrases du cours, un peu chaque jour.</p>
       </div>
-      <p className="connexionIntro">
-        Les mots, les verbes et les phrases du cours, un peu chaque jour.
-      </p>
-      <p className="note" style={{ marginBottom: 22 }}>
-        Entrez le code que votre enseignant vous a donné. Il n'y a ni nom, ni adresse, ni mot de passe :
-        ce code garde vos résultats.
+    </header>
+    <div className="wrap connexion" style={{ maxWidth: 480, paddingBottom: 48 }}>
+      <p className="note" style={{ margin: "18px 0 0" }}>
+        Entrez le code donné par votre enseignant. Ni nom, ni adresse, ni mot de passe : ce code garde vos résultats.
       </p>
 
       <div className="sur" style={{ marginBottom: 8 }}>Votre classe</div>
@@ -93,8 +95,8 @@ export default function Connexion({ onEntrer, onEnseignant }) {
         ))}
       </div>
 
-      <div className="ticket">
-      <div className="ticketTete"><span>Gymnasium Oberwil</span><span>Français · aller simple</span></div>
+      <div className={"ticket" + (verif ? " composte" : "")}>
+      <div className="ticketTete"><span>Gymnasium Oberwil</span><span>Aller simple</span></div>
       <label className="ticketL" htmlFor="code">Votre code</label>
       <input
         id="code"
@@ -104,7 +106,8 @@ export default function Connexion({ onEntrer, onEnseignant }) {
         onChange={(e) => { setV(e.target.value.toUpperCase()); setErreur(null); }}
         onKeyDown={(e) => e.key === "Enter" && entrer()}
         placeholder="OB-3A-07"
-        style={{ letterSpacing: ".1em", marginBottom: 12 }}
+        autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+        style={{ marginBottom: 12 }}
       />
       <button className="btn" disabled={!valide || verif} onClick={entrer}>
         {verif ? "Vérification…" : "Composter et entrer"}
@@ -142,5 +145,6 @@ export default function Connexion({ onEntrer, onEnseignant }) {
         Espace enseignant
       </button>
     </div>
+    </>
   );
 }
