@@ -30,7 +30,7 @@ const ICONES = {
 export default function Nav({ actif, onChoisir }) {
   return (
     <nav className="nav" aria-label="Navigation principale">
-      {[["saison", "Saison"], ["carnet", "Carnet"], ["aide", "Aide"]].map(([cle, nom]) => (
+      {[["saison", "Semestre"], ["carnet", "Carnet"], ["aide", "Aide"]].map(([cle, nom]) => (
         <button key={cle} className={"navBtn" + (actif === cle ? " on" : "")}
           aria-current={actif === cle ? "page" : undefined} onClick={() => onChoisir(cle)}>
           {ICONES[cle]}

@@ -34,10 +34,10 @@ const ECRANS = [
   {
     dessin: "ligne",
     fr: {
-      titre: "Votre saison est une ligne de métro",
+      titre: "Votre semestre est une ligne de métro",
       texte: (
         <>
-          Chaque semestre est une <strong>saison</strong>. Ses stations sont les <strong>unités</strong> du
+          Chaque <strong>semestre</strong> est une ligne. Ses stations sont les <strong>unités</strong> du
           cours, deux semaines chacune : découvrir, s'entraîner, grammaire, tournures, phrases et textes,
           puis le <strong>défi</strong>, qui finit par un petit texte que votre enseignant lit. En
           correspondance, la <strong>ligne de lecture</strong> suit le livre lu en classe, avec un carnet de
@@ -49,7 +49,7 @@ const ECRANS = [
       titre: "Ihr Semester ist eine Metrolinie",
       texte: (
         <>
-          Jedes Semester ist eine <strong>Saison</strong>. Ihre Stationen sind die <strong>Unités</strong> des
+          Jedes <strong>Semester</strong> ist eine Linie. Ihre Stationen sind die <strong>Unités</strong> des
           Unterrichts, je zwei Wochen: entdecken, üben, Grammatik, Wendungen, Sätze und Texte, dann der
           {" "}<strong>Défi</strong>, ein kurzer Test mit einem kleinen Text, den Ihre Lehrperson liest. Als
           Umsteigelinie folgt die <strong>Leselinie</strong> dem Buch, das in der Klasse gelesen wird, mit
@@ -180,7 +180,7 @@ export default function Aide({ premiere = false, onFin, onInstaller, onQuitter, 
         <div><dt><span className="lp lpPlein" /></dt><dd>Une unité validée : défi réussi à 70 % au moins.</dd></div>
         <div><dt><span className="lp lpTiret" /></dt><dd>Une unité facultative, pour reprendre les bases.</dd></div>
         <div><dt><span className="lp lpCarre" /></dt><dd>Une station de lecture : des mots du livre et un carnet à envoyer.</dd></div>
-        <div><dt><span className="rond" style={{ width: 26, height: 26, fontSize: 13 }}>1</span></dt><dd>Le numéro de la saison (le semestre).</dd></div>
+        <div><dt><span className="rond" style={{ width: 26, height: 26, fontSize: 13 }}>1</span></dt><dd>Le numéro du semestre.</dd></div>
       </dl>
 
       <h2 className="planTitre">Questions fréquentes</h2>
@@ -188,7 +188,7 @@ export default function Aide({ premiere = false, onFin, onInstaller, onQuitter, 
         <details>
           <summary>Les accents comptent-ils ?</summary>
           <p>
-            En saison 1, une réponse sans accent est « presque juste ». À partir de la saison 2, un accent
+            Au semestre 1, une réponse sans accent est « presque juste ». À partir du semestre 2, un accent
             oublié est une faute. Une barre sous chaque case permet d'écrire é, è, ê, à, ç… en un clic.
           </p>
         </details>

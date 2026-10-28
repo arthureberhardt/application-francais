@@ -1,24 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="48" viewBox="0 0 96 48">
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">
   <defs>
+    <!-- la face : un blanc à peine chaud, plus clair en haut -->
     <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFFFFF"/>
-      <stop offset=".55" stop-color="#F8F8F5"/>
-      <stop offset="1" stop-color="#EDEEE9"/>
+      <stop offset=".6" stop-color="#FAFAF7"/>
+      <stop offset="1" stop-color="#F2F2EE"/>
     </linearGradient>
-    <linearGradient id="reflet" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".9"/>
-      <stop offset=".45" stop-color="#FFFFFF" stop-opacity="0"/>
+    <!-- le biseau : lumière en haut à gauche, ombre en bas à droite -->
+    <linearGradient id="biseau" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="1"/>
+      <stop offset=".5" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#C9CBC3" stop-opacity="0"/>
+      <stop offset="1" stop-color="#CDCFC7" stop-opacity=".6"/>
     </linearGradient>
+    <!-- le reflet de l'émail -->
+    <radialGradient id="reflet" cx=".3" cy=".18" r=".55">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
     <g id="t">
-      <rect x="1" y="1" width="46" height="22" rx="3.2" fill="url(#face)"/>
-      <rect x="1.6" y="1.6" width="44.8" height="20.8" rx="2.8" fill="none" stroke="url(#reflet)" stroke-width="1.6"/>
-      <path d="M3 22.4 H45 Q46.4 22.4 46.4 21 V4" fill="none" stroke="#D4D6CF" stroke-width="1.1"/>
+      <rect x="1" y="1" width="98" height="48" rx="6" fill="url(#face)"/>
+      <rect x="1.75" y="1.75" width="96.5" height="46.5" rx="5.4" fill="none" stroke="url(#biseau)" stroke-width="2.5"/>
+      <ellipse cx="34" cy="13" rx="34" ry="11" fill="url(#reflet)"/>
     </g>
   </defs>
-  <rect width="96" height="48" fill="#CDD0C8"/>
+  <rect width="200" height="100" fill="#E3E4DF"/>
   <use href="#t" x="0" y="0"/>
-  <use href="#t" x="48" y="0"/>
-  <use href="#t" x="-24" y="24"/>
-  <use href="#t" x="24" y="24"/>
-  <use href="#t" x="72" y="24"/>
+  <use href="#t" x="100" y="0"/>
+  <use href="#t" x="-50" y="50"/>
+  <use href="#t" x="50" y="50"/>
+  <use href="#t" x="150" y="50"/>
 </svg>

@@ -27,7 +27,7 @@ export default function Unite({ unite: u, code, progression, decouverts, onEtape
     <>
       <div className="bar">
         <div className="wrap barIn">
-          <button className="lien" onClick={onRetour}>← Saison {u.semestre}</button>
+          <button className="lien" onClick={onRetour}>← Semestre {u.semestre}</button>
           <span />
         </div>
       </div>
@@ -39,7 +39,7 @@ export default function Unite({ unite: u, code, progression, decouverts, onEtape
             <span>
               <span className="plaqueSur">
                 {u.type === "lecture" ? `Ligne de lecture${u.semaines ? `, semaines ${u.semaines}` : ""}`
-                  : u.facultative ? "Unité facultative" : u.complete ? `Saison ${u.semestre}, unité ${u.numero}${u.semaines ? `, semaines ${u.semaines}` : ""}` : "Thème"}
+                  : u.facultative ? "Unité facultative" : u.complete ? `Semestre ${u.semestre}, unité ${u.numero}${u.semaines ? `, semaines ${u.semaines}` : ""}` : "Thème"}
               </span>
               <h1 className="plaqueNom">{u.titre}</h1>
             </span>

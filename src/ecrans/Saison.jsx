@@ -79,7 +79,7 @@ export default function Saison({
           <div className="plaque plaqueSaison">
             <span className="rond grand" aria-hidden="true">{semestre}</span>
             <span>
-              <span className="plaqueSur">Saison {semestre}</span>
+              <span className="plaqueSur">Semestre {semestre}</span>
               <span className="plaqueNom">{saison?.titre || nomSemestre(semestre)}</span>
             </span>
           </div>
@@ -151,15 +151,15 @@ export default function Saison({
 
         {listeSemestres().length > 1 && (
           <>
-            <h2 className="planTitre">Changer de saison</h2>
-            <div className="saisonChoix" role="group" aria-label="Choisir la saison">
+            <h2 className="planTitre">Changer de semestre</h2>
+            <div className="saisonChoix" role="group" aria-label="Choisir le semestre">
               {listeSemestres().map((s) => {
                 const verrou = Boolean(semestreMax) && s.numero > semestreMax;
                 return (
                   <button key={s.numero} disabled={verrou}
                     className={"rond choix l" + s.numero + (s.numero === semestre ? " on" : "")}
-                    title={verrou ? "Pas encore ouvert par votre enseignant" : `Saison ${s.numero}`}
-                    aria-label={`Saison ${s.numero}${verrou ? " (fermée)" : ""}`}
+                    title={verrou ? "Pas encore ouvert par votre enseignant" : `Semestre ${s.numero}`}
+                    aria-label={`Semestre ${s.numero}${verrou ? " (fermée)" : ""}`}
                     aria-pressed={s.numero === semestre}
                     onClick={() => setSemestre(s.numero)}>
                     {s.numero}

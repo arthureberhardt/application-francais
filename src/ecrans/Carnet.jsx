@@ -14,7 +14,7 @@ export default function Carnet({ semestre, progression, decouverts, onLancer, on
   return (
     <div className="main wrap avecNav">
       <h1 className="pageTitre">Carnet</h1>
-      <p className="note" style={{ margin: "0 0 16px" }}>Saison {semestre} : ce que vous savez déjà, et ce qui reste.</p>
+      <p className="note" style={{ margin: "0 0 16px" }}>Semestre {semestre} : ce que vous savez déjà, et ce qui reste.</p>
 
       <div className="segments" role="tablist">
         {[["progres", "Progrès"], ["mots", "Mots"], ["verbes", "Verbes"]].map(([cle, nom]) => (
