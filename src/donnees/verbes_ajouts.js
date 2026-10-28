@@ -249,5 +249,77 @@ const S4 = [
   }),
 ];
 
-export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4];
+// les verbes en -uire (construire, détruire…) et en -mettre (promettre…)
+const uire = (inf, de) => {
+  const r = inf.slice(0, -2); // construi
+  return irr({
+    inf, de, aux: "avoir", participe: r + "t",
+    present: [r + "s", r + "s", r + "t", r + "sons", r + "sez", r + "sent"],
+    imperatif: [r + "s", r + "sons", r + "sez"],
+    imparfait: ["sais", "sais", "sait", "sions", "siez", "saient"].map((t) => r + t),
+    futur: ["rai", "ras", "ra", "rons", "rez", "ront"].map((t) => r + t),
+    conditionnel: ["rais", "rais", "rait", "rions", "riez", "raient"].map((t) => r + t),
+    subjonctif: ["se", "ses", "se", "sions", "siez", "sent"].map((t) => r + t),
+    participepresent: [r + "sant"],
+  });
+};
+const mettre = (inf, de) => {
+  const r = inf.slice(0, -6); // pro
+  const m = (l) => l.map((f) => r + f);
+  return irr({
+    inf, de, aux: "avoir", participe: r + "mis",
+    present: m(["mets", "mets", "met", "mettons", "mettez", "mettent"]),
+    imperatif: m(["mets", "mettons", "mettez"]),
+    imparfait: m(["mettais", "mettais", "mettait", "mettions", "mettiez", "mettaient"]),
+    futur: m(["mettrai", "mettras", "mettra", "mettrons", "mettrez", "mettront"]),
+    conditionnel: m(["mettrais", "mettrais", "mettrait", "mettrions", "mettriez", "mettraient"]),
+    subjonctif: m(["mette", "mettes", "mette", "mettions", "mettiez", "mettent"]),
+    participepresent: m(["mettant"]),
+  });
+};
+
+// Saison 5 : discours rapporté, médias, ville, justice, société
+const S5 = [
+  er("témoigner", "aussagen, bezeugen"),
+  er("accuser", "beschuldigen, anklagen"),
+  er("acquitter", "freisprechen"),
+  er("enquêter", "ermitteln"),
+  uire("construire", "bauen"),
+  uire("détruire", "zerstören"),
+  er("aménager", "einrichten, gestalten"),
+  er("rénover", "renovieren"),
+  er("loger", "wohnen; unterbringen"),
+  er("louer", "mieten, vermieten; loben"),
+  er("expulser", "ausweisen; zur Räumung zwingen"),
+  er("diffuser", "verbreiten, ausstrahlen"),
+  er("s'informer", "sich informieren"),
+  er("informer", "informieren"),
+  er("censurer", "zensieren"),
+  er("interroger", "befragen, verhören"),
+  er("annoncer", "ankündigen"),
+  er("ajouter", "hinzufügen"),
+  mettre("promettre", "versprechen"),
+  er("vérifier", "überprüfen"),
+  ir("punir", "bestrafen"),
+  er("libérer", "befreien, freilassen"),
+  er("surveiller", "überwachen"),
+  er("contrôler", "kontrollieren"),
+  er("respecter", "respektieren"),
+  ir("démolir", "abreissen"),
+  er("se demander", "sich fragen"),
+  er("s'exclamer", "ausrufen"),
+  er("rejeter", "zurückweisen, ablehnen", { double: true }),
+  irr({
+    inf: "souffrir", de: "leiden", aux: "avoir", participe: "souffert",
+    present: ["souffre", "souffres", "souffre", "souffrons", "souffrez", "souffrent"],
+    imperatif: ["souffre", "souffrons", "souffrez"],
+    imparfait: ["souffrais", "souffrais", "souffrait", "souffrions", "souffriez", "souffraient"],
+    futur: ["souffrirai", "souffriras", "souffrira", "souffrirons", "souffrirez", "souffriront"],
+    conditionnel: ["souffrirais", "souffrirais", "souffrirait", "souffririons", "souffririez", "souffriraient"],
+    subjonctif: ["souffre", "souffres", "souffre", "souffrions", "souffriez", "souffrent"],
+    participepresent: ["souffrant"],
+  }),
+];
+
+export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5];
 export { er, ir };
