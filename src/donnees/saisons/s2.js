@@ -859,7 +859,7 @@ const LECTURE = {
     {
       id: "S2-L1", numero: 1, titre: "Le départ", semaines: "1–2", chapitres: "Les premiers chapitres",
       sous: "Le héros, le cadre, la raison du départ.",
-      notions: ["S6-A067", "N2-150", "N2-151"],
+      notions: ["S6-A067", "N2-150", "S7-A065"],
       mots: ["S2-A094", "S2-A095", "S4-080"],
       grammaire: ["L2-CHRONO"],
       carnet: carnet(

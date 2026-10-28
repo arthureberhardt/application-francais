@@ -865,7 +865,7 @@ const LECTURE = {
     {
       id: "S3-L1", numero: 1, titre: "Entrer dans le livre", semaines: "1–2", chapitres: "Les premiers chapitres",
       sous: "Le sujet, les thèmes, le cadre.",
-      notions: ["N3-100", "N3-101", "N3-102"],
+      notions: ["N3-100", "N3-101", "JOU-016"],
       mots: ["S3-A099"],
       grammaire: ["L3-THEME"],
       carnet: carnet(
@@ -897,7 +897,7 @@ const LECTURE = {
     {
       id: "S3-L4", numero: 4, titre: "Le message du livre", semaines: "7–8", chapitres: "Vers la fin",
       sous: "Ce que l'auteur veut dire ou dénoncer.",
-      notions: ["N3-103", "N3-104", "N3-105"],
+      notions: ["N3-103", "JOU-018", "S6-073"],
       mots: ["S5-078"],
       evaluation: "S3-EV-EXTRAIT",
       carnet: carnet(

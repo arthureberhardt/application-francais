@@ -12,7 +12,6 @@ export const MOTS_AJOUTS_S4 = [
   f("N4-003", "le risque", "das Risiko", "N", "Choix de vie", "Le risque est réel, mais l'occasion est unique."),
   f("N4-004", "avoir le courage de", "den Mut haben zu", "L", "Choix de vie", "Aurais-tu le courage de tout quitter ?"),
   f("N4-005", "tenter sa chance", "sein Glück versuchen", "L", "Choix de vie", "Elle a tenté sa chance à l'audition."),
-  f("N4-006", "peser le pour et le contre", "das Für und Wider abwägen", "L", "Choix de vie", "Avant de décider, il faut peser le pour et le contre."),
   f("N4-007", "faire un compromis", "einen Kompromiss eingehen", "L", "Choix de vie", "Dans un couple, il faut savoir faire des compromis."),
   f("N4-008", "valoir le coup", "sich lohnen (fam.)", "L", "Choix de vie", "Ce voyage vaut vraiment le coup !", { syn: "valoir la peine" }),
   f("N4-009", "gagner au loto", "im Lotto gewinnen", "L", "Choix de vie", "Si je gagnais au loto, j'achèterais une île."),
@@ -29,7 +28,6 @@ export const MOTS_AJOUTS_S4 = [
   f("N4-024", "le temps d'écran", "die Bildschirmzeit", "N", "Numérique", "Mon temps d'écran est de quatre heures par jour."),
   f("N4-025", "se déconnecter", "sich abmelden; offline gehen", "V", "Numérique", "Le week-end, j'essaie de me déconnecter."),
   f("N4-026", "le smartphone", "das Smartphone", "N", "Numérique", "Presque tous les élèves ont un smartphone.", { syn: "le portable" }),
-  f("N4-027", "l'algorithme (m.)", "der Algorithmus", "N", "Numérique", "L'algorithme choisit les vidéos que tu vois."),
   /* U3 · Consommer, dépenser */
   f("N4-030", "l'argent de poche (m.)", "das Taschengeld", "N", "Argent", "Je reçois 50 francs d'argent de poche par mois."),
   f("N4-031", "la seconde main", "Secondhand", "N", "Argent", "J'achète presque tous mes vêtements de seconde main."),
@@ -73,10 +71,7 @@ export const MOTS_AJOUTS_S4 = [
   f("N4-093", "la voiture autonome", "das selbstfahrende Auto", "N", "Futur", "Les voitures autonomes rouleront sans conducteur."),
   f("N4-094", "la technologie", "die Technologie", "N", "Futur", "La technologie change notre quotidien."),
   f("N4-095", "futuriste", "futuristisch", "A", "Futur", "Le nouveau stade a un design futuriste."),
-  f("N4-096", "révolutionnaire", "revolutionär", "A", "Futur", "C'est une idée révolutionnaire !"),
   f("N4-097", "au cas où", "falls", "C", "Futur", "Prends un parapluie, au cas où il pleuvrait.", { piege: "au cas où + conditionnel." }),
-  f("N4-098", "améliorer", "verbessern", "V", "Futur", "Cette invention améliorera la vie des personnes âgées."),
-  f("N4-099", "remplacer", "ersetzen", "V", "Futur", "Les robots ne remplaceront jamais les profs."),
   f("N4-100", "coloniser Mars", "den Mars besiedeln", "L", "Futur", "Coloniser Mars, est-ce une bonne idée ?"),
   f("N4-101", "le passé simple", "das Passé simple", "N", "Futur", "Le passé simple est le temps des contes et des romans."),
   f("N4-102", "l'imprimante 3D (f.)", "der 3D-Drucker", "N", "Futur", "On peut imprimer une maison avec une imprimante 3D."),
@@ -97,14 +92,14 @@ export const MOTS_AJOUTS_S4 = [
 
 export const MOTS_S4 = {
   "S4-U1": [
-    "N4-001", "N4-002", "N4-003", "N4-004", "N4-005", "N4-006", "N4-007", "N4-008", "N4-009", "N4-010",
+    "N4-001", "N4-002", "N4-003", "N4-004", "N4-005", "S8-142", "N4-007", "N4-008", "N4-009", "N4-010",
     "N4-011", "N4-012", "N4-013", "N4-014", "S8-063", "S5-051", "S5-079", "S5-080", "S6-052", "PR-019", "PR-021",
   ],
   "S4-U2": [
     "S4-001", "S4-002", "S4-003", "S4-004", "S4-005", "S4-006", "S4-007", "S4-008", "S4-009", "S4-044",
     "S4-055", "S4-057", "S4-058", "S4-059", "S4-091", "S4-092", "S4-A014", "S4-A015", "S4-A016", "S4-A018",
     "S4-A019", "S4-A020", "S4-A024", "S4-B1001", "S4-B1003", "S4-B1006", "S4-B1026",
-    "N4-020", "N4-021", "N4-022", "N4-023", "N4-024", "N4-025", "N4-026", "N4-027", "S8-059", "S5-A069",
+    "N4-020", "N4-021", "N4-022", "N4-023", "N4-024", "N4-025", "N4-026", "S8-058", "S8-059", "S5-A069",
   ],
   "S4-U3": [
     "S3-028", "S3-029", "S3-030", "S3-031", "S3-033", "S3-035", "S3-037", "S3-075", "S3-076", "S3-077", "S3-078",
@@ -114,7 +109,7 @@ export const MOTS_S4 = {
     "N4-030", "N4-031", "N4-032", "N4-033", "N4-034", "N4-035",
   ],
   "S4-U4": [
-    "S4-032", "S4-033", "S4-046", "S4-047", "S4-048", "S4-075", "S4-076", "S4-085", "S4-104", "S4-105", "S4-150",
+    "S4-032", "S4-033", "S4-046", "S4-047", "S4-048", "S4-075", "S4-104", "S4-105", "S4-150",
     "S4-A047", "S4-A048", "S4-A049", "S4-A050", "S4-A051", "S4-A052", "S4-A054", "S4-A055", "S4-A064",
     "S4-077", "S4-078", "S4-079", "S4-024", "S4-026", "S4-027", "S4-031", "S4-042", "S4-A065", "S4-A066",
     "S4-A079", "S4-A082", "S4-B1009", "S4-B1010",
@@ -133,7 +128,7 @@ export const MOTS_S4 = {
     "S1-A020", "S1-A021",
   ],
   "S4-U7": [
-    "N4-090", "N4-091", "N4-092", "N4-093", "N4-094", "N4-095", "N4-096", "N4-097", "N4-098", "N4-099", "N4-100", "N4-101",
+    "N4-090", "N4-091", "N4-092", "N4-093", "N4-094", "N4-095", "S7-083", "N4-097", "URB-026", "S8-019", "N4-100", "N4-101",
     "N4-102", "N4-103", "N4-104", "N4-105", "N4-106", "N4-107", "N4-108", "S3-032", "S3-A069",
   ],
 };

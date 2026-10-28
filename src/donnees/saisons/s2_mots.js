@@ -54,7 +54,6 @@ export const MOTS_AJOUTS_S2 = [
   f("N2-045", "la famille d'accueil", "die Gastfamilie", "N", "Voyages", "Ma famille d'accueil habitait près de Québec."),
   f("N2-046", "le correspondant, la correspondante", "der Austauschpartner, die Austauschpartnerin", "N", "Voyages", "Ma correspondante est venue à Bâle en mai."),
   f("N2-047", "à l'étranger", "im Ausland", "L", "Voyages", "J'ai passé un semestre à l'étranger."),
-  f("N2-048", "la frontière", "die Grenze", "N", "Voyages", "Bâle est tout près de la frontière française."),
   f("N2-049", "faire sa valise", "den Koffer packen", "L", "Voyages", "J'ai fait ma valise la veille du départ."),
   f("N2-050", "dépaysé, dépaysée", "fremd, in ungewohnter Umgebung", "A", "Voyages", "Les premiers jours, je me sentais complètement dépaysée."),
   /* U4 · Faits divers */
@@ -63,7 +62,6 @@ export const MOTS_AJOUTS_S2 = [
   f("N2-062", "les pompiers (m.)", "die Feuerwehr", "N", "Faits divers", "Les pompiers sont arrivés en dix minutes."),
   f("N2-063", "l'ambulance (f.)", "der Krankenwagen", "N", "Faits divers", "L'ambulance a emmené le cycliste à l'hôpital."),
   f("N2-064", "blessé, blessée", "verletzt", "A", "Faits divers", "Le conducteur est légèrement blessé."),
-  f("N2-066", "le cambriolage", "der Einbruch", "N", "Faits divers", "Il y a eu trois cambriolages dans notre rue."),
   f("N2-067", "le cambrioleur, la cambrioleuse", "der Einbrecher, die Einbrecherin", "N", "Faits divers", "Le cambrioleur est entré par la fenêtre."),
   f("N2-068", "le commissariat", "der Polizeiposten", "N", "Faits divers", "Elle est allée au commissariat pour porter plainte."),
   f("N2-069", "l'incendie (m.)", "der Brand", "N", "Faits divers", "Un incendie a détruit une grange."),
@@ -93,7 +91,6 @@ export const MOTS_AJOUTS_S2 = [
   f("N2-113", "le carnaval", "die Fasnacht", "N", "Fêtes", "Le carnaval de Bâle commence à quatre heures du matin."),
   f("N2-114", "le défilé", "der Umzug", "N", "Fêtes", "Nous avons regardé le défilé depuis le pont."),
   f("N2-115", "le déguisement", "die Verkleidung", "N", "Fêtes", "Ton déguisement de pirate est génial !"),
-  f("N2-117", "la coutume", "der Brauch", "N", "Fêtes", "C'est une vieille coutume de la région."),
   f("N2-118", "le jour férié", "der Feiertag", "N", "Fêtes", "Lundi est un jour férié : pas de cours !"),
   f("N2-119", "le réveillon", "das Fest am Weihnachts- / Silvesterabend", "N", "Fêtes", "Pour le réveillon, on mange une fondue."),
   f("N2-120", "Joyeux anniversaire !", "Alles Gute zum Geburtstag!", "L", "Fêtes", "Joyeux anniversaire, Léa !"),
@@ -127,7 +124,6 @@ export const MOTS_AJOUTS_S2 = [
   /* ligne de lecture : notions */
   f("N2-150", "le héros, l'héroïne", "der Held, die Heldin", "N", "Lire", "L'héroïne du roman a quinze ans.",
     { piege: "On dit « le héros » (pas de liaison), mais « l'héroïne »." }),
-  f("N2-151", "le personnage secondaire", "die Nebenfigur", "N", "Lire", "Le grand-père est un personnage secondaire, mais important."),
   f("N2-152", "la description", "die Beschreibung", "N", "Lire", "Le chapitre commence par une longue description de la ville."),
   f("N2-154", "la chronologie", "die Chronologie, die Zeitfolge", "N", "Lire", "Le récit ne respecte pas la chronologie."),
   f("N2-155", "le récit à la première personne", "die Ich-Erzählung", "N", "Lire", "C'est un récit à la première personne : l'héroïne dit « je »."),
@@ -155,10 +151,10 @@ export const MOTS_S2 = {
     "S2-087", "S2-088", "S2-089", "S2-091", "S2-092", "S2-116", "S2-118", "S2-135", "S2-136", "S2-146", "S2-147",
     "S2-A073", "S2-A074", "S2-A076", "S2-A078", "S2-A079", "S2-A080", "S2-A081", "S2-A082", "S2-A085", "S2-A087", "S2-A088",
     "S2-B114", "S2-B115", "S2-B120", "S2-B127", "S2-B128", "S3-A009", "S4-074",
-    "N2-040", "N2-041", "N2-042", "N2-043", "N2-044", "N2-045", "N2-046", "N2-047", "N2-048", "N2-049", "N2-050",
+    "N2-040", "N2-041", "N2-042", "N2-043", "N2-044", "N2-045", "N2-046", "N2-047", "S4-076", "N2-049", "N2-050",
   ],
   "S2-U4": [
-    "N2-060", "N2-061", "N2-062", "N2-063", "N2-064", "N2-066", "N2-067", "N2-068", "N2-069", "N2-071", "N2-072",
+    "N2-060", "N2-061", "N2-062", "N2-063", "N2-064", "S6-A004", "N2-067", "N2-068", "N2-069", "N2-071", "N2-072",
     "N2-075", "N2-076", "N2-077", "N2-078", "N2-079", "N2-080",
     "RP-020", "RP-023", "RP-024", "RP-021", "RP-022", "S6-048", "S6-139", "S4-142", "S2-096",
   ],
@@ -170,7 +166,7 @@ export const MOTS_S2 = {
   ],
   "S2-U6": [
     "N2-100", "N2-101", "N2-102", "N2-103", "N2-104", "N2-105", "N2-106", "N2-107", "N2-108", "N2-109", "N2-110",
-    "N2-111", "N2-112", "N2-113", "N2-114", "N2-115", "N2-117", "N2-118", "N2-119", "N2-120", "N2-121", "N2-122",
+    "N2-111", "N2-112", "N2-113", "N2-114", "N2-115", "S4-085", "N2-118", "N2-119", "N2-120", "N2-121", "N2-122",
     "N2-124", "N2-126", "N2-127", "N2-128",
     "S4-084", "S4-115", "S3-043", "S2-042", "S2-043", "S2-054", "S2-137", "S2-A090", "S2-B102",
   ],

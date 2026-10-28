@@ -52,21 +52,11 @@ export const MOTS_S1_SUITE = [
   f("N1-818", "menteur, menteuse", "verlogen; Lügner", "A", "Roman policier", "Ne la crois pas, elle est menteuse.",
     { famille: "mentir · le mensonge" }),
   // notions de lecture
-  f("N1-820", "le titre", "der Titel", "N", "Lire et résumer", "Le titre du roman est mystérieux."),
-  f("N1-821", "le narrateur, la narratrice", "der Erzähler, die Erzählerin", "N", "Lire et résumer",
-    "Le narrateur raconte l'histoire, mais il ne participe pas à l'enquête.",
-    { piege: "Le narrateur n'est pas l'auteur : c'est la voix qui raconte." }),
   f("N1-822", "le cadre", "der Rahmen, das Setting", "N", "Lire et résumer", "Le cadre du roman, c'est Paris en hiver.",
     { piege: "Le cadre = le lieu + l'époque de l'histoire." }),
   f("N1-823", "le lieu", "der Ort", "N", "Lire et résumer", "Le lieu du crime est un petit hôtel."),
-  f("N1-824", "l'époque", "die Zeit, die Epoche", "N", "Lire et résumer", "L'histoire se passe à l'époque de nos grands-parents."),
-  f("N1-825", "l'intrigue", "die Handlung", "N", "Lire et résumer", "L'intrigue est simple, mais pleine de suspense."),
-  f("N1-826", "le dénouement", "die Auflösung", "N", "Lire et résumer", "Au dénouement, on découvre le coupable."),
-  f("N1-827", "le portrait", "das Porträt", "N", "Lire et résumer", "Le premier chapitre fait le portrait du commissaire."),
   f("N1-828", "la police", "die Polizei", "N", "Roman policier", "La police arrive sur les lieux du crime."),
   f("N1-829", "le policier, la policière", "der Polizist, die Polizistin", "N", "Roman policier", "Un policier garde la porte."),
-  f("N1-830", "interroger", "befragen, verhören", "V", "Roman policier", "Maigret interroge la concierge.",
-    { famille: "l'interrogatoire" }),
   f("N1-832", "le mensonge", "die Lüge", "N", "Roman policier", "Maigret découvre le mensonge du mari."),
   f("N1-833", "la vérité", "die Wahrheit", "N", "Roman policier", "Dites-moi la vérité !"),
   // unité 7 · Au gymnase
@@ -635,7 +625,7 @@ export const LECTURE_S1 = {
     {
       id: "S1-L1", numero: 1, titre: "Le début du roman", semaines: "1–2", chapitres: "Les deux premiers chapitres",
       sous: "Le titre, l'auteur, le cadre, le personnage principal.",
-      notions: ["S4-068", "S4-069", "N1-820", "S4-066", "N1-704", "N1-705", "N1-822", "N1-823", "N1-824"],
+      notions: ["S4-068", "S4-069", "S4-A001", "S4-066", "N1-704", "N1-705", "N1-822", "N1-823", "S7-046"],
       mots: ["S4-067", "N1-707", "S4-143", "RP-006", "RP-008", "RP-010", "RP-011", "N1-828"],
       grammaire: ["L1-CADRE"],
       carnet: carnet(
@@ -646,8 +636,8 @@ export const LECTURE_S1 = {
     {
       id: "S1-L2", numero: 2, titre: "L'enquête commence", semaines: "3–4", chapitres: "Chapitres 3 et 4",
       sous: "Les témoins, l'interrogatoire, le narrateur.",
-      notions: ["N1-821", "N1-827"],
-      mots: ["S6-049", "N1-830", "RP-026", "RP-036", "RP-032", "RP-004", "RP-007", "N1-829", "N1-833"],
+      notions: ["S6-070", "S4-A030"],
+      mots: ["S6-049", "QI-023", "RP-026", "RP-036", "RP-032", "RP-004", "RP-007", "N1-829", "N1-833"],
       carnet: carnet(
         "Racontez un interrogatoire du chapitre (5 à 7 phrases) : qui Maigret interroge, ce que la personne dit, et ce que Maigret pense.",
         ["Je présente le témoin (nom, âge, métier).", "Je rapporte deux réponses importantes.", "J'utilise des verbes au présent.", "Je donne mon avis avec « je pense que »."],
@@ -667,7 +657,7 @@ export const LECTURE_S1 = {
     {
       id: "S1-L4", numero: 4, titre: "Indices et fausses pistes", semaines: "7–8", chapitres: "Chapitres 7 et 8",
       sous: "Les indices, le suspense, l'intrigue.",
-      notions: ["N1-825"],
+      notions: ["S6-071"],
       mots: ["RP-013", "RP-014", "RP-018", "RP-027", "RP-028", "RP-029", "RP-030", "RP-035", "RP-039", "N1-714"],
       carnet: carnet(
         "Quel est l'indice le plus important jusqu'ici ? Expliquez pourquoi, puis faites une hypothèse : qui est le coupable ? (6 à 8 phrases)",
@@ -677,7 +667,7 @@ export const LECTURE_S1 = {
     {
       id: "S1-L5", numero: 5, titre: "Le dénouement", semaines: "9–10", chapitres: "La fin du roman",
       sous: "Le dénouement, le résumé, votre avis.",
-      notions: ["N1-826"],
+      notions: ["S6-A088"],
       mots: ["RP-002", "RP-033", "RP-017", "RP-037", "RP-038", "N1-710", "N1-711", "S4-015", "S6-038", "N1-713", "S3-133", "S1-127", "S1-128"],
       grammaire: ["G7-RESUME"],
       evaluation: "S1-EV-RESUME",

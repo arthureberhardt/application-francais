@@ -63,10 +63,7 @@ export const MOTS_AJOUTS_S3 = [
   /* ligne de lecture */
   f("N3-100", "le thème", "das Thema", "N", "Lire", "Le thème principal du roman est l'écologie."),
   f("N3-101", "le sujet de société", "das gesellschaftliche Thema", "N", "Lire", "Ce roman aborde un sujet de société : la pauvreté."),
-  f("N3-102", "aborder (un sujet)", "(ein Thema) ansprechen", "V", "Lire", "L'auteur aborde la question du climat."),
   f("N3-103", "le message (d'une œuvre)", "die Botschaft", "N", "Lire", "Quel est le message du roman ?"),
-  f("N3-104", "dénoncer", "anprangern", "V", "Lire", "L'autrice dénonce l'indifférence des adultes."),
-  f("N3-105", "le passage", "die Textstelle", "N", "Lire", "Relisez le passage de la page 52."),
 ];
 
 export const MOTS_S3 = {
