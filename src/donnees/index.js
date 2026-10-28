@@ -44,6 +44,8 @@ function appliquerSaisons(filiere) {
   const verbesSaison = (s) => [...new Set(s.unites.filter((u) => !u.facultative).flatMap((u) => u.verbes || []))];
   const pris = new Set(Object.values(SAISONS).flatMap(idsSaison));
   const verbesPris = new Set(Object.values(SAISONS).flatMap(verbesSaison));
+  // un temps placé par une saison n'est introduit qu'une fois
+  const tempsPris = new Set(Object.values(SAISONS).flatMap((s) => s.temps || []));
   for (const sem of filiere.semestres) {
     const saison = SAISONS[sem.numero];
     if (saison) {
@@ -59,6 +61,7 @@ function appliquerSaisons(filiere) {
       sem.mots = sem.mots.filter((id) => !pris.has(id));
       sem.appro = sem.appro.filter((id) => !pris.has(id));
       sem.verbes = sem.verbes.filter((v) => !verbesPris.has(v));
+      sem.tempsCles = sem.tempsCles.filter((t) => !tempsPris.has(t));
     }
   }
   return filiere;

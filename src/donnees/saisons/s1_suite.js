@@ -67,8 +67,6 @@ export const MOTS_S1_SUITE = [
   f("N1-829", "le policier, la policière", "der Polizist, die Polizistin", "N", "Roman policier", "Un policier garde la porte."),
   f("N1-830", "interroger", "befragen, verhören", "V", "Roman policier", "Maigret interroge la concierge.",
     { famille: "l'interrogatoire" }),
-  f("N1-831", "mentir", "lügen", "V", "Roman policier", "Le témoin ment : il était là.",
-    { piege: "je mens, il ment, nous mentons." }),
   f("N1-832", "le mensonge", "die Lüge", "N", "Roman policier", "Maigret découvre le mensonge du mari."),
   f("N1-833", "la vérité", "die Wahrheit", "N", "Roman policier", "Dites-moi la vérité !"),
   // unité 7 · Au gymnase
@@ -659,7 +657,7 @@ export const LECTURE_S1 = {
       id: "S1-L3", numero: 3, titre: "Les suspects", semaines: "5–6", chapitres: "Chapitres 5 et 6",
       sous: "Le portrait des suspects, le mobile, l'alibi.",
       notions: [],
-      mots: ["RP-001", "RP-003", "RP-016", "RP-015", "RP-031", "N1-831", "N1-832", "RP-034", "RP-019", "N1-816", "N1-817", "N1-818"],
+      mots: ["RP-001", "RP-003", "RP-016", "RP-015", "RP-031", "S2-050", "N1-832", "RP-034", "RP-019", "N1-816", "N1-817", "N1-818"],
       grammaire: ["L3-PORTRAIT"],
       carnet: carnet(
         "Faites le portrait d'un suspect (6 à 8 phrases) : son physique, son caractère, son alibi, son mobile possible. À votre avis, est-il coupable ?",

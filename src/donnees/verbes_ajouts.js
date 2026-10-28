@@ -1,7 +1,10 @@
 // Verbes ajoutés lors de la refonte 2026. Même format que verbes.js.
-export const VERBES_AJOUTS = [
+// Les réguliers passent par le conjugueur ; les irréguliers sont écrits à la main.
+import { er, ir, irr } from "./conjugueur.js";
+
+const IRREGULIERS = [
   {
-    inf: "voir", de: "sehen", aux: "avoir", participe: "vu", pronominal: false, impersonnel: false,
+    inf: "voir", de: "sehen", aux: "avoir", participe: "vu",
     present: ["vois", "vois", "voit", "voyons", "voyez", "voient"],
     imperatif: ["vois", "voyons", "voyez"],
     imparfait: ["voyais", "voyais", "voyait", "voyions", "voyiez", "voyaient"],
@@ -10,4 +13,122 @@ export const VERBES_AJOUTS = [
     subjonctif: ["voie", "voies", "voie", "voyions", "voyiez", "voient"],
     participepresent: ["voyant"],
   },
+  {
+    inf: "naître", de: "geboren werden", aux: "être", participe: "né",
+    present: ["nais", "nais", "naît", "naissons", "naissez", "naissent"],
+    imperatif: ["nais", "naissons", "naissez"],
+    imparfait: ["naissais", "naissais", "naissait", "naissions", "naissiez", "naissaient"],
+    futur: ["naîtrai", "naîtras", "naîtra", "naîtrons", "naîtrez", "naîtront"],
+    conditionnel: ["naîtrais", "naîtrais", "naîtrait", "naîtrions", "naîtriez", "naîtraient"],
+    subjonctif: ["naisse", "naisses", "naisse", "naissions", "naissiez", "naissent"],
+    participepresent: ["naissant"],
+  },
+  {
+    inf: "mourir", de: "sterben", aux: "être", participe: "mort",
+    present: ["meurs", "meurs", "meurt", "mourons", "mourez", "meurent"],
+    imperatif: ["meurs", "mourons", "mourez"],
+    imparfait: ["mourais", "mourais", "mourait", "mourions", "mouriez", "mouraient"],
+    futur: ["mourrai", "mourras", "mourra", "mourrons", "mourrez", "mourront"],
+    conditionnel: ["mourrais", "mourrais", "mourrait", "mourrions", "mourriez", "mourraient"],
+    subjonctif: ["meure", "meures", "meure", "mourions", "mouriez", "meurent"],
+    participepresent: ["mourant"],
+  },
+  {
+    inf: "revenir", de: "zurückkommen", aux: "être", participe: "revenu",
+    present: ["reviens", "reviens", "revient", "revenons", "revenez", "reviennent"],
+    imperatif: ["reviens", "revenons", "revenez"],
+    imparfait: ["revenais", "revenais", "revenait", "revenions", "reveniez", "revenaient"],
+    futur: ["reviendrai", "reviendras", "reviendra", "reviendrons", "reviendrez", "reviendront"],
+    conditionnel: ["reviendrais", "reviendrais", "reviendrait", "reviendrions", "reviendriez", "reviendraient"],
+    subjonctif: ["revienne", "reviennes", "revienne", "revenions", "reveniez", "reviennent"],
+    participepresent: ["revenant"],
+  },
+  {
+    inf: "offrir", de: "schenken, anbieten", aux: "avoir", participe: "offert",
+    present: ["offre", "offres", "offre", "offrons", "offrez", "offrent"],
+    imperatif: ["offre", "offrons", "offrez"],
+    imparfait: ["offrais", "offrais", "offrait", "offrions", "offriez", "offraient"],
+    futur: ["offrirai", "offriras", "offrira", "offrirons", "offrirez", "offriront"],
+    conditionnel: ["offrirais", "offrirais", "offrirait", "offririons", "offririez", "offriraient"],
+    subjonctif: ["offre", "offres", "offre", "offrions", "offriez", "offrent"],
+    participepresent: ["offrant"],
+  },
+  {
+    inf: "recevoir", de: "erhalten, empfangen", aux: "avoir", participe: "reçu",
+    present: ["reçois", "reçois", "reçoit", "recevons", "recevez", "reçoivent"],
+    imperatif: ["reçois", "recevons", "recevez"],
+    imparfait: ["recevais", "recevais", "recevait", "recevions", "receviez", "recevaient"],
+    futur: ["recevrai", "recevras", "recevra", "recevrons", "recevrez", "recevront"],
+    conditionnel: ["recevrais", "recevrais", "recevrait", "recevrions", "recevriez", "recevraient"],
+    subjonctif: ["reçoive", "reçoives", "reçoive", "recevions", "receviez", "reçoivent"],
+    participepresent: ["recevant"],
+  },
+  {
+    inf: "plaire", de: "gefallen", aux: "avoir", participe: "plu",
+    present: ["plais", "plais", "plaît", "plaisons", "plaisez", "plaisent"],
+    imperatif: ["plais", "plaisons", "plaisez"],
+    imparfait: ["plaisais", "plaisais", "plaisait", "plaisions", "plaisiez", "plaisaient"],
+    futur: ["plairai", "plairas", "plaira", "plairons", "plairez", "plairont"],
+    conditionnel: ["plairais", "plairais", "plairait", "plairions", "plairiez", "plairaient"],
+    subjonctif: ["plaise", "plaises", "plaise", "plaisions", "plaisiez", "plaisent"],
+    participepresent: ["plaisant"],
+  },
+  {
+    inf: "battre", de: "schlagen; besiegen", aux: "avoir", participe: "battu",
+    present: ["bats", "bats", "bat", "battons", "battez", "battent"],
+    imperatif: ["bats", "battons", "battez"],
+    imparfait: ["battais", "battais", "battait", "battions", "battiez", "battaient"],
+    futur: ["battrai", "battras", "battra", "battrons", "battrez", "battront"],
+    conditionnel: ["battrais", "battrais", "battrait", "battrions", "battriez", "battraient"],
+    subjonctif: ["batte", "battes", "batte", "battions", "battiez", "battent"],
+    participepresent: ["battant"],
+  },
+  {
+    inf: "s'enfuir", de: "fliehen", aux: "être", participe: "enfui",
+    present: ["enfuis", "enfuis", "enfuit", "enfuyons", "enfuyez", "enfuient"],
+    imperatif: ["enfuis", "enfuyons", "enfuyez"],
+    imparfait: ["enfuyais", "enfuyais", "enfuyait", "enfuyions", "enfuyiez", "enfuyaient"],
+    futur: ["enfuirai", "enfuiras", "enfuira", "enfuirons", "enfuirez", "enfuiront"],
+    conditionnel: ["enfuirais", "enfuirais", "enfuirait", "enfuirions", "enfuiriez", "enfuiraient"],
+    subjonctif: ["enfuie", "enfuies", "enfuie", "enfuyions", "enfuyiez", "enfuient"],
+    participepresent: ["enfuyant"],
+  },
+].map(irr);
+
+// Saison 2 : récit au passé, voyages, faits divers, sport, fêtes
+const S2 = [
+  er("rentrer", "nach Hause gehen, zurückkehren", { aux: "être" }),
+  er("tomber", "fallen", { aux: "être" }),
+  er("retourner", "zurückgehen", { aux: "être" }),
+  er("passer", "vorbeigehen; verbringen"),
+  er("voler", "stehlen; fliegen"),
+  er("attraper", "fangen"),
+  er("sauter", "springen"),
+  er("lancer", "werfen"),
+  er("dépasser", "überholen, übertreffen"),
+  er("glisser", "ausrutschen, gleiten"),
+  er("renverser", "umwerfen, anfahren"),
+  er("crier", "schreien"),
+  er("se casser", "(sich) brechen"),
+  er("cambrioler", "einbrechen"),
+  er("arrêter", "anhalten; verhaften"),
+  er("appeler", "rufen, anrufen", { double: true }),
+  er("fêter", "feiern"),
+  er("célébrer", "feiern (feierlich)"),
+  er("inviter", "einladen"),
+  er("envoyer", "schicken", { futur: "enverr" }),
+  er("se déguiser", "sich verkleiden"),
+  er("décorer", "schmücken"),
+  er("enlever", "ausziehen, entfernen"),
+  er("emporter", "mitnehmen"),
+  er("se maquiller", "sich schminken"),
+  er("se marier", "heiraten"),
 ];
+// « envoyer » : futur enverrai — le conjugueur ajoute les terminaisons au radical
+for (const v of S2) if (v.inf === "envoyer") {
+  v.futur = ["enverrai", "enverras", "enverra", "enverrons", "enverrez", "enverront"];
+  v.conditionnel = ["enverrais", "enverrais", "enverrait", "enverrions", "enverriez", "enverraient"];
+}
+
+export const VERBES_AJOUTS = [...IRREGULIERS, ...S2];
+export { er, ir };
