@@ -607,3 +607,18 @@ export const DEFIS_S1 = {
     modele: "(Exemple inventé) L'histoire se passe à Paris, en hiver, dans les années cinquante. Le personnage principal est le commissaire Maigret, un homme calme et patient. D'abord, la police trouve un homme mort dans un petit hôtel. Ensuite, Maigret va sur les lieux du crime et il interroge les témoins. La concierge dit qu'elle ne voit personne, mais Maigret ne la croit pas, parce qu'elle a l'air nerveuse. Finalement, le commissaire trouve un indice important dans la chambre.",
   },
 };
+
+/* ─────────── La saison, au format commun (voir saisons/index.js) ─────────── */
+export default {
+  numero: 1,
+  titre: "Se présenter, décrire, s'orienter",
+  unites: UNITES_S1,
+  grammaire: GRAMMAIRE_S1,
+  tournures: TOURNURES_S1,
+  phrases: PHRASES_S1,
+  textes: [],
+  defis: DEFIS_S1,
+  evaluations: {},
+  lecture: null,
+  surcharges: SURCHARGES_S1,
+};

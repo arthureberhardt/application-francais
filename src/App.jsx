@@ -11,6 +11,7 @@ import Unite from "./ecrans/Unite.jsx";
 import Decouvrir from "./ecrans/Decouvrir.jsx";
 import Regle from "./ecrans/Regle.jsx";
 import Production from "./ecrans/Production.jsx";
+import Evaluation from "./ecrans/Evaluation.jsx";
 import Installer from "./ecrans/Installer.jsx";
 import Carnet from "./ecrans/Carnet.jsx";
 import Nav from "./ecrans/Nav.jsx";
@@ -21,7 +22,7 @@ import {
 import { choisirFiliere, filiereActive, itemsCumules } from "./lib/items.js";
 import {
   uniteParId, uniteCourante, itemsEtape, elementsRencontres, lireDecouverts, marquerDecouverts,
-  definirFichesCours,
+  definirFichesCours, stationLectureCourante, evalEnvoyee,
 } from "./lib/saison.js";
 import { composer, composerJour, composerDefi } from "./lib/seance.js";
 
@@ -99,8 +100,11 @@ export default function App() {
     const courante = uniteCourante(semestre, progression, decouverts);
     // les nouveautés suivent l'ordre de l'unité : d'abord les mots déjà
     // découverts, puis le reste du parcours
+    // la station de lecture en cours apporte aussi ses mots : on lit en parallèle
+    const lecture = stationLectureCourante(semestre, progression);
     const nouveautes = courante ? [
       ...courante.lexique.filter((i) => decouverts.has(i.cle)),
+      ...(lecture ? lecture.lexique.filter((i) => decouverts.has(i.cle)) : []),
       ...courante.lexique,
       ...courante.verbes, ...courante.grammaire, ...courante.tournures, ...courante.phrases,
     ] : [];
@@ -111,8 +115,20 @@ export default function App() {
     setSeance({ mode: "jour", filtre: { bassin, titre: "séance du jour" }, retour: { type: "saison" } });
   };
 
+  /* Marquer qu'un texte a été envoyé (carnet de lecture, entraînement à une
+     évaluation) : une ligne de progression, pour que l'élève et l'enseignant
+     le voient sur tous les appareils. */
+  const marquerEnvoi = (cle) => {
+    const etat = { boite: 1, ok: 1, essais: 1, echecs: 0, du: 0, maj: Date.now() };
+    const suivante = { ...progression, [cle]: etat };
+    setProgression(suivante);
+    enregistrerItem(code, cle, etat, suivante);
+  };
+
   const lancerEtape = (u, etape, items) => {
     if (etape === "decouvrir") { setVue({ type: "decouvrir", uniteId: u.id }); return; }
+    if (etape === "carnet") { setVue({ type: "carnetLecture", uniteId: u.id }); return; }
+    if (etape === "evaluation") { setVue({ type: "evaluation", uniteId: u.id }); return; }
     if (etape === "grammaire" && !items) { setVue({ type: "regle", uniteId: u.id }); return; }
     if (etape === "defi") {
       setSeance({ mode: "defi", filtre: { bassin: composerDefi(u), titre: `défi · ${u.titre}`, unite: u.id },
@@ -191,6 +207,26 @@ export default function App() {
     ecran = (
       <Regle unite={unite} onFin={() => setVue({ type: "unite", uniteId: unite.id })}
         onExercices={() => lancerEtape(unite, "grammaire", unite.grammaire)} />
+    );
+  } else if (vue.type === "carnetLecture" && unite) {
+    ecran = (
+      <Production unite={unite} code={code} tache={unite.carnet} cible={unite.id} titre="Carnet de lecture"
+        minimum={25} onEnvoye={() => marquerEnvoi(`carnet:${unite.id}`)}
+        onFin={() => setVue({ type: "unite", uniteId: unite.id })} />
+    );
+  } else if (vue.type === "evaluation" && unite?.evaluation) {
+    ecran = (
+      <Evaluation unite={unite} evaluation={unite.evaluation}
+        fait={evalEnvoyee(progression, unite.evaluation.id)}
+        onEntrainer={() => setVue({ type: "entrainementEval", uniteId: unite.id })}
+        onFin={() => setVue({ type: "unite", uniteId: unite.id })} />
+    );
+  } else if (vue.type === "entrainementEval" && unite?.evaluation) {
+    ecran = (
+      <Production unite={unite} code={code} tache={unite.evaluation.entrainement}
+        cible={`eval:${unite.evaluation.id}`} titre={unite.evaluation.titre}
+        onEnvoye={() => marquerEnvoi(`eval:${unite.evaluation.id}`)}
+        onFin={() => setVue({ type: "evaluation", uniteId: unite.id })} />
     );
   } else if (vue.type === "production" && unite) {
     ecran = <Production unite={unite} code={code} onFin={() => setVue({ type: "unite", uniteId: unite.id })} />;

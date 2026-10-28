@@ -5,7 +5,9 @@ import {
   definirSemestreMax, listerProgressionClasse, enLigne,
   listerSuggestions, validerSuggestion, rejeterSuggestion,
   listerProductions, commenterProduction, chargerFichesCours, ajouterFicheCours, retirerFicheCours,
+  listerCibles, fixerCible,
 } from "../lib/store.js";
+import { stationsDe, stationValidee, tousItems } from "../lib/saison.js";
 import { UNITES_S1 } from "../donnees/saisons/s1.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
 import { itemsCumules, choisirFiliere } from "../lib/items.js";
@@ -448,6 +450,7 @@ function Classe({ nom, eleves, onChange }) {
           {erreurLignes && (
             <p className="note" style={{ color: "var(--rouge)", marginBottom: 12 }}>{erreurLignes}</p>
           )}
+          <Stations nom={nom} eleves={actifs} lignesParCode={lignesParCode} charge={Boolean(lignes)} />
           <PointsFaibles lignes={lignes} />
 
           <div className="listeC" style={{ boxShadow: "none", marginTop: 18 }}>
@@ -603,6 +606,95 @@ function LimiteSemestre({ eleves, onChange }) {
           Illimité
         </button>
       </div>
+    </div>
+  );
+}
+
+/* Stations de contrôle : élèves × stations de la saison. Validée (défi à
+   70 % ou carnet envoyé), commencée, ou rien. Une date par station et par
+   classe, que les élèves voient sur leur ligne. */
+function Stations({ nom, eleves, lignesParCode, charge }) {
+  const max = Math.max(1, ...eleves.map((e) => e.semestre_max || 1));
+  const [sem, setSem] = useState(max);
+  const [cibles, setCibles] = useState({});
+  const [erreur, setErreur] = useState(null);
+  const stations = stationsDe(sem);
+  const filiere = choisirFiliere(eleves[0]?.filiere || "gymnase");
+
+  useEffect(() => {
+    listerCibles().then((r) => {
+      if (r.erreur) { setErreur("Dates indisponibles : exécutez supabase/stations.sql."); return; }
+      setCibles(Object.fromEntries(r.lignes.filter((l) => l.classe === nom).map((l) => [l.station, l.jour])));
+    });
+  }, [nom]);
+
+  const changer = async (station, jour) => {
+    setCibles((c) => ({ ...c, [station]: jour || undefined }));
+    const r = await fixerCible(nom, station, jour);
+    if (r.erreur) setErreur(r.erreur);
+  };
+
+  const etat = (e, st) => {
+    const prog = {};
+    for (const l of lignesParCode[e.code] || []) prog[l.cle] = l;
+    if (stationValidee(st, prog)) return "valide";
+    return tousItems(st).some((i) => prog[i.cle]) ? "commencee" : "";
+  };
+  const aujourdhui = new Date().toISOString().slice(0, 10);
+
+  if (!charge) return null;
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <span className="h2" style={{ fontSize: 16 }}>Stations de contrôle</span>
+        <span style={{ display: "flex", gap: 4 }}>
+          {filiere.semestres.map((s) => (
+            <button key={s.numero ?? s} className={"btn2" + ((s.numero ?? s) === sem ? " on" : "")}
+              style={{ padding: "4px 10px", fontSize: 12.5 }} onClick={() => setSem(s.numero ?? s)}>
+              S{s.numero ?? s}
+            </button>
+          ))}
+        </span>
+      </div>
+      {erreur && <p className="note" style={{ color: "var(--ambre)", fontSize: 12.5 }}>{erreur}</p>}
+      <div className="grilleStations">
+        <table>
+          <thead>
+            <tr>
+              <th />
+              {stations.map((st) => (
+                <th key={st.id} title={st.titre}>
+                  <span className="gsNom">{st.type === "lecture" ? "L" : ""}{st.numero ?? st.id.split("-").pop()}</span>
+                  <input type="date" value={cibles[st.id] || ""} aria-label={`Date pour ${st.titre}`}
+                    onChange={(ev) => changer(st.id, ev.target.value)} />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {eleves.map((e) => (
+              <tr key={e.code}>
+                <th className="gsEleve">{e.nom || e.code}</th>
+                {stations.map((st) => {
+                  const x = etat(e, st);
+                  const retard = !x.startsWith("valide") && cibles[st.id] && cibles[st.id] < aujourdhui;
+                  return <td key={st.id} className={"gs " + x + (retard ? " retard" : "")}
+                    title={`${st.titre} : ${x === "valide" ? "validée" : x ? "commencée" : "pas commencée"}${retard ? " (en retard)" : ""}`}>
+                    {x === "valide" ? "✓" : x ? "·" : ""}
+                  </td>;
+                })}
+              </tr>
+            ))}
+            <tr>
+              <th className="gsEleve">Validée par</th>
+              {stations.map((st) => (
+                <td key={st.id} className="gsTotal">{eleves.filter((e) => etat(e, st) === "valide").length}/{eleves.length}</td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="note" style={{ fontSize: 12 }}>✓ validée · point : commencée · ambre : date dépassée. Les dates s'affichent sur la ligne des élèves de {nom}.</p>
     </div>
   );
 }

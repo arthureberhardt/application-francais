@@ -372,3 +372,32 @@ export async function retirerFicheCours(id) {
   if (error) return { erreur: error.message };
   return { ok: true };
 }
+
+/* ─────────── Stations de contrôle : dates fixées par classe ─────────── */
+
+/** Les dates de la classe de l'élève : { "S1-U2": "2026-10-12", … }.
+    Objet vide si la base n'est pas branchée ou si stations.sql manque. */
+export async function ciblesClasse(code) {
+  if (!enLigne) return {};
+  const { data, error } = await sb.rpc("mes_cibles", { p_code: code });
+  if (error || !data) return {};
+  return Object.fromEntries(data.map((l) => [l.station, l.jour]));
+}
+
+/** Côté enseignant : toutes les dates, par classe. */
+export async function listerCibles() {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { data, error } = await sb.from("cibles").select("classe, station, jour");
+  if (error) return { erreur: error.message };
+  return { lignes: data };
+}
+
+/** Fixe (jour = "AAAA-MM-JJ") ou retire (jour vide) la date d'une station. */
+export async function fixerCible(classe, station, jour) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const r = jour
+    ? await sb.from("cibles").upsert({ classe, station, jour })
+    : await sb.from("cibles").delete().eq("classe", classe).eq("station", station);
+  if (r.error) return { erreur: r.error.message };
+  return { ok: true };
+}

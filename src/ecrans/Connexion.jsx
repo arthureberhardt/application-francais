@@ -93,8 +93,12 @@ export default function Connexion({ onEntrer, onEnseignant }) {
         ))}
       </div>
 
+      <div className="ticket">
+      <div className="ticketTete"><span>Gymnasium Oberwil</span><span>Français · aller simple</span></div>
+      <label className="ticketL" htmlFor="code">Votre code</label>
       <input
-        className="champ mono"
+        id="code"
+        className="champ mono ticketChamp"
         value={v}
         autoFocus
         onChange={(e) => { setV(e.target.value.toUpperCase()); setErreur(null); }}
@@ -103,8 +107,9 @@ export default function Connexion({ onEntrer, onEnseignant }) {
         style={{ letterSpacing: ".1em", marginBottom: 12 }}
       />
       <button className="btn" disabled={!valide || verif} onClick={entrer}>
-        {verif ? "Vérification…" : "Commencer"}
+        {verif ? "Vérification…" : "Composter et entrer"}
       </button>
+      </div>
 
       {erreur && (
         <p className="note" style={{ marginTop: 10, fontSize: 12.5, color: "var(--rouge)" }}>

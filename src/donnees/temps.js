@@ -49,6 +49,24 @@ export const TEMPS = [
   "type": "conjugaison"
  },
  {
+  "cle": "futuranterieur",
+  "nom": "futur antérieur",
+  "type": "compose",
+  "auxTemps": "futur"
+ },
+ {
+  "cle": "conditionnelpasse",
+  "nom": "conditionnel passé",
+  "type": "compose",
+  "auxTemps": "conditionnel"
+ },
+ {
+  "cle": "subjonctifpasse",
+  "nom": "subjonctif passé",
+  "type": "compose",
+  "auxTemps": "subjonctif"
+ },
+ {
   "cle": "participepresent",
   "nom": "participe présent",
   "type": "conjugaison",

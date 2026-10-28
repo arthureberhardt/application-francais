@@ -7,6 +7,17 @@ export default function Unite({ unite: u, code, progression, decouverts, onEtape
   const a = avancementUnite(u, progression, decouverts);
   const defi = resultatDefi(progression, u.id);
   const [retours, setRetours] = useState([]);
+  const compte = (f) => u.lexique.filter((i) => i.fil === f).length;
+  const fils = [
+    ["mots", u.lexique.filter((i) => !i.fil).length],
+    ["verbes", new Set(u.verbes.map((v) => v.inf)).size],
+    ["adjectifs", compte("adjectifs")],
+    ["notions de littérature", compte("notions")],
+    ["outils pour argumenter", compte("argumentation")],
+    ["points de grammaire", u.points.length],
+    ["tournures", u.tournures.length],
+    ["phrases et textes", u.phrases.length],
+  ].filter(([, n]) => n > 0);
   useEffect(() => {
     mesProductions(code).then((l) => setRetours(l.filter((p) => p.unite === u.id)));
   }, [code, u.id]);
@@ -21,9 +32,27 @@ export default function Unite({ unite: u, code, progression, decouverts, onEtape
       </div>
 
       <div className="main wrap">
-        <p className="uniteNum">{u.facultative ? "Unité facultative" : u.complete ? `Unité ${u.numero}` : "Thème"}</p>
-        <h1 className="uniteTitre">{u.titre}</h1>
+        <div className="plaque plaqueUnite">
+          <span className="rond" aria-hidden="true">{u.semestre}</span>
+          <span>
+            <span className="plaqueSur">
+              {u.type === "lecture" ? `Ligne de lecture${u.semaines ? ` · semaines ${u.semaines}` : ""}`
+                : u.facultative ? "Unité facultative" : u.complete ? `Unité ${u.numero}${u.semaines ? ` · semaines ${u.semaines}` : ""}` : "Thème"}
+            </span>
+            <h1 className="plaqueNom">{u.titre}</h1>
+          </span>
+        </div>
         <p className="uniteSous">{u.sous}</p>
+
+        {u.type === "lecture" && u.chapitres && (
+          <p className="aLire"><span className="objectifsL">À lire</span>{u.chapitres}</p>
+        )}
+
+        {fils.length > 0 && (
+          <div className="fils" aria-label="Ce que l'unité ajoute">
+            {fils.map(([nom, n]) => <span key={nom} className="fil"><b>{n}</b> {nom}</span>)}
+          </div>
+        )}
 
         {(u.oral || u.ecrit) && (
           <div className="objectifs">
@@ -43,7 +72,9 @@ export default function Unite({ unite: u, code, progression, decouverts, onEtape
                   <span className="etapeCorps">
                     <span className="etapeNom">{e.nom}</span>
                     <span className="etapeSous">
-                      {e.cle === "defi"
+                      {e.cle === "evaluation" && u.evaluation
+                        ? `${u.evaluation.type} : ${u.evaluation.titre}`
+                        : e.cle === "defi"
                         ? defi ? `Dernier test : ${defi.score} % (il faut ${SEUIL_DEFI} %)` : e.sous
                         : e.total ? `${e.sous} · ${e.n} / ${e.total}` : e.sous}
                     </span>

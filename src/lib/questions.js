@@ -74,6 +74,18 @@ const AUX = {
     avoir: ["avais", "avais", "avait", "avions", "aviez", "avaient"],
     être: ["étais", "étais", "était", "étions", "étiez", "étaient"],
   },
+  futur: {
+    avoir: ["aurai", "auras", "aura", "aurons", "aurez", "auront"],
+    être: ["serai", "seras", "sera", "serons", "serez", "seront"],
+  },
+  conditionnel: {
+    avoir: ["aurais", "aurais", "aurait", "aurions", "auriez", "auraient"],
+    être: ["serais", "serais", "serait", "serions", "seriez", "seraient"],
+  },
+  subjonctif: {
+    avoir: ["aie", "aies", "ait", "ayons", "ayez", "aient"],
+    être: ["sois", "sois", "soit", "soyons", "soyez", "soient"],
+  },
 };
 // sujets choisis pour faire apparaître l'accord
 const SUJETS = [
@@ -88,7 +100,10 @@ function formeComposee(item, s) {
   const aux = AUX[item.auxTemps || "present"][item.aux][s.i];
   const accord = item.aux === "être" && !item.sansAccord;
   const pp = accord ? item.participe + s.acc : item.participe;
-  return item.pronominal ? `${s.mot} ${s.refl}${aux} ${pp}` : `${s.mot} ${aux} ${pp}`;
+  const forme = item.pronominal ? `${s.mot} ${s.refl}${aux} ${pp}` : `${s.mot} ${aux} ${pp}`;
+  // au subjonctif passé, la forme se donne avec « que » : qu'il soit parti
+  if (item.auxTemps === "subjonctif") return /^[aeiouéèêh]/i.test(forme) ? `qu'${forme}` : `que ${forme}`;
+  return forme;
 }
 
 function questionComposee(item) {
@@ -125,7 +140,7 @@ function questionComposee(item) {
     aide: `${s.mot} … · ${item.de}`,
     placeholder: `${s.mot} …`,
     reponse: formeComposee(item, s),
-    aussi: [formeComposee(item, s).replace(`${s.mot} `, "")],
+    aussi: [formeComposee(item, s).replace(/^(que |qu')/, ""), formeComposee(item, s).replace(/^(que |qu')/, "").replace(`${s.mot} `, "")],
     astuce: item.aux === "être" && !item.sansAccord ? "Attention : le participe s'accorde." : null,
   };
 }
@@ -185,6 +200,31 @@ function questionTournure(item, p) {
   };
 }
 
+/* Textes à trous : chaque blanc s'écrit {réponse/variante|indice} dans les
+   données. « {suis allé/suis allée|aller} » → deux réponses acceptées,
+   indice « aller » affiché dans le blanc. */
+export function decouperTrous(texte) {
+  const segments = [];
+  const re = /\{([^}|]+)(?:\|([^}]*))?\}/g;
+  let dernier = 0, m, n = 0;
+  while ((m = re.exec(texte))) {
+    if (m.index > dernier) segments.push({ texte: texte.slice(dernier, m.index) });
+    segments.push({ blanc: n++, reponses: m[1].split("/").map((x) => x.trim()), indice: (m[2] || "").trim() });
+    dernier = re.lastIndex;
+  }
+  if (dernier < texte.length) segments.push({ texte: texte.slice(dernier) });
+  return segments;
+}
+
+function questionTexte(item) {
+  const segments = decouperTrous(item.texte);
+  return {
+    type: "trous", consigne: item.consigne || "Complétez le texte", titre: item.titre, segments,
+    blancs: segments.filter((x) => x.blanc !== undefined),
+    reponse: segments.map((x) => (x.texte ?? x.reponses[0])).join(""),
+  };
+}
+
 function questionPhrase(item, p) {
   if (!p || p.boite <= 1) {
     return {
@@ -204,6 +244,7 @@ export function question(item, p, vocabDuSemestre, semestreCourant, mode) {
   if (item.module === "grammaire") return { ...questionGrammaire(item), phrase: true };
   if (item.module === "tournure") return { ...questionTournure(item, p), phrase: true };
   if (item.module === "phrase") return { ...questionPhrase(item, p), phrase: true };
+  if (item.module === "texte") return { ...questionTexte(item), phrase: true };
 
   /* Dictée : on entend, on écrit. C'est le seul exercice qui travaille le lien
      entre le son et l'orthographe — celui qui manque le plus à des

@@ -81,6 +81,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   const [k, setK] = useState(0);
   const [saisie, setSaisie] = useState("");
   const [choisis, setChoisis] = useState([]); // étiquettes posées, pour « ordre » (indices)
+  const [trous, setTrous] = useState({});     // réponses des blancs, pour « trous »
   const [retour, setRetour] = useState(null);
   const [justes, setJustes] = useState(0);
   const [rates, setRates] = useState([]);
@@ -142,6 +143,25 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   if (!item) return <Fin justes={justes} total={bassin.length} rates={rates} onFin={onFin}
     onRattrapage={(items) => onLancerRattrapage(items)} onTermine={onTermine} defi={mode === "defi"} />;
 
+  /* Un texte à trous est juste si tous ses blancs le sont ; chaque blanc
+     est corrigé séparément pour que l'élève voie où il s'est trompé. */
+  const validerTrous = () => {
+    if (retour) return;
+    const resultats = q.blancs.map((b) => {
+      const v = evalue(trous[b.blanc] || "", b.reponses[0], b.reponses.slice(1), { phrase: true });
+      return v === "proche" && semestre >= 2 ? "accent" : v;
+    });
+    const nbJustes = resultats.filter((v) => v === "exact" || v === "proche").length;
+    const juste = nbJustes === resultats.length;
+    const etat = apresReponse(progression[item.cle], juste);
+    const suivante = { ...progression, [item.cle]: etat };
+    setProgression(suivante);
+    enregistrerItem(code, item.cle, etat, suivante);
+    setRetour({ verdict: juste ? "exact" : "faux", reponse: "", boite: etat.boite, resultats, nbJustes });
+    if (juste) setJustes((x) => x + 1);
+    else if (mode !== "rattrapage") setRates((r) => [...r, item]);
+  };
+
   const valider = (reponse) => {
     if (retour) return;
     let verdict =
@@ -165,7 +185,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     else if (mode !== "rattrapage") setRates((r) => [...r, item]);
   };
 
-  const suivant = () => { setRetour(null); setSaisie(""); setChoisis([]); setK(k + 1); };
+  const suivant = () => { setRetour(null); setSaisie(""); setChoisis([]); setTrous({}); setK(k + 1); };
   const phraseOrdre = q.type === "ordre" ? choisis.map((i) => q.mots[i]).join(" ") : "";
 
   return (
@@ -178,9 +198,19 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
             {k + 1} / {bassin.length}
           </span>
         </div>
-        <div className="prog">
-          <div className="progIn" style={{ width: `${(k / bassin.length) * 100}%` }} />
-        </div>
+        {bassin.length <= 24 ? (
+          <div className="wrap">
+            <ol className="trajet" aria-label={`Question ${k + 1} sur ${bassin.length}`}>
+              {bassin.map((_, i) => (
+                <li key={i} className={i < k ? "passee" : i === k ? "ici" : ""}><span /></li>
+              ))}
+            </ol>
+          </div>
+        ) : (
+          <div className="prog">
+            <div className="progIn" style={{ width: `${(k / bassin.length) * 100}%` }} />
+          </div>
+        )}
       </div>
 
       <div className="main wrap">
@@ -199,7 +229,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
         )}
 
         <div className="carte apparait" style={devoile && !retour ? { opacity: .35 } : null}>
-          <div className="sur">{q.consigne}</div>
+          <div className="plaqueQ">{q.consigne}</div>
           {q.dictee ? (
             <div className="zoneEcoute">
               <Ecouter texte={q.dictee} grand libelle="Réécouter" />
@@ -218,7 +248,9 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
             <div className="boiteL" style={{ marginTop: 6 }}>{q.astuce}</div>
           )}
 
-          {q.type === "ordre" ? (
+          {q.type === "trous" ? (
+            <Trous q={q} trous={trous} setTrous={setTrous} retour={retour} />
+          ) : q.type === "ordre" ? (
             <Ordre q={q} choisis={choisis} setChoisis={setChoisis} retour={retour} />
           ) : q.type === "qcm" ? (
             <div className="qcm" style={{ marginTop: 18 }}>
@@ -257,8 +289,9 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
 
           {!retour && q.type !== "qcm" && (
             <button className="btn" style={{ marginTop: 12 }}
-              disabled={q.type === "ordre" && choisis.length !== q.mots.length}
-              onClick={() => valider(q.type === "ordre" ? phraseOrdre : saisie)}>
+              disabled={(q.type === "ordre" && choisis.length !== q.mots.length) ||
+                (q.type === "trous" && q.blancs.some((b) => !(trous[b.blanc] || "").trim()))}
+              onClick={() => (q.type === "trous" ? validerTrous() : valider(q.type === "ordre" ? phraseOrdre : saisie))}>
               Vérifier
             </button>
           )}
@@ -320,7 +353,14 @@ function Correction({ retour, q, item, exo, code }) {
         <div className="explication">{q.explication}</div>
       )}
 
-      {retour.verdict !== "exact" && (
+      {q.type === "trous" && (
+        <p className="note" style={{ margin: "0 0 8px" }}>
+          {retour.nbJustes} blanc{retour.nbJustes > 1 ? "s" : ""} juste{retour.nbJustes > 1 ? "s" : ""} sur {q.blancs.length}.
+          {retour.verdict !== "exact" && " Les bonnes réponses sont en vert à côté de vos erreurs."}
+        </p>
+      )}
+
+      {retour.verdict !== "exact" && q.type !== "trous" && (
         <>
           {retour.reponse && q.type !== "qcm" && (
             <div style={{ fontSize: 18, marginBottom: 6 }}>
@@ -430,6 +470,38 @@ function Correction({ retour, q, item, exo, code }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/* Un texte à trous : les blancs sont des champs dans le texte. Après
+   correction, chaque blanc juste passe au vert ; un blanc faux montre
+   la bonne réponse à côté de ce que l'élève a écrit. */
+function Trous({ q, trous, setTrous, retour }) {
+  return (
+    <div className="trous">
+      {q.titre && <p className="trousTitre">{q.titre}</p>}
+      <p className="trousTexte">
+        {q.segments.map((seg, i) => {
+          if (seg.texte !== undefined) return <React.Fragment key={i}>{seg.texte}</React.Fragment>;
+          const res = retour?.resultats?.[seg.blanc];
+          const ok = res === "exact" || res === "proche";
+          return (
+            <span key={i} className="blancBoite">
+              <input
+                className={"blanc" + (retour ? (ok ? " ok" : " ko") : "")}
+                value={trous[seg.blanc] || ""}
+                disabled={Boolean(retour)}
+                placeholder={seg.indice || "…"}
+                size={Math.max(4, (seg.indice || seg.reponses[0]).length + 1)}
+                aria-label={seg.indice ? `blanc : ${seg.indice}` : "blanc"}
+                onChange={(e) => setTrous({ ...trous, [seg.blanc]: e.target.value })}
+              />
+              {retour && !ok && <span className="blancCorrige">{seg.reponses[0]}</span>}
+            </span>
+          );
+        })}
+      </p>
     </div>
   );
 }

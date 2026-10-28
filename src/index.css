@@ -752,3 +752,176 @@ body { background: #F4F5F7; }
 .avecNav .badgeDetail { font-size: 12px; margin-top: 1px; }
 .chiffres { grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); }
 @media (max-width: 420px) { .chiffreN { font-size: 28px; } .chiffre { padding: 13px; } }
+
+/* ── textes à trous ── */
+.trous { margin-top: 14px; }
+.trousTitre { font-weight: 700; margin: 0 0 6px; }
+.trousTexte { font-size: 17.5px; line-height: 2.2; margin: 0; }
+.blancBoite { display: inline-flex; align-items: baseline; gap: 6px; }
+.fle .blanc {
+  font: inherit; font-size: 16.5px; padding: 3px 8px; margin: 0 2px; min-width: 4ch;
+  border: none; border-bottom: 2px solid var(--encre); background: #EEF1F6; border-radius: 6px 6px 0 0;
+  color: var(--encre); outline: none;
+}
+.fle .blanc:focus { background: var(--bleu-clair); border-bottom-color: var(--bleu); }
+.fle .blanc.ok { background: var(--vert-clair); border-bottom-color: var(--vert); }
+.fle .blanc.ko { background: var(--rouge-clair); border-bottom-color: var(--rouge); text-decoration: line-through; }
+.blancCorrige { color: var(--vert); font-weight: 700; font-size: 16px; }
+
+/* ── préparer l'évaluation ── */
+.evalBloc { margin: 0 0 22px; }
+.criteres { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--trait); }
+.critere { display: grid; grid-template-columns: minmax(120px, 34%) 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--trait); }
+.critere dt { font-weight: 700; }
+.critere dd { margin: 0; color: var(--ardoise); line-height: 1.5; }
+.remarques { margin: 0; padding-left: 20px; display: grid; gap: 6px; line-height: 1.55; }
+.tournuresListe { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+.tournuresListe li { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--trait); font-size: 16px; }
+@media (max-width: 480px) { .critere { grid-template-columns: 1fr; gap: 2px; } }
+
+/* ═══════════════════════════════════════════════════════════
+   Signalétique du métro
+   Trois signes, pas plus : la plaque émaillée (bleu, liseré blanc)
+   pour nommer un lieu ou poser une question, le rond de ligne pour la
+   saison, le trajet de stations pour avancer. Le reste reste sobre.
+   ═══════════════════════════════════════════════════════════ */
+.fle { --plaque: #0B3A75; --plaque-liseré: #FFFFFF; }
+
+.plaque {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--plaque); color: #fff;
+  border-radius: 12px; padding: 12px 18px;
+  box-shadow: inset 0 0 0 2px var(--plaque), inset 0 0 0 4px var(--plaque-liseré), 0 2px 0 rgba(0,0,0,.18);
+  letter-spacing: -.005em;
+}
+.plaqueSur { display: block; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.72); }
+.plaqueNom { display: block; font-size: clamp(20px, 5.4vw, 26px); font-weight: 800; letter-spacing: -.02em; line-height: 1.12; }
+.plaqueSaison { margin: 4px 0 18px; padding: 14px 20px; }
+
+/* le rond de ligne : chiffre dans un disque à la couleur de la saison */
+.rond {
+  display: inline-grid; place-items: center; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--ligne); color: var(--ligne-texte);
+  font-weight: 800; font-size: 17px; font-variant-numeric: tabular-nums; line-height: 1;
+}
+.rond.grand { width: 50px; height: 50px; font-size: 26px; box-shadow: 0 0 0 3px #fff; }
+.rond.l1 { --ligne: #FFCD00; --ligne-texte: #101E31; } .rond.l2 { --ligne: #003CA6; --ligne-texte: #fff; }
+.rond.l3 { --ligne: #837902; --ligne-texte: #fff; }    .rond.l4 { --ligne: #CF009E; --ligne-texte: #fff; }
+.rond.l5 { --ligne: #FF7E2E; --ligne-texte: #101E31; } .rond.l6 { --ligne: #6ECA97; --ligne-texte: #101E31; }
+.rond.l7 { --ligne: #FA9ABA; --ligne-texte: #101E31; } .rond.l8 { --ligne: #E19BDF; --ligne-texte: #101E31; }
+.fle .rond.choix { width: 42px; height: 42px; font-size: 18px; transition: transform .15s; opacity: .9; }
+.fle .rond.choix:hover { transform: scale(1.06); opacity: 1; }
+.fle .rond.choix.on { box-shadow: 0 0 0 3px var(--papier), 0 0 0 6px var(--encre); opacity: 1; }
+.fle .rond.choix:disabled { opacity: .25; cursor: default; transform: none; }
+.saisonChoix { flex-wrap: wrap; gap: 10px; }
+
+/* le code de l'élève, comme un ticket */
+.ticketMini {
+  font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; font-weight: 700; letter-spacing: .1em;
+  background: #F1EAD2; color: #4A3F1F; padding: 6px 12px 6px 16px; border-radius: 4px; position: relative;
+  -webkit-mask: radial-gradient(circle at 0 50%, transparent 5px, #000 5.5px); mask: radial-gradient(circle at 0 50%, transparent 5px, #000 5.5px);
+}
+.teteHaut { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+
+.compteurs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
+.compteur { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: baseline; }
+.compteurN { font-size: 40px; font-weight: 800; letter-spacing: -.035em; line-height: 1; font-variant-numeric: tabular-nums; }
+.compteurSur { font-size: 20px; color: rgba(255,255,255,.55); }
+.compteurL { font-size: 14px; color: rgba(255,255,255,.78); }
+.compteur .seriePoints, .compteur .objectifJauge { grid-column: 1 / -1; margin: 10px 0 0; }
+.teteNote { font-size: 13px; color: rgba(255,255,255,.68); margin: 12px 0 0; line-height: 1.5; }
+.bandeauSaison { padding-bottom: 64px; }
+
+/* plan de la ligne */
+.planTitre { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ardoise); margin: 34px 0 10px; }
+.stationCible { font-size: 12.5px; font-weight: 600; color: var(--encre-2); }
+.stationCible.retard { color: var(--ambre); }
+
+/* correspondance : la ligne de lecture, en trait creux à côté de la ligne */
+.correspondance { display: flex; gap: 14px; align-items: center; margin: 26px 0 8px; }
+.correspondanceSigne {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; position: relative;
+  background: #fff; border: 3px solid var(--encre);
+}
+.correspondanceSigne::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: var(--ligne); }
+.correspondanceTitre { display: block; font-weight: 800; font-size: 16.5px; letter-spacing: -.01em; }
+.correspondanceSous { display: block; font-size: 13.5px; color: var(--ardoise); }
+.ligneLecture::before { background: transparent; border: 3px solid var(--ligne); width: 8px; box-sizing: border-box; }
+.ligneLecture .stationPoint { border-radius: 7px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fle *, .fle *::before, .fle *::after { animation: none !important; transition: none !important; }
+}
+
+/* ── unité : plaque et fils ── */
+.plaqueUnite { margin: 4px 0 14px; }
+.plaqueUnite .plaqueNom { margin: 0; font-size: clamp(22px, 6vw, 32px); }
+.fils { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 20px; }
+.fil { font-size: 13px; padding: 5px 10px; border-radius: 20px; background: var(--carte); border: 1px solid var(--trait); color: var(--encre-2); }
+.fil b { font-variant-numeric: tabular-nums; }
+.aLire { font-size: 15px; margin: 0 0 14px; padding: 12px 16px; border-radius: 14px; background: var(--carte); border: 1px solid var(--trait); }
+
+/* ── séance : le trajet (une station par question) et la plaque de consigne ── */
+.trajet { list-style: none; margin: 0; padding: 6px 0 12px; display: flex; position: relative; }
+.trajet li { flex: 1; height: 16px; position: relative; display: grid; place-items: center; }
+.trajet li::after { content: ""; position: absolute; left: 50%; width: 100%; top: 6px; height: 4px; background: var(--trait); }
+.trajet li:last-child::after { display: none; }
+.trajet li.passee::after { background: var(--ligne); }
+.trajet li span { width: 10px; height: 10px; border-radius: 50%; background: var(--carte); border: 2.5px solid var(--ardoise-clair); position: relative; z-index: 1; }
+.trajet li.passee span { background: var(--encre); border-color: var(--encre); }
+.trajet li.ici span { width: 16px; height: 16px; border: 4px solid var(--encre); }
+.plaqueQ {
+  display: inline-block; background: var(--plaque); color: #fff; font-size: 13.5px; font-weight: 700;
+  padding: 5px 12px; border-radius: 7px; margin-bottom: 8px;
+  box-shadow: inset 0 0 0 1.5px var(--plaque), inset 0 0 0 2.5px #fff;
+}
+
+/* ── connexion : le code sur un ticket ── */
+.ticket {
+  background: #F3EDD6; color: #3D3420; border-radius: 10px; padding: 14px 18px 18px; margin-top: 18px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 8px 22px rgba(16,30,49,.10);
+  -webkit-mask: radial-gradient(circle at 0 62%, transparent 9px, #000 9.5px) left / 51% 100% no-repeat,
+                radial-gradient(circle at 100% 62%, transparent 9px, #000 9.5px) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle at 0 62%, transparent 9px, #000 9.5px) left / 51% 100% no-repeat,
+                radial-gradient(circle at 100% 62%, transparent 9px, #000 9.5px) right / 51% 100% no-repeat;
+}
+.ticketTete { display: flex; justify-content: space-between; gap: 8px; font-size: 11.5px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; border-bottom: 1.5px dashed rgba(61,52,32,.35); padding-bottom: 10px; margin-bottom: 12px; }
+.ticketL { display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 6px; }
+.fle .ticketChamp { background: #FFFDF5; border-color: rgba(61,52,32,.25); font-size: 20px; }
+.ticket .btn { width: 100%; }
+
+/* ── aide : trois écrans, puis la légende du plan ── */
+.aidePas { list-style: none; display: flex; gap: 6px; padding: 0; margin: 0 0 22px; }
+.aidePas li { flex: 1; height: 5px; border-radius: 3px; background: var(--trait); }
+.aidePas li.on { background: var(--ligne); }
+.aideTexte { font-size: 17px; line-height: 1.6; margin: 0 0 24px; }
+.aidePlan { width: 100%; max-width: 360px; display: block; margin: 0 0 14px; }
+.aideBoutons { display: flex; gap: 10px; }
+.aideBoutons .btn { flex: 1; }
+.legendePlan { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--trait); }
+.legendePlan > div { display: grid; grid-template-columns: 44px 1fr; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--trait); }
+.legendePlan dd { margin: 0; font-size: 14.5px; line-height: 1.45; }
+.lp { display: inline-block; width: 22px; height: 22px; border-radius: 50%; border: 4px solid var(--encre); background: #fff; vertical-align: middle; }
+.lpIci { width: 26px; height: 26px; border-width: 7px; }
+.lpPlein { background: var(--encre); }
+.lpTiret { border-style: dashed; border-width: 3px; border-color: var(--ardoise); }
+.lpCarre { border-radius: 7px; }
+
+/* ── enseignant : grille des stations ── */
+.grilleStations { overflow-x: auto; margin: 10px 0 6px; border: 1px solid var(--trait); border-radius: 12px; }
+.grilleStations table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+.grilleStations th, .grilleStations td { border-bottom: 1px solid var(--trait); padding: 6px 6px; text-align: center; }
+.grilleStations thead th { vertical-align: bottom; background: var(--papier); position: sticky; top: 0; }
+.gsNom { display: block; font-weight: 800; font-size: 13px; margin-bottom: 4px; }
+.grilleStations input[type=date] { font-size: 11px; width: 106px; border: 1px solid var(--trait); border-radius: 6px; padding: 2px 3px; font-family: inherit; }
+.gsEleve { text-align: left !important; font-weight: 600; white-space: nowrap; position: sticky; left: 0; background: var(--carte); }
+.gs { width: 44px; font-weight: 800; }
+.gs.valide { background: var(--vert-clair); color: var(--vert); }
+.gs.commencee { background: #EEF1F6; color: var(--ardoise); font-size: 20px; line-height: 1; }
+.gs.retard { box-shadow: inset 0 0 0 2px var(--ambre); }
+.gsTotal { font-size: 12px; color: var(--ardoise); font-variant-numeric: tabular-nums; }
+.fle .btn2.on { background: var(--encre); color: #fff; border-color: var(--encre); }

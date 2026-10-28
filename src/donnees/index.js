@@ -16,19 +16,52 @@ import { MOTS as MOTS_BASE } from "./mots.js";
 import { MOTS_AJOUTS } from "./mots_ajouts.js";
 import { VERBES as VERBES_BASE } from "./verbes.js";
 import { VERBES_AJOUTS } from "./verbes_ajouts.js";
-import { SURCHARGES_S1 } from "./saisons/s1_mots.js";
+import { SAISONS } from "./saisons/index.js";
 
 // Les surcharges remplacent l'exemple (et parfois la traduction) de fiches
-// reprises en S1 : un exemple au présent sert toutes les filières.
-const SURCHARGES = { ...SURCHARGES_S1 };
+// reprises dans une saison : un exemple adapté au niveau sert toutes les filières.
+const SURCHARGES = Object.assign({}, ...Object.values(SAISONS).map((s) => s.surcharges || {}));
+const AJOUTS_SAISONS = Object.values(SAISONS).flatMap((s) => s.motsAjouts || []);
 // La Suisse n'écrit pas « ß » : on affiche « ss » partout (heissen, gross).
 const suisse = (m) => (m.de && m.de.includes("ß") ? { ...m, de: m.de.replace(/ß/g, "ss") } : m);
-export const MOTS = [...MOTS_BASE, ...MOTS_AJOUTS].map((m) =>
+export const MOTS = [...MOTS_BASE, ...MOTS_AJOUTS, ...AJOUTS_SAISONS].map((m) =>
   suisse(SURCHARGES[m.id] ? { ...m, ...SURCHARGES[m.id] } : m));
 export const PAR_ID = Object.fromEntries(MOTS.map((m) => [m.id, m]));
 export const VERBES = [...VERBES_BASE, ...VERBES_AJOUTS].map(suisse);
 export const VERBE_PAR_INF = Object.fromEntries(VERBES.map((v) => [v.inf, v]));
 export { TEMPS } from "./temps.js";
+
+/* Les saisons rédigées font foi pour le gymnase : leurs mots et leurs verbes
+   remplacent ceux du semestre, et sont retirés des autres semestres. Ce qui
+   n'a trouvé place dans aucune unité reste en reconnaissance dans son
+   semestre d'origine : aucune fiche ne disparaît. */
+function appliquerSaisons(filiere) {
+  const idsSaison = (s) => [
+    ...s.unites.flatMap((u) => [...(u.mots || []), ...Object.values(u.fils || {}).flat()]),
+    ...(s.lecture?.stations || []).flatMap((st) => [...(st.notions || []), ...(st.mots || [])]),
+  ];
+  // les verbes d'une unité facultative (les bases) ne sont « pris » par personne
+  const verbesSaison = (s) => [...new Set(s.unites.filter((u) => !u.facultative).flatMap((u) => u.verbes || []))];
+  const pris = new Set(Object.values(SAISONS).flatMap(idsSaison));
+  const verbesPris = new Set(Object.values(SAISONS).flatMap(verbesSaison));
+  for (const sem of filiere.semestres) {
+    const saison = SAISONS[sem.numero];
+    if (saison) {
+      const anciens = [...sem.mots, ...sem.appro];
+      sem.mots = [...new Set(saison.unites.filter((u) => !u.facultative).flatMap((u) =>
+        [...(u.mots || []), ...Object.values(u.fils || {}).flat()]))];
+      sem.appro = [...new Set(anciens.filter((id) => !pris.has(id)))];
+      sem.verbes = verbesSaison(saison);
+      if (saison.temps) sem.tempsCles = saison.temps;
+    } else {
+      sem.mots = sem.mots.filter((id) => !pris.has(id));
+      sem.appro = sem.appro.filter((id) => !pris.has(id));
+      sem.verbes = sem.verbes.filter((v) => !verbesPris.has(v));
+    }
+  }
+  return filiere;
+}
+appliquerSaisons(gymnase);
 
 export const FILIERES = [gymnase, fms];
 export const filierePar = (cle) => FILIERES.find((f) => f.cle === cle) || gymnase;

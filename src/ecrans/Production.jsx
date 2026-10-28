@@ -4,9 +4,14 @@ import { envoyerProduction, enLigne } from "../lib/store.js";
 /* La mini-production du défi : un court texte avec des éléments imposés,
    une liste de contrôle, puis l'envoi à l'enseignant. Le modèle n'apparaît
    qu'après l'envoi — sinon on le recopie. */
-export default function Production({ unite, code, onFin }) {
-  const d = unite.defi;
-  const cleBrouillon = `fle:brouillon:${code}:${unite.id}`;
+/* Sert pour trois textes : le défi d'une unité, le carnet de lecture d'une
+   station de lecture, et l'entraînement à une évaluation.
+   tache = { consigne, motsImposes?, controle, modele, titre? }
+   cible = ce qui est enregistré côté enseignant (unité, station ou évaluation). */
+export default function Production({ unite, code, onFin, tache, cible, titre, onEnvoye, minimum = 30 }) {
+  const d = tache || unite.defi;
+  const id = cible || unite.id;
+  const cleBrouillon = `fle:brouillon:${code}:${id}`;
   const [texte, setTexte] = useState(() => {
     try { return localStorage.getItem(cleBrouillon) || ""; } catch { return ""; }
   });
@@ -18,15 +23,16 @@ export default function Production({ unite, code, onFin }) {
   }, [texte]); // eslint-disable-line
 
   const mots = texte.trim() ? texte.trim().split(/\s+/).length : 0;
-  const pret = mots >= 30 && coches.length === d.controle.length;
+  const pret = mots >= minimum && coches.length === d.controle.length;
 
   const envoyer = async () => {
     if (!enLigne) { setEtat("horsligne"); return; }
     setEtat("envoi");
-    const r = await envoyerProduction(code, unite.id, d.consigne, texte.trim());
+    const r = await envoyerProduction(code, id, d.consigne, texte.trim());
     if (r.erreur) { setEtat("erreur"); return; }
     try { localStorage.removeItem(cleBrouillon); } catch {}
     setEtat("envoye");
+    onEnvoye && onEnvoye();
   };
 
   return (
@@ -39,16 +45,16 @@ export default function Production({ unite, code, onFin }) {
       </div>
 
       <div className="main wrap" style={{ maxWidth: 620 }}>
-        <h1 className="uniteTitre" style={{ fontSize: 28 }}>Votre texte</h1>
+        <h1 className="uniteTitre" style={{ fontSize: 28 }}>{titre || d.titre || "Votre texte"}</h1>
         <p className="consigne">{d.consigne}</p>
 
-        <div className="imposes">
+        {d.motsImposes?.length > 0 && <div className="imposes">
           <span className="note">À utiliser :</span>
           {d.motsImposes.map((m) => {
             const present = texte.toLowerCase().includes(m.split(/[ /]/)[0].toLowerCase().replace(/\+.*$/, ""));
             return <span key={m} className={"impose" + (present ? " ok" : "")}>{m}</span>;
           })}
-        </div>
+        </div>}
 
         {etat !== "envoye" && (
           <>
@@ -72,7 +78,7 @@ export default function Production({ unite, code, onFin }) {
             </button>
             {!pret && (
               <p className="note" style={{ marginTop: 10, fontSize: 12.5 }}>
-                Au moins 30 mots, et toutes les cases cochées.
+                Au moins {minimum} mots, et toutes les cases cochées.
               </p>
             )}
             {etat === "erreur" && (
@@ -91,9 +97,10 @@ export default function Production({ unite, code, onFin }) {
 
         {etat === "envoye" && (
           <div className="apparait">
-            <div className="envoye">Envoyé. Votre enseignant le lira ; son retour apparaîtra dans l'unité.</div>
+            <div className="envoye">Envoyé. Votre enseignant le lira ; son retour apparaîtra ici, dans l'unité.</div>
+            {d.modele && <>
             <h2 className="h2" style={{ margin: "22px 0 8px" }}>Un exemple de texte réussi</h2>
-            <p className="modele">{d.modele}</p>
+            <p className="modele">{d.modele}</p></>}
             <p className="note" style={{ fontSize: 12.5 }}>
               Comparez : qu'est-ce que le modèle fait que votre texte ne fait pas encore ?
             </p>
