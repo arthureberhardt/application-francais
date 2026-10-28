@@ -361,5 +361,48 @@ const S6 = [
   }),
 ];
 
-export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5, ...S6];
+// Saison 7 : analyse, histoire, environnement, sciences, engagement
+const S7 = [
+  er("régner", "herrschen"),
+  er("se révolter", "sich auflehnen"),
+  ir("abolir", "abschaffen"),
+  er("voter", "abstimmen, wählen"),
+  er("polluer", "verschmutzen"),
+  er("innover", "innovieren"),
+  er("prouver", "beweisen"),
+  er("démontrer", "nachweisen, zeigen"),
+  er("analyser", "analysieren"),
+  er("gouverner", "regieren"),
+  er("dominer", "beherrschen"),
+  er("recycler", "rezyklieren"),
+  er("sensibiliser", "sensibilisieren"),
+  ir("agir", "handeln"),
+  er("rechercher", "erforschen, suchen"),
+  er("expérimenter", "experimentieren"),
+  er("estimer", "schätzen, meinen"),
+  er("distinguer", "unterscheiden"),
+  er("ironiser", "ironisieren"),
+  irr({
+    inf: "conquérir", de: "erobern", aux: "avoir", participe: "conquis",
+    present: ["conquiers", "conquiers", "conquiert", "conquérons", "conquérez", "conquièrent"],
+    imperatif: ["conquiers", "conquérons", "conquérez"],
+    imparfait: ["conquérais", "conquérais", "conquérait", "conquérions", "conquériez", "conquéraient"],
+    futur: ["conquerrai", "conquerras", "conquerra", "conquerrons", "conquerrez", "conquerront"],
+    conditionnel: ["conquerrais", "conquerrais", "conquerrait", "conquerrions", "conquerriez", "conquerraient"],
+    subjonctif: ["conquière", "conquières", "conquière", "conquérions", "conquériez", "conquièrent"],
+    participepresent: ["conquérant"],
+  }),
+  irr({
+    inf: "concevoir", de: "entwerfen, begreifen", aux: "avoir", participe: "conçu",
+    present: ["conçois", "conçois", "conçoit", "concevons", "concevez", "conçoivent"],
+    imperatif: ["conçois", "concevons", "concevez"],
+    imparfait: ["concevais", "concevais", "concevait", "concevions", "conceviez", "concevaient"],
+    futur: ["concevrai", "concevras", "concevra", "concevrons", "concevrez", "concevront"],
+    conditionnel: ["concevrais", "concevrais", "concevrait", "concevrions", "concevriez", "concevraient"],
+    subjonctif: ["conçoive", "conçoives", "conçoive", "concevions", "conceviez", "conçoivent"],
+    participepresent: ["concevant"],
+  }),
+];
+
+export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5, ...S6, ...S7];
 export { er, ir };
