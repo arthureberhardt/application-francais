@@ -12,7 +12,7 @@
 import { NOM_CATEGORIE } from "./items.js";
 import { palier, trouer } from "./paliers.js";
 import { texteADicter } from "./voix.js";
-import { TOURNURES_S1 } from "../donnees/saisons/s1.js";
+import { SAISONS } from "../donnees/saisons/index.js";
 import { EXERCICES } from "./exercices.js";
 import { VERBE_PAR_INF } from "../donnees/index.js";
 import { sonDisponible } from "./voix.js";
@@ -181,12 +181,17 @@ function questionGrammaire(item) {
   };
 }
 
+const TOURNURES = Object.values(SAISONS).flatMap((s) => s.tournures || []);
+
 function questionTournure(item, p) {
   // d'abord reconnaître la bonne réplique dans une situation, puis la compléter
   // les leurres viennent de la même unité : même thème, fonctions différentes
-  const voisins = TOURNURES_S1.filter((t) => t.unite === item.unite);
   if (!p || p.boite <= 2) {
-    const leurres = melange(voisins.filter((v) => v.id !== item.id)).slice(0, 2).map((v) => v.fr);
+    // les leurres viennent d'abord de la même unité, puis du même semestre
+    const autres = (liste) => liste.filter((v) => v.id !== item.id && v.fr !== item.fr);
+    const memeUnite = melange(autres(TOURNURES.filter((t) => t.unite === item.unite)));
+    const memeSemestre = melange(autres(TOURNURES.filter((t) => t.unite !== item.unite && t.unite.split("-")[0] === item.unite.split("-")[0])));
+    const leurres = [...new Set([...memeUnite, ...memeSemestre].map((v) => v.fr))].slice(0, 2);
     return {
       type: "qcm", consigne: "Que dites-vous ?", invite: item.situation, phraseLongue: true,
       reponse: item.fr, aussi: [], options: melange([item.fr, ...leurres]),
@@ -268,6 +273,23 @@ export function question(item, p, vocabDuSemestre, semestreCourant, mode) {
     const i = Math.floor(Math.random() * item.formes.length);
     const forme = item.formes[i];
     const pronom = item.pronoms ? item.pronoms[i] : null;
+    // au subjonctif, la forme se donne avec « que » : que je parle, qu'il parle
+    if (item.tempsCle === "subjonctif" && pronom) {
+      const avec = avecPronom(forme, pronom)[0];
+      const que = /^[aeiouéèêh]/i.test(avec) ? `qu'${avec}` : `que ${avec}`;
+      const personne = item.personnes[i];
+      const queP = /^[aeiouéèêh]/i.test(personne) ? `qu'${personne}` : `que ${personne}`;
+      return {
+        type: "saisie",
+        consigne: "Conjuguez au subjonctif présent",
+        invite: item.inf,
+        aide: `${queP} … · ${item.de}`,
+        placeholder: `${queP} …`,
+        reponse: que,
+        aussi: [avec, forme],
+        astuce: "« que » et le pronom peuvent être écrits ou non.",
+      };
+    }
     return {
       type: "saisie",
       consigne: `Conjuguez ${ARTICLE[item.tempsCle] || "au " + item.temps}`,
@@ -287,11 +309,12 @@ export function question(item, p, vocabDuSemestre, semestreCourant, mode) {
      non employé. Le QCM est donc le seul format. */
   const premiereFois = !p || p.essais === 0;
   if (premiereFois || item.module === "approfondissement") {
-    const leurres = vocabDuSemestre
-      .filter((v) => v.cat === item.cat && v.fr !== item.fr)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3)
-      .map((v) => v.de);
+    // des leurres de même catégorie d'abord ; s'il en manque, n'importe quel mot du semestre
+    const differents = vocabDuSemestre.filter((v) => v.fr !== item.fr && v.de !== item.de);
+    const leurres = [...new Set([
+      ...melange(differents.filter((v) => v.cat === item.cat)),
+      ...melange(differents.filter((v) => v.cat !== item.cat)),
+    ].map((v) => v.de))].slice(0, 3);
     return {
       type: "qcm",
       consigne: "Que veut dire ce mot ?",

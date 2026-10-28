@@ -233,7 +233,9 @@ export function FicheVerbe({ v, progression }) {
               <div className="mono conj">
                 {t.formes.map((f, i) => (
                   <div key={i}>
-                    <span className="conjP">{(t.cle === "imperatif" ? persImp : pers)[i]}</span>
+                    <span className="conjP">{t.cle === "subjonctif"
+                      ? ((x) => (/^[aeiouéèêh]/i.test(x) ? `qu'${x}` : `que ${x}`))(pers[i])
+                      : (t.cle === "imperatif" ? persImp : pers)[i]}</span>
                     <span className="conjF">{f}</span>
                   </div>
                 ))}

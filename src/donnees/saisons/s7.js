@@ -163,7 +163,7 @@ const GRAMMAIRE = [
       c("g7av-03", "C'est un travail ___ .", ["fatigant", "fatiguant", "fatigants"], "fatigant"),
       c("g7av-04", "En ___ ses devoirs, il a raté l'examen.", ["négligeant", "négligent", "négligents"], "négligeant"),
       c("g7av-05", "Le jour ___ la Révolution…", ["précédant", "précédent", "précédente"], "précédant"),
-      c("g7av-06", "Les salons étaient des lieux très ___ .", ["influents", "influant", "influents"], "influents"),
+      c("g7av-06", "Les salons étaient des lieux très ___ .", ["influents", "influant", "influentes"], "influents"),
       c("g7av-07", "Une idée ___ (= qui choque) :", ["choquante", "choquant", "choquantes"], "choquante"),
       s("g7av-08", "Écrivez l'adjectif verbal.", "convaincre → un discours …", "un discours convaincant"),
       s("g7av-09", "Écrivez l'adjectif verbal (féminin).", "provoquer → une attitude …", "une attitude provocante"),

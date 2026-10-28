@@ -31,19 +31,54 @@ import s7 from "./s7.js";
 import s8 from "./s8.js";
 import { COMPLEMENTS } from "./complements.js";
 import { CONSTRUCTIONS } from "./constructions.js";
+import { LECTURES_PLUS } from "./lectures/index.js";
 
-// les constructions verbales (un point par saison) et les compléments d'exhaustivité
+// les constructions verbales (un point par saison), les compléments des
+// stations de lecture et les compléments d'exhaustivité
 function completer(s) {
   const k = CONSTRUCTIONS[s.numero];
-  return {
-    ...s,
-    grammaire: k ? [...(s.grammaire || []), k.point] : s.grammaire,
-    unites: s.unites.map((u) => ({
-      ...u,
-      mots: COMPLEMENTS[u.id] ? [...u.mots, ...COMPLEMENTS[u.id]] : u.mots,
-      grammaire: k && k.unite === u.id ? [...(u.grammaire || []), k.point.id] : u.grammaire,
-    })),
+  const grammaire = [...(s.grammaire || []), ...(k ? [k.point] : [])];
+  const tournures = [...(s.tournures || [])];
+  const phrases = [...(s.phrases || [])];
+  const textes = [...(s.textes || [])];
+  const motsAjouts = [...(s.motsAjouts || [])];
+
+  // ajoute les compléments d'une station ; rend les ids de mots et de points ajoutés
+  const ajouter = (id) => {
+    const a = LECTURES_PLUS[id];
+    if (!a) return { mots: [], points: [] };
+    (a.tournures || []).forEach((t, i) => tournures.push({ ...t, id: `${id}-T${i + 1}`, unite: id }));
+    (a.phrases || []).forEach((p, i) => phrases.push({ ...p, id: `${id}-P${i + 1}`, unite: id }));
+    (a.textes || []).forEach((x, i) => textes.push({ ...x, id: `${id}-X${i + 1}`, unite: id }));
+    const mots = (a.mots || []).map((m, i) => {
+      const fiche = { id: `${id}-M${i + 1}`, unite: "Lire", gram: "", construction: "", famille: "", syn: "", ant: "", piege: "", ...m };
+      motsAjouts.push(fiche);
+      return fiche.id;
+    });
+    const points = [];
+    if (a.grammaire) {
+      grammaire.push({ id: `${id}-OUTIL`, unite: id, ...a.grammaire });
+      points.push(`${id}-OUTIL`);
+    }
+    return { mots, points };
   };
+
+  const unites = s.unites.map((u) => {
+    const a = ajouter(u.id);
+    return {
+      ...u,
+      mots: [...u.mots, ...(COMPLEMENTS[u.id] || []), ...a.mots],
+      grammaire: [...(u.grammaire || []), ...(k && k.unite === u.id ? [k.point.id] : []), ...a.points],
+    };
+  });
+  const lecture = s.lecture && {
+    ...s.lecture,
+    stations: s.lecture.stations.map((st) => {
+      const a = ajouter(st.id);
+      return { ...st, mots: [...(st.mots || []), ...a.mots], grammaire: [...(st.grammaire || []), ...a.points] };
+    }),
+  };
+  return { ...s, grammaire, tournures, phrases, textes, motsAjouts, unites, lecture };
 }
 
 export const SAISONS = Object.fromEntries(

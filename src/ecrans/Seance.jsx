@@ -334,9 +334,10 @@ function Correction({ retour, q, item, exo, code }) {
   // également valables, et où la fiche n'en liste souvent qu'une seule.
   // Même chose pour les phrases à traduire ou à transformer : il existe
   // souvent une autre formulation correcte que la fiche ne prévoit pas.
+  // toute réponse écrite jugée fausse peut être signalée, sauf une conjugaison
+  // (la forme y est unique) et une dictée (on écrit ce qu'on entend)
   const peutProposer =
-    !bon && retour.reponse && (["synonyme", "contraire"].includes(exo?.cle || q.exoCle) ||
-      (q.type === "saisie" && ["phrase", "grammaire"].includes(item.module)));
+    !bon && retour.reponse && q.type === "saisie" && item.module !== "verbes" && !q.dictee;
 
   const envoyerProposition = async () => {
     setPropose(true);
@@ -427,7 +428,9 @@ function Correction({ retour, q, item, exo, code }) {
           {item.type === "conjugaison" ? (
             <div className="conjTable">
               {item.formes.map((f, i) => (
-                <div key={i}><span>{item.personnes[i]}</span><b>{f}</b></div>
+                <div key={i}><span>{item.tempsCle === "subjonctif"
+                  ? (/^[aeiouéèêh]/i.test(item.personnes[i]) ? `qu'${item.personnes[i]}` : `que ${item.personnes[i]}`)
+                  : item.personnes[i]}</span><b>{f}</b></div>
               ))}
             </div>
           ) : (
