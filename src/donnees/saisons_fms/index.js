@@ -6,8 +6,9 @@
 
 
 import f1 from "./f1.js";
+import f2 from "./f2.js";
 
-const SEMESTRES = { 1: f1 };
+const SEMESTRES = { 1: f1, 2: f2 };
 
 export const SAISONS_FMS = Object.fromEntries(
   Object.entries(SEMESTRES).map(([n, s]) => [n, { ...s, motsAjouts: s.motsAjouts || [] }]));
