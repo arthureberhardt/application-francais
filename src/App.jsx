@@ -17,8 +17,18 @@ import Carnet from "./ecrans/Carnet.jsx";
 import Nav from "./ecrans/Nav.jsx";
 import {
   chargerProgression, chargerSynonymesValides, lireSemestre, ecrireSemestre, lireFiliere, ecrireFiliere,
-  enregistrerItem, noterSeance, lireJours, joursServeur, chargerFichesCours,
+  enregistrerItem, noterSeance, lireJours, joursServeur, chargerFichesCours, codeValide,
 } from "./lib/store.js";
+
+/* La session reste ouverte sur l'appareil : le code est gardé jusqu'à ce que
+   l'élève choisisse « Changer de code » dans l'aide. */
+const CLE_SESSION = "fle:session";
+const lireSession = () => {
+  try { return JSON.parse(localStorage.getItem(CLE_SESSION) || "null"); } catch { return null; }
+};
+const ecrireSession = (s) => {
+  try { s ? localStorage.setItem(CLE_SESSION, JSON.stringify(s)) : localStorage.removeItem(CLE_SESSION); } catch {}
+};
 import { choisirFiliere, filiereActive, itemsCumules } from "./lib/items.js";
 import {
   uniteParId, uniteCourante, itemsEtape, elementsRencontres, lireDecouverts, marquerDecouverts,
@@ -35,6 +45,7 @@ const LIGNES = {
 
 export default function App() {
   const [code, setCode] = useState(null);
+  const [reprise] = useState(lireSession);
   const [filiere, setFiliere] = useState(() => choisirFiliere(lireFiliere() || "gymnase").cle);
   const [semestre, setSem] = useState(lireSemestre());
   const [semestreMax, setSemestreMax] = useState(null);
@@ -49,7 +60,7 @@ export default function App() {
   const [badges, setBadges] = useState(false);
   const [premiereAide, setPremiereAide] = useState(false);
   const [examen, setExamen] = useState(false);
-  const [chargement, setChargement] = useState(false);
+  const [chargement, setChargement] = useState(() => Boolean(lireSession()?.code));
   const [enseignant, setEnseignant] = useState(false);
 
   const entrer = useCallback(async (c, cleFiliere, semMax) => {
@@ -72,6 +83,7 @@ export default function App() {
     joursServeur(c).then((j) => { if (j.length) setJours(new Set([...locaux, ...j])); });
     chargerSynonymesValides().then(setMotsValides);
     setCode(c);
+    ecrireSession({ code: c, filiere: cleFiliere || null, semMax: semMax ?? null });
     setVue({ type: "saison" });
     setChargement(false);
     try {
@@ -87,9 +99,25 @@ export default function App() {
     setSem(n); ecrireSemestre(n);
   };
   const quitter = () => {
+    ecrireSession(null);
     setCode(null); setProgression({}); setSemestreMax(null); setSeance(null); setVue({ type: "saison" });
     setListe(false); setBadges(false); setPremiereAide(false); setExamen(false);
   };
+
+  /* Au démarrage : on rouvre la dernière session tout de suite (même hors
+     ligne), puis on revérifie le code en arrière-plan. Un code supprimé par
+     l'enseignant ramène à l'écran de connexion. */
+  useEffect(() => {
+    if (!reprise?.code) return;
+    entrer(reprise.code, reprise.filiere, reprise.semMax);
+    codeValide(reprise.code).then((res) => {
+      if (!res.ok) { quitter(); return; }
+      if ((res.semestreMax ?? null) !== (reprise.semMax ?? null)) {
+        setSemestreMax(res.semestreMax ?? null);
+        ecrireSession({ ...reprise, semMax: res.semestreMax ?? null });
+      }
+    });
+  }, []); // eslint-disable-line
 
   const unite = vue.uniteId ? uniteParId(semestre, vue.uniteId) : null;
 

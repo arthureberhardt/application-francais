@@ -214,6 +214,13 @@ export default function Aide({ premiere = false, onFin, onInstaller, onQuitter, 
           </p>
         </details>
         <details>
+          <summary>Dois-je entrer mon code à chaque fois ?</summary>
+          <p>
+            Non : l'application garde votre code sur cet appareil et s'ouvre directement. Sur un appareil
+            partagé, utilisez « Changer de code » ci-dessous en partant.
+          </p>
+        </details>
+        <details>
           <summary>Qui voit mes résultats ?</summary>
           <p>
             Vous et votre enseignant. Il n'y a aucun classement ; l'objectif de classe ne montre qu'un total.
