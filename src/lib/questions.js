@@ -13,6 +13,36 @@ import { NOM_CATEGORIE } from "./items.js";
 import { palier, trouer } from "./paliers.js";
 import { texteADicter } from "./voix.js";
 import { TOURNURES_S1 } from "../donnees/saisons/s1.js";
+import { EXERCICES } from "./exercices.js";
+import { VERBE_PAR_INF } from "../donnees/index.js";
+import { sonDisponible } from "./voix.js";
+
+/* Un mot déjà bien ancré (boîte 3 et plus) n'est pas toujours redemandé de la
+   même façon : une fois sur trois environ, la question change de format —
+   dictée, genre, préposition, synonyme, contraire, famille de mots, verbe à
+   conjuguer dans sa phrase. Ce sont les anciens « exercices spéciaux » : ils
+   ne demandent plus d'aller les chercher, ils viennent au bon moment. */
+const PART_VARIANTES = 0.35;
+
+function questionVariante(item, vocab) {
+  const possibles = EXERCICES.filter((e) => e.eligible(item));
+  if (sonDisponible()) possibles.push("dictee");
+  if (!possibles.length || Math.random() > PART_VARIANTES) return null;
+  const e = possibles[Math.floor(Math.random() * possibles.length)];
+  if (e === "dictee") {
+    return {
+      type: "saisie", dictee: texteADicter(item.fr), consigne: "Écoutez, puis écrivez le mot",
+      invite: null, aide: item.de, placeholder: "écrivez ce que vous entendez",
+      reponse: item.fr, aussi: [texteADicter(item.fr)], astuce: null, variante: "dictée",
+    };
+  }
+  try {
+    const q = e.question(item, vocab, (inf) => VERBE_PAR_INF[inf]);
+    return q && q.reponse ? { ...q, variante: e.nom, exoCle: e.cle } : null;
+  } catch {
+    return null;
+  }
+}
 
 /* ── conjugaison simple ── */
 function avecPronom(forme, pronom) {
@@ -230,6 +260,11 @@ export function question(item, p, vocabDuSemestre, semestreCourant, mode) {
       aussi: [],
       options: [item.de, ...leurres].sort(() => Math.random() - 0.5),
     };
+  }
+
+  if (p && p.boite >= 3 && mode !== "examen") {
+    const v = questionVariante(item, vocabDuSemestre);
+    if (v) return v;
   }
 
   /* Le format dépend de l'ancienneté du mot : voir paliers.js */

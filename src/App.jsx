@@ -1,6 +1,5 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Connexion from "./ecrans/Connexion.jsx";
-import Accueil from "./ecrans/Accueil.jsx";
 import Seance from "./ecrans/Seance.jsx";
 import Liste from "./ecrans/Liste.jsx";
 import Badges from "./ecrans/Badges.jsx";
@@ -13,6 +12,8 @@ import Decouvrir from "./ecrans/Decouvrir.jsx";
 import Regle from "./ecrans/Regle.jsx";
 import Production from "./ecrans/Production.jsx";
 import Installer from "./ecrans/Installer.jsx";
+import Carnet from "./ecrans/Carnet.jsx";
+import Nav from "./ecrans/Nav.jsx";
 import {
   chargerProgression, chargerSynonymesValides, lireSemestre, ecrireSemestre, lireFiliere, ecrireFiliere,
   enregistrerItem, noterSeance, lireJours, joursServeur, chargerFichesCours,
@@ -40,11 +41,11 @@ export default function App() {
   const [decouverts, setDecouverts] = useState(new Set());
   const [jours, setJours] = useState(new Set());
   const [seance, setSeance] = useState(null); // { mode, filtre, retour }
-  // vue : saison | autres | unite | decouvrir | regle | production | installer
+  // vue : saison | carnet | aide | unite | decouvrir | regle | production | installer
   const [vue, setVue] = useState({ type: "saison" });
   const [liste, setListe] = useState(false);
   const [badges, setBadges] = useState(false);
-  const [aide, setAide] = useState(false);
+  const [premiereAide, setPremiereAide] = useState(false);
   const [examen, setExamen] = useState(false);
   const [chargement, setChargement] = useState(false);
   const [enseignant, setEnseignant] = useState(false);
@@ -72,9 +73,9 @@ export default function App() {
     setVue({ type: "saison" });
     setChargement(false);
     try {
-      if (!localStorage.getItem("fle:aideVue")) {
-        setAide(true);
-        localStorage.setItem("fle:aideVue", "1");
+      if (!localStorage.getItem("fle:aideVue2026")) {
+        setPremiereAide(true);
+        localStorage.setItem("fle:aideVue2026", "1");
       }
     } catch {}
   }, []);
@@ -85,10 +86,13 @@ export default function App() {
   };
   const quitter = () => {
     setCode(null); setProgression({}); setSemestreMax(null); setSeance(null); setVue({ type: "saison" });
-    setListe(false); setBadges(false); setAide(false); setExamen(false);
+    setListe(false); setBadges(false); setPremiereAide(false); setExamen(false);
   };
 
   const unite = vue.uniteId ? uniteParId(semestre, vue.uniteId) : null;
+
+  // chaque nouvel écran s'ouvre en haut de page
+  useEffect(() => { window.scrollTo(0, 0); }, [vue, seance, premiereAide, examen]);
 
   /* ── lancer les séances ── */
   const lancerJour = () => {
@@ -165,8 +169,8 @@ export default function App() {
     ecran = <Liste semestre={semestre} progression={progression} onFin={() => setListe(false)} />;
   } else if (examen) {
     ecran = <Examen semestre={semestre} code={code} progression={progression} onFin={() => setExamen(false)} />;
-  } else if (aide) {
-    ecran = <Aide onFin={() => setAide(false)} />;
+  } else if (premiereAide) {
+    ecran = <Aide premiere onFin={() => setPremiereAide(false)} />;
   } else if (badges) {
     ecran = <Badges semestre={semestre} progression={progression} onFin={() => setBadges(false)} />;
   } else if (vue.type === "installer") {
@@ -190,29 +194,34 @@ export default function App() {
     );
   } else if (vue.type === "production" && unite) {
     ecran = <Production unite={unite} code={code} onFin={() => setVue({ type: "unite", uniteId: unite.id })} />;
-  } else if (vue.type === "autres") {
+  } else if (vue.type === "carnet") {
     ecran = (
-      <Accueil
-        code={code} semestre={semestre} setSemestre={setSemestre} semestreMax={semestreMax}
-        progression={progression}
-        onLancer={(mode, filtre) => setSeance({ mode, filtre, retour: { type: "autres" } })}
-        onConsulter={() => setListe(true)} onBadges={() => setBadges(true)}
-        onAide={() => setAide(true)} onExamen={() => setExamen(true)} onQuitter={quitter}
-        onRetour={() => setVue({ type: "saison" })}
-      />
+      <Carnet semestre={semestre} progression={progression} decouverts={decouverts}
+        onLancer={(mode, filtre) => setSeance({ mode, filtre, retour: { type: "carnet" } })}
+        onExamen={() => setExamen(true)} />
     );
+  } else if (vue.type === "aide") {
+    ecran = <Aide onInstaller={() => setVue({ type: "installer" })} />;
   } else {
     ecran = (
       <Saison
         code={code} semestre={semestre} setSemestre={setSemestre} semestreMax={semestreMax}
         progression={progression} decouverts={decouverts} jours={jours}
         onJour={lancerJour} onUnite={(id) => setVue({ type: "unite", uniteId: id })}
-        onAutres={() => setVue({ type: "autres" })} onAide={() => setAide(true)}
+        onCarnet={() => setVue({ type: "carnet" })}
         onInstaller={() => setVue({ type: "installer" })} onQuitter={quitter}
       />
     );
   }
 
   const [ligne, ligneTexte] = LIGNES[semestre] || LIGNES[1];
-  return <div className="fle" style={{ "--ligne": ligne, "--ligne-texte": ligneTexte }}>{ecran}</div>;
+  // la barre du bas n'apparaît que sur les trois écrans principaux
+  const onglet = code && !seance && !liste && !examen && !badges && !premiereAide && !enseignant
+    && ["saison", "carnet", "aide"].includes(vue.type) ? vue.type : null;
+  return (
+    <div className="fle" style={{ "--ligne": ligne, "--ligne-texte": ligneTexte }}>
+      {ecran}
+      {onglet && <Nav actif={onglet} onChoisir={(t) => { setVue({ type: t }); window.scrollTo(0, 0); }} />}
+    </div>
+  );
 }

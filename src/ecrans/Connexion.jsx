@@ -63,14 +63,20 @@ export default function Connexion({ onEntrer, onEnseignant }) {
   };
 
   return (
-    <div className="wrap" style={{ paddingTop: 64, maxWidth: 460 }}>
-      <div className="sur">Gymnasium Oberwil · français</div>
-      <h1 className="dsp h1" style={{ margin: "12px 0 6px" }}>
-        Vocabulaire<br />et verbes
-      </h1>
-      <p className="note" style={{ marginBottom: 20 }}>
-        Entrez le code que votre enseignant vous a donné.
-        Il n'y a ni nom, ni adresse, ni mot de passe : ce code garde vos résultats.
+    <div className="wrap connexion" style={{ paddingTop: 56, maxWidth: 460 }}>
+      <div className="marque">
+        <img src="/icone-192.png" alt="" width="56" height="56" />
+        <div>
+          <h1 className="marqueNom">Français</h1>
+          <p className="marqueSous">Gymnasium Oberwil</p>
+        </div>
+      </div>
+      <p className="connexionIntro">
+        Les mots, les verbes et les phrases du cours, un peu chaque jour.
+      </p>
+      <p className="note" style={{ marginBottom: 22 }}>
+        Entrez le code que votre enseignant vous a donné. Il n'y a ni nom, ni adresse, ni mot de passe :
+        ce code garde vos résultats.
       </p>
 
       <div className="sur" style={{ marginBottom: 8 }}>Votre classe</div>

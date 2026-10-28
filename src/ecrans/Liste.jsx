@@ -1,17 +1,20 @@
 import React, { useState, useMemo } from "react";
 import { itemsDe, verbesConsultables, NOM_CATEGORIE } from "../lib/items.js";
 import { categorie } from "../lib/leitner.js";
+import { unitesDe as unitesSaison } from "../lib/saison.js";
 import { Ligne, Fenetre, COULEUR, ETIQUETTE } from "./Commun.jsx";
 
 const sansAccents = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-export default function Liste({ semestre, progression, onFin }) {
-  const [onglet, setOnglet] = useState("mots");
+export default function Liste({ semestre, progression, onFin, integre = false, ongletImpose }) {
+  const [ongletLocal, setOnglet] = useState("mots");
+  const onglet = ongletImpose || ongletLocal;
   const [recherche, setRecherche] = useState("");
   const [ouvert, setOuvert] = useState(null);
 
   return (
     <>
+      {!integre && (
       <div className="bar">
         <div className="wrap barIn">
           <button className="lien" onClick={onFin}>← Retour</button>
@@ -19,16 +22,17 @@ export default function Liste({ semestre, progression, onFin }) {
           <span style={{ width: 60 }} />
         </div>
       </div>
+      )}
 
-      <div className="main wrap">
-        <div className="tab" style={{ marginBottom: 14 }}>
+      <div className={integre ? "" : "main wrap"}>
+        {!ongletImpose && <div className="tab" style={{ marginBottom: 14 }}>
           <button className={onglet === "mots" ? "on" : ""} onClick={() => { setOnglet("mots"); setOuvert(null); }}>
             Les mots
           </button>
           <button className={onglet === "verbes" ? "on" : ""} onClick={() => { setOnglet("verbes"); setOuvert(null); }}>
             Les verbes
           </button>
-        </div>
+        </div>}
 
         <input
           className="champ"
@@ -71,12 +75,11 @@ export default function Liste({ semestre, progression, onFin }) {
 function Mots({ semestre, progression, recherche, setOuvert }) {
   const groupes = useMemo(() => {
     const q = sansAccents(recherche.trim());
-    const items = itemsDe(semestre).lexique.filter(
-      (i) => !q || sansAccents(i.fr).includes(q) || sansAccents(i.de).includes(q)
-    );
-    const par = {};
-    for (const i of items) (par[i.unite] = par[i.unite] || []).push(i);
-    return Object.entries(par);
+    const correspond = (i) => !q || sansAccents(i.fr).includes(q) || sansAccents(i.de).includes(q);
+    // les mots suivent les unités de la saison, dans l'ordre du parcours
+    return unitesSaison(semestre)
+      .map((u) => [u.titre, u.lexique.filter(correspond)])
+      .filter(([, l]) => l.length);
   }, [semestre, recherche]);
 
   if (!groupes.length) return <p className="note">Aucun mot ne correspond à votre recherche.</p>;
@@ -191,7 +194,7 @@ function Verbes({ semestre, progression, recherche, setOuvert }) {
   );
 }
 
-function FicheVerbe({ v, progression }) {
+export function FicheVerbe({ v, progression }) {
   const pers = v.impersonnel
     ? ["il"]
     : ["je", "tu", "il / elle", "nous", "vous", "ils / elles"];

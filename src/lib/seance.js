@@ -8,7 +8,7 @@
    Règle : au plus « nouveaux » découvertes, le reste en révision — d'abord ce
    qui est dû, puis ce qui ne l'est pas encore, les acquis en dernier.        */
 
-import { jamaisVu, estDu, categorie } from "./leitner.js";
+import { jamaisVu, estDu, categorie, estDifficile } from "./leitner.js";
 
 /* Le bilan est plus long : il porte sur plusieurs semestres et sert de
    répétition générale. Les séances ordinaires restent courtes pour pouvoir
@@ -34,12 +34,14 @@ export const FORMATS = {
 export function composerJour(nouveautes, rencontres, progression) {
   const { longueur, nouveaux: maxNouveaux } = FORMATS.jour;
   const neufs = nouveautes.filter((i) => jamaisVu(progression[i.cle])).slice(0, maxNouveaux);
+  // les mots qui résistent passent en premier : jusqu'à trois par séance
+  const difficiles = melange(rencontres.filter((i) => estDifficile(progression[i.cle]))).slice(0, 3);
   const dus = rencontres
     .filter((i) => estDu(progression[i.cle]) && categorie(progression[i.cle]) !== "acquis")
     .sort((a, b) => progression[a.cle].du - progression[b.cle].du);
   const enCours = melange(rencontres.filter((i) =>
     !estDu(progression[i.cle]) && categorie(progression[i.cle]) === "vu"));
-  const choisis = [...neufs];
+  const choisis = [...neufs, ...difficiles.filter((i) => !neufs.includes(i))];
   for (const groupe of [dus, enCours, nouveautes]) {
     for (const i of groupe) {
       if (choisis.length >= longueur) break;

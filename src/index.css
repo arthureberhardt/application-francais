@@ -665,3 +665,90 @@ body { background: #F4F5F7; }
 
 .mainSaison { position: relative; z-index: 3; }
 .fle .etiquette.posee:disabled { opacity: 1; }
+
+/* ── barre de navigation ── */
+.avecNav { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+.nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex; justify-content: center; gap: 4px;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--trait);
+}
+.fle .navBtn {
+  flex: 1; max-width: 140px; display: grid; justify-items: center; gap: 2px;
+  padding: 6px 4px; border-radius: 12px; color: var(--ardoise); font-size: 12px; font-weight: 600;
+}
+.fle .navBtn.on { color: var(--encre); }
+.fle .navBtn.on svg { filter: drop-shadow(0 0 0 var(--ligne)); }
+.fle .navBtn.on::after { content: ""; width: 18px; height: 4px; border-radius: 2px; background: var(--ligne); margin-top: 2px; }
+
+/* ── pages ── */
+.pageTitre { font-size: clamp(30px, 7vw, 38px); font-weight: 800; letter-spacing: -.032em; margin: 8px 0 6px; }
+.sectionTitre { font-size: 19px; font-weight: 800; letter-spacing: -.015em; margin: 30px 0 8px; }
+
+.segments { display: flex; gap: 4px; padding: 4px; border-radius: 13px; background: #E6E9EF; margin-bottom: 20px; }
+.fle .segment { flex: 1; padding: 9px 6px; border-radius: 10px; font-weight: 700; font-size: 14.5px; color: var(--ardoise); }
+.fle .segment.on { background: var(--carte); color: var(--encre); box-shadow: var(--e1); }
+
+/* ── carnet ── */
+.chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.chiffre { background: var(--carte); border: 1px solid var(--trait); border-radius: 16px; padding: 16px; }
+.chiffreN { font-size: 34px; font-weight: 800; letter-spacing: -.035em; line-height: 1; font-variant-numeric: tabular-nums; }
+.chiffreSur { font-size: 17px; color: var(--ardoise); font-weight: 700; margin-left: 2px; }
+.chiffreTitre { font-weight: 700; margin-top: 6px; }
+.chiffreDetail { font-size: 12.5px; color: var(--ardoise); }
+.actionsCarnet { display: grid; gap: 10px; }
+.fle .carteCarnet {
+  display: grid; gap: 4px; text-align: left; width: 100%; padding: 16px 18px; border-radius: 16px;
+  background: var(--carte); border: 1px solid var(--trait); border-left: 6px solid var(--ligne);
+}
+.fle .carteCarnet:hover { box-shadow: var(--e2); }
+.carteCarnetTitre { font-weight: 800; font-size: 17px; }
+.carteCarnetSous { font-size: 13.5px; color: var(--ardoise); line-height: 1.45; }
+
+.legende { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ardoise); margin-bottom: 12px; }
+.legende .pastille { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; }
+.grilleDefil { overflow-x: auto; background: var(--carte); border: 1px solid var(--trait); border-radius: 16px; }
+.grilleVerbes { border-collapse: collapse; width: 100%; font-size: 14px; }
+.grilleVerbes th, .grilleVerbes td { padding: 8px 10px; border-bottom: 1px solid var(--trait); text-align: center; white-space: nowrap; }
+.grilleVerbes thead th { font-size: 12px; color: var(--ardoise); font-weight: 700; position: sticky; top: 0; background: var(--carte); }
+.grilleVerbes th[scope="row"], .grilleVerbes thead th:first-child { text-align: left; position: sticky; left: 0; background: var(--carte); }
+.grilleVerbes tr:last-child th, .grilleVerbes tr:last-child td { border-bottom: none; }
+.fle .lienVerbe { font-weight: 700; font-size: 14.5px; color: var(--encre); text-decoration: underline; text-decoration-color: var(--trait-fort); text-underline-offset: 3px; }
+.caseVerbe { display: inline-block; width: 18px; height: 18px; border-radius: 5px; background: #CBD2DC; }
+.caseVerbe.vu { background: var(--ambre); }
+.caseVerbe.acquis { background: var(--vert); }
+.tempsBoutons { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ── aide ── */
+.aideBlocs { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 12px; counter-reset: bloc; }
+.aideBlocs li { background: var(--carte); border: 1px solid var(--trait); border-radius: 18px; padding: 18px 20px 6px; position: relative; }
+.aideBlocs h2 { font-size: 19px; font-weight: 800; letter-spacing: -.015em; margin: 0 0 8px; }
+.aideBlocs p { font-size: 15.5px; line-height: 1.6; margin: 0 0 14px; }
+.aideIntervalles { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.aideIntervalles span { font-size: 12.5px; font-weight: 700; padding: 5px 10px; border-radius: 20px; background: var(--papier); border: 1px solid var(--trait); }
+.faq { display: grid; gap: 8px; }
+.faq details { background: var(--carte); border: 1px solid var(--trait); border-radius: 14px; padding: 13px 16px; }
+.faq summary { font-weight: 700; cursor: pointer; font-size: 15px; }
+.faq details p { font-size: 14.5px; line-height: 1.6; margin: 10px 0 2px; color: var(--encre-2); }
+
+/* ── connexion ── */
+.marque { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.marque img { border-radius: 14px; box-shadow: var(--e2); }
+.marqueNom { font-size: 34px; font-weight: 800; letter-spacing: -.035em; margin: 0; line-height: 1; }
+.marqueSous { margin: 4px 0 0; color: var(--ardoise); font-size: 14px; }
+.connexionIntro { font-size: 19px; font-weight: 700; letter-spacing: -.012em; line-height: 1.35; margin: 0 0 10px; }
+
+/* récompenses du carnet : en liste compacte plutôt qu'en grandes tuiles */
+.avecNav .grilleBadges { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.avecNav .badge {
+  display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 12px;
+  align-items: center; text-align: left; padding: 10px 12px; box-shadow: none; opacity: .65; animation: none;
+}
+.avecNav .badge.obtenu { opacity: 1; }
+.avecNav .badgeRond { grid-row: 1 / 3; margin: 0; }
+.avecNav .badgeNom { font-size: 14px; }
+.avecNav .badgeDetail { font-size: 12px; margin-top: 1px; }
+.chiffres { grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); }
+@media (max-width: 420px) { .chiffreN { font-size: 28px; } .chiffre { padding: 13px; } }

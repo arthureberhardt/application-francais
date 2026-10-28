@@ -10,7 +10,7 @@ import { estInstallee } from "./Installer.jsx";
    de métro — chaque unité est une station. */
 export default function Saison({
   code, semestre, setSemestre, semestreMax, progression, decouverts, jours,
-  onJour, onUnite, onAutres, onAide, onInstaller, onQuitter,
+  onJour, onUnite, onCarnet, onInstaller, onQuitter,
 }) {
   const unites = unitesDe(semestre);
   const courante = uniteCourante(semestre, progression, decouverts);
@@ -36,10 +36,7 @@ export default function Saison({
         <div className="wrap">
           <div className="bandeauHaut">
             <span className="code">{code}</span>
-            <div style={{ display: "flex", gap: 4 }}>
-              <button className="lienClair" onClick={onAide}>Aide</button>
-              <button className="lienClair" onClick={onQuitter}>Quitter</button>
-            </div>
+            <button className="lienClair" onClick={onQuitter}>Changer de code</button>
           </div>
 
           <div className="serie">
@@ -63,7 +60,7 @@ export default function Saison({
         </div>
       </div>
 
-      <div className="main wrap mainSaison">
+      <div className="main wrap mainSaison avecNav">
         <button className="seanceJour" onClick={onJour}>
           <span className="seanceJourTitre">Séance du jour</span>
           <span className="seanceJourDetail">
@@ -139,11 +136,9 @@ export default function Saison({
           </p>
         )}
 
-        <button className="btn2 large" style={{ marginTop: 26 }} onClick={onAutres}>
-          Autres exercices : verbes, dictée, mots difficiles, examen blanc, liste
-        </button>
-        <p className="note" style={{ marginTop: 16, fontSize: 12.5 }}>
-          Filière : {filiereActive().nom}.
+        <p className="note" style={{ marginTop: 22, fontSize: 12.5 }}>
+          Filière : {filiereActive().nom}. Vos progrès, la liste des mots et la grille des verbes sont dans le{" "}
+          <button className="lienTexte" onClick={onCarnet}>carnet</button>.
         </p>
       </div>
     </>

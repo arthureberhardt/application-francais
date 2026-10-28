@@ -52,7 +52,7 @@ const chrono = (s) =>
     un item verbe n'a ni `fr` ni `cat`, et les y chercher produit une question
     cassée dont la réponse attendue est `undefined`. */
 function questionExamen(item, semestre, vocab) {
-  const q = question(item, { boite: 3, ok: 3, essais: 5 }, vocab, semestre);
+  const q = question(item, { boite: 3, ok: 3, essais: 5 }, vocab, semestre, "examen");
   if (q.type !== "qcm") return { ...q, astuce: null };
 
   if (item.module === "verbes") {

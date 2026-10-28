@@ -7,7 +7,17 @@ import { question } from "../lib/questions.js";
 import { exercicePar } from "../lib/exercices.js";
 import { VERBE_PAR_INF } from "../donnees/index.js";
 import { enregistrerItem, proposerMot } from "../lib/store.js";
-import { Rail, Ligne } from "./Commun.jsx";
+import { Ligne } from "./Commun.jsx";
+import { INTERVALLES } from "../lib/leitner.js";
+
+/* Quand l'élément reviendra : plus parlant qu'un numéro de boîte. */
+const retourDans = (boite) => {
+  const j = INTERVALLES[boite] || 0;
+  if (j === 0) return "revient dans cette séance ou la suivante";
+  if (j === 1) return "revient demain";
+  if (j < 30) return `revient dans ${j} jours`;
+  return `revient dans ${Math.round(j / 30)} mois`;
+};
 import { Ecouter, BarreAccents } from "./Outils.jsx";
 import { lire, taire, sonDisponible } from "../lib/voix.js";
 
@@ -72,7 +82,6 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   const [saisie, setSaisie] = useState("");
   const [choisis, setChoisis] = useState([]); // étiquettes posées, pour « ordre » (indices)
   const [retour, setRetour] = useState(null);
-  const [flash, setFlash] = useState(null);
   const [justes, setJustes] = useState(0);
   const [rates, setRates] = useState([]);
   const champ = useRef(null);
@@ -111,8 +120,10 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
 
   /* En mode « mots difficiles », le mot est montré avant d'être demandé :
      le redemander à l'aveugle une sixième fois ne servirait à rien. */
-  const [devoile, setDevoile] = useState(mode === "difficiles");
-  useEffect(() => setDevoile(mode === "difficiles"), [k, mode]);
+  // un mot qui résiste est d'abord montré, dans n'importe quelle séance
+  const resiste = (i) => i && i.module === "lexique" && estDifficile(progression[i.cle]);
+  const [devoile, setDevoile] = useState(mode === "difficiles" || resiste(bassin[0]));
+  useEffect(() => setDevoile(mode === "difficiles" || resiste(bassin[k])), [k, mode]); // eslint-disable-line
 
   useEffect(() => {
     if (!retour && champ.current) champ.current.focus();
@@ -148,12 +159,10 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     enregistrerItem(code, item.cle, etat, suivante);
 
     setRetour({ verdict, reponse, boite: etat.boite });
-    setFlash(etat.boite);
     if (juste) setJustes((x) => x + 1);
     // en rattrapage on ne re-signale pas une faute : sinon un mot raté deux
     // fois de suite s'empilerait sans fin dans sa propre liste de reprise
     else if (mode !== "rattrapage") setRates((r) => [...r, item]);
-    setTimeout(() => setFlash(null), 500);
   };
 
   const suivant = () => { setRetour(null); setSaisie(""); setChoisis([]); setK(k + 1); };
@@ -264,15 +273,6 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
         )}
       </div>
 
-      <div className="pied">
-        <div className="wrap">
-          <Rail
-            progression={progression}
-            actif={retour ? retour.boite : (progression[item.cle] || etatInitial()).boite}
-            flash={flash}
-          />
-        </div>
-      </div>
     </>
   );
 }
@@ -289,7 +289,7 @@ function Correction({ retour, q, item, exo, code }) {
   // Même chose pour les phrases à traduire ou à transformer : il existe
   // souvent une autre formulation correcte que la fiche ne prévoit pas.
   const peutProposer =
-    !bon && retour.reponse && (["synonyme", "contraire"].includes(exo?.cle) ||
+    !bon && retour.reponse && (["synonyme", "contraire"].includes(exo?.cle || q.exoCle) ||
       (q.type === "saisie" && ["phrase", "grammaire"].includes(item.module)));
 
   const envoyerProposition = async () => {
@@ -313,7 +313,7 @@ function Correction({ retour, q, item, exo, code }) {
             ? "Faux : il manque un accent"
             : "Faux"}
         </span>
-        <span className="boiteL">ce mot passe dans la boîte {retour.boite}</span>
+        <span className="note" style={{ fontSize: 12.5 }}>{retourDans(retour.boite)}</span>
       </div>
 
       {q.explication && (
@@ -322,7 +322,7 @@ function Correction({ retour, q, item, exo, code }) {
 
       {retour.verdict !== "exact" && (
         <>
-          {retour.reponse && (
+          {retour.reponse && q.type !== "qcm" && (
             <div style={{ fontSize: 18, marginBottom: 6 }}>
               {diff(retour.reponse, attendu).map((s, i) => (
                 <span
