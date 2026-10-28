@@ -41,7 +41,6 @@ export const MOTS_AJOUTS_S3 = [
   f("N3-044", "quelques-uns, quelques-unes", "einige", "C", "Argumentation", "Parmi mes amis, quelques-uns ne sont pas d'accord."),
   f("N3-045", "il me semble que", "mir scheint, dass", "L", "Argumentation", "Il me semble que tu as raison."),
   f("N3-046", "je suis convaincu(e) que", "ich bin überzeugt, dass", "L", "Argumentation", "Je suis convaincue que le sport aide à apprendre."),
-  f("N3-047", "le préjugé", "das Vorurteil", "N", "Argumentation", "C'est un préjugé : les jeunes lisent encore !"),
   /* U6 · Regards sur l'art */
   f("N3-060", "l'artiste", "der Künstler, die Künstlerin", "N", "Arts", "L'artiste a peint ce mur en trois nuits."),
   f("N3-061", "la peinture", "die Malerei; die Farbe", "N", "Arts", "J'aime la peinture abstraite.", { piege: "« la peinture » = aussi die Farbe (pour peindre un mur)." }),
@@ -99,7 +98,7 @@ export const MOTS_S3 = {
   ],
   "S3-U5": [
     "S3-124", "S3-126", "S3-128", "S3-129", "S3-131", "S3-132", "S3-134", "S3-135", "S3-136",
-    "N3-040", "N3-041", "N3-042", "N3-043", "N3-044", "N3-047",
+    "N3-040", "N3-041", "N3-042", "N3-043", "N3-044", "S4-A076",
     "S2-045", "S2-046", "S3-036", "S3-041", "S3-044", "S3-045", "S3-046", "S3-047", "S3-048",
     "S3-087", "S3-088", "S3-089", "S3-109", "S3-110", "S3-150", "S3-A073", "S5-073", "S5-072", "S5-075",
     "S3-084", "S3-111", "S3-112",

@@ -207,5 +207,47 @@ const S3 = [
   }),
 ];
 
-export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3];
+// Saison 4 : hypothèses, numérique, consommation, francophonie, registres, relations
+const S4 = [
+  er("oser", "wagen"),
+  er("risquer", "riskieren"),
+  er("tenter", "versuchen"),
+  ir("réfléchir", "nachdenken"),
+  er("supprimer", "löschen"),
+  er("se connecter", "sich einloggen"),
+  er("dépenser", "ausgeben"),
+  er("économiser", "sparen"),
+  er("consommer", "konsumieren, verbrauchen"),
+  er("gaspiller", "verschwenden"),
+  er("emprunter", "ausleihen (von)"),
+  er("prêter", "leihen (an)"),
+  er("rembourser", "zurückzahlen"),
+  er("émigrer", "auswandern", { aux: "avoir" }),
+  er("immigrer", "einwandern"),
+  er("se débrouiller", "zurechtkommen"),
+  er("prononcer", "aussprechen"),
+  er("exagérer", "übertreiben"),
+  er("tutoyer", "duzen"),
+  er("vouvoyer", "siezen"),
+  er("se disputer", "streiten"),
+  er("se réconcilier", "sich versöhnen"),
+  er("pardonner", "verzeihen"),
+  ir("trahir", "verraten"),
+  er("améliorer", "verbessern"),
+  er("remplacer", "ersetzen"),
+  er("transformer", "verwandeln, verändern"),
+  er("s'habituer", "sich gewöhnen"),
+  irr({
+    inf: "rompre", de: "brechen; Schluss machen", aux: "avoir", participe: "rompu",
+    present: ["romps", "romps", "rompt", "rompons", "rompez", "rompent"],
+    imperatif: ["romps", "rompons", "rompez"],
+    imparfait: ["rompais", "rompais", "rompait", "rompions", "rompiez", "rompaient"],
+    futur: ["romprai", "rompras", "rompra", "romprons", "romprez", "rompront"],
+    conditionnel: ["romprais", "romprais", "romprait", "romprions", "rompriez", "rompraient"],
+    subjonctif: ["rompe", "rompes", "rompe", "rompions", "rompiez", "rompent"],
+    participepresent: ["rompant"],
+  }),
+];
+
+export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4];
 export { er, ir };
