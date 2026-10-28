@@ -8,7 +8,7 @@
    — Supabase et tout autre domaine : jamais touchés. La progression passe
      toujours directement par le réseau.                                    */
 
-const CACHE = "fle-v2026-2";
+const CACHE = "fle-v2026-3";
 const BASE = ["/", "/index.html", "/manifest.webmanifest", "/icone-192.png", "/icone-512.png", "/apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {

@@ -12,7 +12,30 @@ import f4 from "./f4.js";
 import f5 from "./f5.js";
 import f6 from "./f6.js";
 
+import DIX from "./dix.js";
+
 const SEMESTRES = { 1: f1, 2: f2, 3: f3, 4: f4, 5: f5, 6: f6 };
 
+/* Les compléments (dix.js) s'ajoutent à chaque unité ou station, avec des
+   identifiants dérivés : <station>-T9, -P3, -M1… */
+function completer(s) {
+  const tournures = [...s.tournures], phrases = [...s.phrases], motsAjouts = [...(s.motsAjouts || [])];
+  const ajouter = (u) => {
+    const a = DIX[u.id];
+    if (!a) return u;
+    (a.tournures || []).forEach((t, i) => tournures.push({ ...t, id: `${u.id}-T${i + 1}`, unite: u.id }));
+    (a.phrases || []).forEach((p, i) => phrases.push({ ...p, id: `${u.id}-P${i + 1}`, unite: u.id }));
+    const mots = (a.mots || []).map((m, i) => {
+      const fiche = { id: `${u.id}-M${i + 1}`, unite: "Lire", gram: "", construction: "", famille: "", syn: "", ant: "", piege: "", ...m };
+      motsAjouts.push(fiche);
+      return fiche.id;
+    });
+    return { ...u, mots: [...(u.mots || []), ...mots] };
+  };
+  const unites = s.unites.map(ajouter);
+  const lecture = s.lecture && { ...s.lecture, stations: s.lecture.stations.map(ajouter) };
+  return { ...s, unites, lecture, tournures, phrases, motsAjouts };
+}
+
 export const SAISONS_FMS = Object.fromEntries(
-  Object.entries(SEMESTRES).map(([n, s]) => [n, { ...s, motsAjouts: s.motsAjouts || [] }]));
+  Object.entries(SEMESTRES).map(([n, s]) => [n, completer(s)]));

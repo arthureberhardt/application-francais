@@ -32,7 +32,7 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
       const urls = performance.getEntriesByType("resource")
         .map((r) => r.name)
         .filter((u) => u.startsWith(location.origin) && /\/assets\//.test(u));
-      if (urls.length && "caches" in window) caches.open("fle-v2026-2").then((c) => c.addAll(urls)).catch(() => {});
+      if (urls.length && "caches" in window) caches.open("fle-v2026-3").then((c) => c.addAll(urls)).catch(() => {});
     });
   });
 }
