@@ -13,6 +13,7 @@
      p:<id>             une phrase à construire puis à traduire
      x:<id>             un texte à trous
      defi:<unité>       le résultat du défi (ok = score en %, essais = nombre de questions)
+     texte:<unité>      le texte du défi envoyé à l'enseignant
      carnet:<station>   le carnet de lecture envoyé pour une station de lecture
      eval:<évaluation>  l'entraînement à une évaluation envoyé
    Elles ne dépendent ni du semestre ni de la filière.                       */
@@ -30,7 +31,8 @@ export const ETAPES = [
   { cle: "grammaire", nom: "Grammaire", sous: "La règle, puis des exercices" },
   { cle: "tournures", nom: "Tournures", sous: "Les phrases toutes faites pour communiquer" },
   { cle: "phrases", nom: "Phrases et textes", sous: "Construire, traduire, compléter un texte" },
-  { cle: "defi", nom: "Défi", sous: "Un test, puis un petit texte pour votre enseignant" },
+  { cle: "defi", nom: "Défi", sous: "Un test sur toute l'unité" },
+  { cle: "texte", nom: "Mon texte", sous: "Un petit texte pour votre enseignant" },
   { cle: "evaluation", nom: "Préparer l'évaluation", sous: "Les critères, un modèle, un entraînement" },
 ];
 
@@ -238,6 +240,7 @@ export function etapesDisponibles(u) {
     e.cle === "defi" || e.cle === "decouvrir" || e.cle === "entrainer"
       ? true
       : e.cle === "evaluation" ? Boolean(u.evaluation)
+      : e.cle === "texte" ? Boolean(u.defi)
       : itemsEtape(u, e.cle).length);
 }
 
@@ -249,12 +252,17 @@ export function resultatDefi(progression, uniteId) {
   return p ? { score: p.ok, total: p.essais, date: p.maj } : null;
 }
 export const carnetEnvoye = (progression, stationId) => Boolean(progression[`carnet:${stationId}`]);
+export const texteEnvoye = (progression, uniteId) => Boolean(progression[`texte:${uniteId}`]);
 export const evalEnvoyee = (progression, evalId) => Boolean(progression[`eval:${evalId}`]);
 
 export function avancementEtape(u, etape, progression, decouverts) {
   if (etape === "defi") {
     const r = resultatDefi(progression, u.id);
     return { part: r ? Math.min(1, r.score / SEUIL_DEFI) : 0, fait: Boolean(r && r.score >= SEUIL_DEFI) };
+  }
+  if (etape === "texte") {
+    const f = texteEnvoye(progression, u.id);
+    return { part: f ? 1 : 0, fait: f };
   }
   if (etape === "carnet") {
     const f = carnetEnvoye(progression, u.id);

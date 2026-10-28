@@ -7,6 +7,8 @@ import {
 import { calculerSerie, quatorzeJours } from "../lib/serie.js";
 import { objectifClasse, ciblesClasse } from "../lib/store.js";
 import { estInstallee } from "./Installer.jsx";
+import { competencesDe, itemsCompetence, avancementItems, semestreDeStation } from "../lib/entrainement.js";
+import { uniteParId } from "../lib/saison.js";
 
 const dateCourte = (d) => new Date(d).toLocaleDateString("fr-CH", { day: "numeric", month: "short" });
 
@@ -25,7 +27,7 @@ function useSerieAnimee(code, serie) {
    la séance du jour, puis le plan de la ligne et sa correspondance. */
 export default function Saison({
   code, semestre, setSemestre, semestreMax, progression, decouverts, jours,
-  onJour, onUnite, onInstaller,
+  onJour, onUnite, onInstaller, onChoix, onCompetence,
 }) {
   const unites = unitesDe(semestre);
   const lecture = lectureDe(semestre);
@@ -113,7 +115,10 @@ export default function Saison({
               : `12 questions, cinq minutes${detail.length ? " : " + detail.join(", ") : ""}.`}
           </span>
           <button className="btn" onClick={onJour}>{aujourdhui ? "Encore une séance" : "Commencer"}</button>
+          <button className="lien choixLien" onClick={onChoix}>Ou choisir moi-même ce que je travaille →</button>
         </div>
+
+        <Competences semestre={semestre} progression={progression} onUnite={onUnite} onCompetence={onCompetence} />
 
         {!estInstallee() && !installerVu && (
           <div className="bandeInstaller" role="button" tabIndex={0} onClick={onInstaller}
@@ -209,5 +214,57 @@ function Station({ u, e, courante, cible, onClick, lecture }) {
         </span>
       </button>
     </li>
+  );
+}
+
+/* Les compétences centrales du semestre : ce qui compte le plus, avec la
+   progression et un entraînement ciblé. */
+function Competences({ semestre, progression, onUnite, onCompetence }) {
+  const liste = competencesDe(semestre);
+  if (!liste.length) return null;
+  return (
+    <section className="competences">
+      <h2 className="planTitre">Compétences clés du semestre</h2>
+      {liste.map((c) => <CarteCompetence key={c.id} c={c} semestre={semestre} progression={progression} onUnite={onUnite} onCompetence={onCompetence} />)}
+    </section>
+  );
+}
+
+function CarteCompetence({ c, semestre, progression, onUnite, onCompetence, petite }) {
+  const items = useMemo(() => itemsCompetence(c), [c]);
+  const a = avancementItems(items, progression);
+  const [ouvert, setOuvert] = useState(false);
+  const ici = c.unites.filter((id) => semestreDeStation(id) === semestre).map((id) => uniteParId(semestre, id)).filter(Boolean);
+  return (
+    <div className={"competence" + (petite ? " petite" : "")}>
+      <div className="competenceHaut">
+        <span className="competenceTitre">{petite && c.semestre ? `S${c.semestre} · ` : ""}{c.titre}</span>
+        <span className="competencePart">{a.part} %</span>
+      </div>
+      {!petite && <span className="competenceSous">{c.sous}</span>}
+      <span className="competenceJauge" aria-hidden="true"><span style={{ width: `${a.part}%` }} /></span>
+      {ici.length > 0 && (
+        <div className="competenceLiens">
+          {ici.map((u) => (
+            <button key={u.id} className="puce petite" onClick={() => onUnite(u.id)}>
+              {u.type === "lecture" ? `Lecture ${u.numero}` : `Unité ${u.numero}`} · {u.titre}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="competenceActions">
+        <button className="btn2" disabled={!items.length} onClick={() => onCompetence(c)}>S'entraîner ({Math.min(15, items.length)} questions)</button>
+        {c.precedentes && (
+          <button className="lien" onClick={() => setOuvert(!ouvert)}>{ouvert ? "Masquer" : "Choisir une compétence à revoir"}</button>
+        )}
+      </div>
+      {ouvert && c.precedentes && (
+        <div className="competencesPrecedentes">
+          {c.precedentes.map((x) => (
+            <CarteCompetence key={x.id} c={x} semestre={semestre} progression={progression} onUnite={onUnite} onCompetence={onCompetence} petite />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

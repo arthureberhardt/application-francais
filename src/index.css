@@ -789,3 +789,37 @@ body { margin: 0; background: #F2F2EE; }
 @media (prefers-reduced-motion: reduce) {
   .fle *, .fle *::before, .fle *::after, .voile, .fenetre { animation: none !important; transition: none !important; }
 }
+
+/* ───────── Compétences clés et entraînement à la carte ───────── */
+.fle .choixLien { justify-self: center; margin-top: 6px; font-size: 14.5px; }
+.competences { margin-top: 26px; }
+.competence {
+  background: var(--carte); border: 1px solid var(--trait); border-radius: 14px;
+  padding: 16px 16px 14px; margin-bottom: 12px; box-shadow: var(--e1);
+  display: grid; gap: 6px; border-left: 5px solid var(--ligne);
+}
+.competence.petite { box-shadow: none; padding: 12px 12px 10px; border-left-width: 3px; margin-bottom: 8px; }
+.competenceHaut { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.competenceTitre { font-family: var(--signal); font-weight: 700; font-size: 19px; }
+.competence.petite .competenceTitre { font-size: 16px; }
+.competencePart { font-family: var(--signal); font-weight: 600; font-size: 14px; color: var(--ardoise); }
+.competenceSous { font-size: 14px; color: var(--encre-2); line-height: 1.4; }
+.competenceJauge { height: 5px; border-radius: 3px; background: var(--trait); overflow: hidden; margin: 2px 0 4px; }
+.competenceJauge span { display: block; height: 100%; background: var(--encre); transition: width .6s cubic-bezier(.2,.8,.3,1); }
+.competenceLiens { display: flex; flex-wrap: wrap; gap: 6px; }
+.competenceActions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 4px; }
+.competencesPrecedentes { margin-top: 8px; }
+
+.puces { display: flex; flex-wrap: wrap; gap: 8px; }
+.fle .puce {
+  padding: 8px 12px; border-radius: 999px; background: var(--carte); border: 1.5px solid var(--trait-fort);
+  font-size: 14.5px; font-weight: 500; color: var(--encre-2); text-align: left; line-height: 1.25;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.fle .puce.on { background: var(--encre); border-color: var(--encre); color: #fff; }
+.fle .puce.petite { padding: 5px 10px; font-size: 13px; border-width: 1px; }
+.blocChoix { margin-bottom: 20px; }
+.blocChoixTitre { font-family: var(--signal); font-size: 17px; font-weight: 700; margin: 0 0 10px; }
+.blocChoixNote { font-weight: 500; color: var(--ardoise); font-size: 14px; }
+.lancerChoix { position: sticky; bottom: 0; background: linear-gradient(transparent, var(--papier) 30%); padding: 20px 0 calc(16px + env(safe-area-inset-bottom)); }
+.lancerChoix .btn { width: 100%; }

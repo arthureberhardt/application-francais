@@ -7,6 +7,8 @@ import Aide from "./ecrans/Aide.jsx";
 import Examen from "./ecrans/Examen.jsx";
 import Enseignant from "./ecrans/Enseignant.jsx";
 import Saison from "./ecrans/Saison.jsx";
+import Entrainement from "./ecrans/Entrainement.jsx";
+import { itemsCompetence, composerLibre } from "./lib/entrainement.js";
 import Unite from "./ecrans/Unite.jsx";
 import Decouvrir from "./ecrans/Decouvrir.jsx";
 import Regle from "./ecrans/Regle.jsx";
@@ -157,6 +159,7 @@ export default function App() {
   const lancerEtape = (u, etape, items) => {
     if (etape === "decouvrir") { setVue({ type: "decouvrir", uniteId: u.id }); return; }
     if (etape === "carnet") { setVue({ type: "carnetLecture", uniteId: u.id }); return; }
+    if (etape === "texte") { setVue({ type: "production", uniteId: u.id }); return; }
     if (etape === "evaluation") { setVue({ type: "evaluation", uniteId: u.id }); return; }
     if (etape === "grammaire" && !items) { setVue({ type: "regle", uniteId: u.id }); return; }
     if (etape === "defi") {
@@ -183,7 +186,7 @@ export default function App() {
         enregistrerItem(code, cle, etat, suivante);
       }
       const u = uniteParId(semestre, s.filtre.unite);
-      if (res.part >= 70 && u?.defi) { setVue({ type: "production", uniteId: u.id }); return; }
+      if ((res.part >= 70 || res.ecrire) && u?.defi) { setVue({ type: "production", uniteId: u.id }); return; }
     }
     setVue(s?.retour || { type: "saison" });
   };
@@ -258,12 +261,19 @@ export default function App() {
         onFin={() => setVue({ type: "evaluation", uniteId: unite.id })} />
     );
   } else if (vue.type === "production" && unite) {
-    ecran = <Production unite={unite} code={code} onFin={() => setVue({ type: "unite", uniteId: unite.id })} />;
+    ecran = <Production unite={unite} code={code} onEnvoye={() => marquerEnvoi(`texte:${unite.id}`)}
+      onFin={() => setVue({ type: "unite", uniteId: unite.id })} />;
+  } else if (vue.type === "choix") {
+    ecran = (
+      <Entrainement semestre={semestre} semestreMax={semestreMax} progression={progression}
+        onLancer={(bassin, titre) => setSeance({ mode: "unite", filtre: { bassin, titre }, retour: { type: "choix" } })}
+        onFin={() => setVue({ type: vue.retour || "saison" })} />
+    );
   } else if (vue.type === "carnet") {
     ecran = (
       <Carnet semestre={semestre} progression={progression} decouverts={decouverts}
         onLancer={(mode, filtre) => setSeance({ mode, filtre, retour: { type: "carnet" } })}
-        onExamen={() => setExamen(true)} />
+        onExamen={() => setExamen(true)} onChoix={() => setVue({ type: "choix", retour: "carnet" })} />
     );
   } else if (vue.type === "aide") {
     ecran = <Aide code={code} onQuitter={quitter} onInstaller={() => setVue({ type: "installer" })} />;
@@ -274,6 +284,9 @@ export default function App() {
         progression={progression} decouverts={decouverts} jours={jours}
         onJour={lancerJour} onUnite={(id) => setVue({ type: "unite", uniteId: id })}
         onCarnet={() => setVue({ type: "carnet" })}
+        onChoix={() => setVue({ type: "choix" })}
+        onCompetence={(c) => setSeance({ mode: "unite", retour: { type: "saison" },
+          filtre: { bassin: composerLibre(itemsCompetence(c), progression, 15), titre: c.titre } })}
         onInstaller={() => setVue({ type: "installer" })} onQuitter={quitter}
       />
     );

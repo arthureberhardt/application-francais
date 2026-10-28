@@ -26,6 +26,7 @@ export const FORMATS = {
   unite: { longueur: 16, nouveaux: 8 },
   jour: { longueur: 12, nouveaux: 4 },
   defi: { longueur: 15, nouveaux: 15 },
+  libre: { longueur: 15, nouveaux: 99 },
 };
 
 /* La séance « Aujourd'hui » : ce qui est dû dans tout ce qui a déjà été

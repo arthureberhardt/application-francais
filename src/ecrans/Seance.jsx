@@ -546,7 +546,7 @@ function Fin({ justes, total, rates, onFin, onRattrapage, onTermine, defi, serie
           {defi
             ? p >= 70
               ? "Défi réussi. Il reste à écrire votre texte : c'est lui que votre enseignant lira."
-              : "Pas encore : il faut 70 %. Revoyez les étapes de l'unité, puis retentez le défi."
+              : "Pas encore : il faut 70 % pour valider l'unité. Vous pouvez quand même écrire votre texte, puis retenter le défi."
             : p >= 80
             ? "Très bien. Revenez demain : c'est en revenant souvent que les mots restent."
             : p >= 50
@@ -566,6 +566,11 @@ function Fin({ justes, total, rates, onFin, onRattrapage, onTermine, defi, serie
           <button className="btn" onClick={() => onFin(defi ? { justes, total, part: p } : undefined)}>
             {defi ? (p >= 70 ? "Écrire mon texte" : "Retour à l'unité") : "Continuer"}
           </button>
+          {defi && p < 70 && (
+            <button className="btn2" onClick={() => onFin({ justes, total, part: p, ecrire: true })}>
+              Écrire mon texte maintenant
+            </button>
+          )}
           {!defi && uniques.length > 0 && (
             <button className="btn2" onClick={() => onRattrapage(uniques)}>
               Refaire {uniques.length === 1 ? "la question ratée" : `les ${uniques.length} questions ratées`}

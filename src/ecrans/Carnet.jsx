@@ -9,7 +9,7 @@ import { Fenetre, COULEUR, ETIQUETTE } from "./Commun.jsx";
 /* Le carnet : consulter et voir ses progrès. Personne n'y interroge, sauf si
    l'élève lance lui-même un entraînement ciblé (un temps, l'examen blanc,
    les mots « pour aller plus loin »). */
-export default function Carnet({ semestre, progression, decouverts, onLancer, onExamen }) {
+export default function Carnet({ semestre, progression, decouverts, onLancer, onExamen, onChoix }) {
   const [vue, setVue] = useState("progres");
   return (
     <div className="main wrap avecNav">
@@ -27,7 +27,7 @@ export default function Carnet({ semestre, progression, decouverts, onLancer, on
 
       {vue === "progres" && (
         <Progres semestre={semestre} progression={progression} decouverts={decouverts}
-          onLancer={onLancer} onExamen={onExamen} />
+          onLancer={onLancer} onExamen={onExamen} onChoix={onChoix} />
       )}
       {vue === "mots" && <Liste semestre={semestre} progression={progression} integre ongletImpose="mots" />}
       {vue === "verbes" && <GrilleVerbes semestre={semestre} progression={progression} onLancer={onLancer} />}
@@ -35,7 +35,7 @@ export default function Carnet({ semestre, progression, decouverts, onLancer, on
   );
 }
 
-function Progres({ semestre, progression, decouverts, onLancer, onExamen }) {
+function Progres({ semestre, progression, decouverts, onLancer, onExamen, onChoix }) {
   const { lexique, verbes, approfondissement } = itemsDe(semestre);
   const verbesGr = verbesGroupes(semestre);
   const unites = unitesDe(semestre);
@@ -68,6 +68,10 @@ function Progres({ semestre, progression, decouverts, onLancer, onExamen }) {
       </p>
 
       <div className="actionsCarnet">
+        <button className="carteCarnet" onClick={onChoix}>
+          <span className="carteCarnetTitre">Mon entraînement</span>
+          <span className="carteCarnetSous">Choisissez vous-même : unités, mots, verbes et temps, points de grammaire, nombre de questions.</span>
+        </button>
         <button className="carteCarnet" onClick={onExamen}>
           <span className="carteCarnetTitre">Examen blanc</span>
           <span className="carteCarnetSous">40 questions en 20 minutes, sans aide, comme un vrai test. Vos résultats habituels ne changent pas.</span>
