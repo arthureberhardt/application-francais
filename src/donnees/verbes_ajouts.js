@@ -321,5 +321,45 @@ const S5 = [
   }),
 ];
 
-export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5];
+// Saison 6 : subjonctif, sentiments, école, égalité, image de soi, réclamations, débat
+const S6 = [
+  mettre("permettre", "erlauben, ermöglichen"),
+  er("empêcher", "verhindern"),
+  er("supporter", "ertragen"),
+  er("discriminer", "diskriminieren"),
+  er("réclamer", "fordern, reklamieren"),
+  er("s'accepter", "sich annehmen"),
+  er("se comparer", "sich vergleichen"),
+  er("harceler", "belästigen, mobben"),
+  er("valoriser", "aufwerten, wertschätzen"),
+  er("encourager", "ermutigen"),
+  er("favoriser", "begünstigen"),
+  ir("garantir", "garantieren"),
+  er("tolérer", "dulden"),
+  er("évaluer", "bewerten"),
+  er("sélectionner", "auswählen"),
+  er("échanger", "tauschen, umtauschen"),
+  irr({
+    inf: "débattre", de: "debattieren", aux: "avoir", participe: "débattu",
+    present: ["débats", "débats", "débat", "débattons", "débattez", "débattent"],
+    imperatif: ["débats", "débattons", "débattez"],
+    imparfait: ["débattais", "débattais", "débattait", "débattions", "débattiez", "débattaient"],
+    futur: ["débattrai", "débattras", "débattra", "débattrons", "débattrez", "débattront"],
+    conditionnel: ["débattrais", "débattrais", "débattrait", "débattrions", "débattriez", "débattraient"],
+    subjonctif: ["débatte", "débattes", "débatte", "débattions", "débattiez", "débattent"],
+    participepresent: ["débattant"],
+  }),
+  irr({
+    inf: "inclure", de: "einschliessen", aux: "avoir", participe: "inclus",
+    present: ["inclus", "inclus", "inclut", "incluons", "incluez", "incluent"],
+    imperatif: ["inclus", "incluons", "incluez"],
+    imparfait: ["incluais", "incluais", "incluait", "incluions", "incluiez", "incluaient"],
+    futur: ["inclurai", "incluras", "inclura", "inclurons", "inclurez", "incluront"],
+    conditionnel: ["inclurais", "inclurais", "inclurait", "inclurions", "incluriez", "incluraient"],
+    subjonctif: ["inclue", "inclues", "inclue", "incluions", "incluiez", "incluent"],
+    participepresent: ["incluant"],
+  }),
+];
+
+export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5, ...S6];
 export { er, ir };

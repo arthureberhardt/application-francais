@@ -837,7 +837,7 @@ const EVALUATIONS = {
 const carnet = (consigne, controle, modele) => ({ consigne, controle, modele });
 const LECTURE = {
   titre: "Une œuvre du XXe siècle",
-  sous: "par exemple « L'Étranger » de Camus ou « Huis clos » de Sartre · 10 semaines",
+  sous: "par exemple « L'Étranger » de Camus, « Huis clos » de Sartre, ou la dystopie « Panorama » de Lilia Hassaine · 10 semaines",
   stations: [
     {
       id: "S5-L1", numero: 1, titre: "L'incipit", semaines: "1–2", chapitres: "Les premières pages",

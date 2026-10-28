@@ -1,7 +1,8 @@
 /* Saison S3 — Futur, conditionnel, futur antérieur.
    Se projeter : projets, orientation, travail, santé ; puis donner son avis,
    juger une œuvre d'art, écrire une critique.
-   Ligne de lecture : un roman (ou une pièce) sur un sujet de société.     */
+   Ligne de lecture : une pièce ou un roman sur un sujet de société
+   (par exemple « En attendant la vague », pièce sur l'écologie).     */
 
 import { MOTS_AJOUTS_S3, MOTS_S3, FILS_S3 } from "./s3_mots.js";
 
@@ -859,8 +860,8 @@ const EVALUATIONS = {
 
 const carnet = (consigne, controle, modele) => ({ consigne, controle, modele });
 const LECTURE = {
-  titre: "Un roman sur un sujet de société",
-  sous: "par exemple « En attendant la vague », « Banksy et moi », « No et moi » · 10 semaines",
+  titre: "Une œuvre sur un sujet de société",
+  sous: "par exemple « En attendant la vague » (théâtre, écologie), « Banksy et moi », « No et moi » · 10 semaines",
   stations: [
     {
       id: "S3-L1", numero: 1, titre: "Entrer dans le livre", semaines: "1–2", chapitres: "Les premiers chapitres",
