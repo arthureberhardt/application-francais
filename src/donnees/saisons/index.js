@@ -23,5 +23,6 @@
 
 import s1 from "./s1.js";
 import s2 from "./s2.js";
+import s3 from "./s3.js";
 
-export const SAISONS = { 1: s1, 2: s2 };
+export const SAISONS = { 1: s1, 2: s2, 3: s3 };

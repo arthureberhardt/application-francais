@@ -1,6 +1,6 @@
 // Verbes ajoutés lors de la refonte 2026. Même format que verbes.js.
 // Les réguliers passent par le conjugueur ; les irréguliers sont écrits à la main.
-import { er, ir, irr } from "./conjugueur.js";
+import { er, ir, re, irr } from "./conjugueur.js";
 
 const IRREGULIERS = [
   {
@@ -130,5 +130,82 @@ for (const v of S2) if (v.inf === "envoyer") {
   v.conditionnel = ["enverrais", "enverrais", "enverrait", "enverrions", "enverriez", "enverraient"];
 }
 
-export const VERBES_AJOUTS = [...IRREGULIERS, ...S2];
+// Saison 3 : projets, orientation, travail, santé, opinion, arts, cinéma
+const S3 = [
+  er("rêver", "träumen"),
+  er("étudier", "studieren, lernen"),
+  er("hésiter", "zögern"),
+  er("s'orienter", "sich orientieren"),
+  er("se renseigner", "sich erkundigen"),
+  er("engager", "anstellen"),
+  er("embaucher", "einstellen"),
+  er("gérer", "verwalten, managen"),
+  er("organiser", "organisieren"),
+  er("collaborer", "zusammenarbeiten"),
+  er("conseiller", "raten, beraten"),
+  re("se détendre", "sich entspannen"),
+  er("tousser", "husten"),
+  er("respirer", "atmen"),
+  er("accepter", "annehmen, akzeptieren"),
+  er("refuser", "ablehnen"),
+  er("créer", "schaffen, gestalten"),
+  er("exposer", "ausstellen"),
+  er("recommander", "empfehlen"),
+  er("réaliser", "verwirklichen; Regie führen"),
+  er("filmer", "filmen"),
+  er("inventer", "erfinden"),
+  er("s'inspirer", "sich inspirieren lassen"),
+  irr({
+    inf: "convaincre", de: "überzeugen", aux: "avoir", participe: "convaincu",
+    present: ["convaincs", "convaincs", "convainc", "convainquons", "convainquez", "convainquent"],
+    imperatif: ["convaincs", "convainquons", "convainquez"],
+    imparfait: ["convainquais", "convainquais", "convainquait", "convainquions", "convainquiez", "convainquaient"],
+    futur: ["convaincrai", "convaincras", "convaincra", "convaincrons", "convaincrez", "convaincront"],
+    conditionnel: ["convaincrais", "convaincrais", "convaincrait", "convaincrions", "convaincriez", "convaincraient"],
+    subjonctif: ["convainque", "convainques", "convainque", "convainquions", "convainquiez", "convainquent"],
+    participepresent: ["convainquant"],
+  }),
+  irr({
+    inf: "peindre", de: "malen", aux: "avoir", participe: "peint",
+    present: ["peins", "peins", "peint", "peignons", "peignez", "peignent"],
+    imperatif: ["peins", "peignons", "peignez"],
+    imparfait: ["peignais", "peignais", "peignait", "peignions", "peigniez", "peignaient"],
+    futur: ["peindrai", "peindras", "peindra", "peindrons", "peindrez", "peindront"],
+    conditionnel: ["peindrais", "peindrais", "peindrait", "peindrions", "peindriez", "peindraient"],
+    subjonctif: ["peigne", "peignes", "peigne", "peignions", "peigniez", "peignent"],
+    participepresent: ["peignant"],
+  }),
+  irr({
+    inf: "atteindre", de: "erreichen", aux: "avoir", participe: "atteint",
+    present: ["atteins", "atteins", "atteint", "atteignons", "atteignez", "atteignent"],
+    imperatif: ["atteins", "atteignons", "atteignez"],
+    imparfait: ["atteignais", "atteignais", "atteignait", "atteignions", "atteigniez", "atteignaient"],
+    futur: ["atteindrai", "atteindras", "atteindra", "atteindrons", "atteindrez", "atteindront"],
+    conditionnel: ["atteindrais", "atteindrais", "atteindrait", "atteindrions", "atteindriez", "atteindraient"],
+    subjonctif: ["atteigne", "atteignes", "atteigne", "atteignions", "atteigniez", "atteignent"],
+    participepresent: ["atteignant"],
+  }),
+  irr({
+    inf: "valoir", de: "wert sein, gelten", aux: "avoir", participe: "valu",
+    present: ["vaux", "vaux", "vaut", "valons", "valez", "valent"],
+    imperatif: ["vaux", "valons", "valez"],
+    imparfait: ["valais", "valais", "valait", "valions", "valiez", "valaient"],
+    futur: ["vaudrai", "vaudras", "vaudra", "vaudrons", "vaudrez", "vaudront"],
+    conditionnel: ["vaudrais", "vaudrais", "vaudrait", "vaudrions", "vaudriez", "vaudraient"],
+    subjonctif: ["vaille", "vailles", "vaille", "valions", "valiez", "vaillent"],
+    participepresent: ["valant"],
+  }),
+  irr({
+    inf: "interrompre", de: "unterbrechen", aux: "avoir", participe: "interrompu",
+    present: ["interromps", "interromps", "interrompt", "interrompons", "interrompez", "interrompent"],
+    imperatif: ["interromps", "interrompons", "interrompez"],
+    imparfait: ["interrompais", "interrompais", "interrompait", "interrompions", "interrompiez", "interrompaient"],
+    futur: ["interromprai", "interrompras", "interrompra", "interromprons", "interromprez", "interrompront"],
+    conditionnel: ["interromprais", "interromprais", "interromprait", "interromprions", "interrompriez", "interrompraient"],
+    subjonctif: ["interrompe", "interrompes", "interrompe", "interrompions", "interrompiez", "interrompent"],
+    participepresent: ["interrompant"],
+  }),
+];
+
+export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3];
 export { er, ir };

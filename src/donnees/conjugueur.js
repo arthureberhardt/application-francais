@@ -72,6 +72,24 @@ export function ir(infComplet, de, o = {}) {
   return pron ? pronominaliser(v) : v;
 }
 
+export function re(infComplet, de, o = {}) {
+  const pron = /^(se |s')/.test(infComplet);
+  const inf = infComplet.replace(/^(se |s')/, "");
+  const r = inf.slice(0, -2);
+  const fut = inf.slice(0, -1);
+  const v = {
+    inf: infComplet, de, aux: o.aux || "avoir", participe: o.participe || r + "u", pronominal: false, impersonnel: false,
+    present: [r + "s", r + "s", r, r + "ons", r + "ez", r + "ent"],
+    imperatif: [r + "s", r + "ons", r + "ez"],
+    imparfait: ["ais", "ais", "ait", "ions", "iez", "aient"].map((t) => r + t),
+    futur: ["ai", "as", "a", "ons", "ez", "ont"].map((t) => fut + t),
+    conditionnel: ["ais", "ais", "ait", "ions", "iez", "aient"].map((t) => fut + t),
+    subjonctif: ["e", "es", "e", "ions", "iez", "ent"].map((t) => r + t),
+    participepresent: [r + "ant"],
+  };
+  return pron ? pronominaliser(v) : v;
+}
+
 /* Un verbe irrégulier écrit à la main, avec le pronom réfléchi ajouté si besoin. */
 export function irr(v) {
   const pron = /^(se |s')/.test(v.inf);
