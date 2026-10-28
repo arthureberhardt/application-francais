@@ -10,6 +10,7 @@ import {
 import { stationsDe, stationValidee, tousItems } from "../lib/saison.js";
 import { SAISONS } from "../donnees/saisons/index.js";
 import { SAISONS_FMS } from "../donnees/saisons_fms/index.js";
+import { exporterCodesWord } from "../lib/exportCodes.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
 import { itemsCumules, choisirFiliere } from "../lib/items.js";
 import { categorie } from "../lib/leitner.js";
@@ -286,9 +287,16 @@ function TableauDeBord() {
         <p className="note" style={{ margin: 0 }}>
           {lignes.length} élève{lignes.length > 1 ? "s" : ""} · {classes.length} classe{classes.length > 1 ? "s" : ""}
         </p>
-        <button className="btn2" onClick={() => setCreation(!creation)}>
-          {creation ? "Fermer" : "+ Nouvelle classe"}
-        </button>
+        <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {classes.length > 0 && (
+            <button className="btn2" onClick={() => exporterCodesWord(classes, "codes-francais-toutes-les-classes.docx")}>
+              Codes de toutes les classes (Word)
+            </button>
+          )}
+          <button className="btn2" onClick={() => setCreation(!creation)}>
+            {creation ? "Fermer" : "+ Nouvelle classe"}
+          </button>
+        </span>
       </div>
 
       {creation && <CreerClasse onFait={() => { setCreation(false); charger(); }} />}
@@ -472,6 +480,9 @@ function Classe({ nom, eleves, onChange }) {
             </button>
             <button className="btn2" onClick={() => exporterCodes(nom, eleves)}>
               Copier la liste des codes
+            </button>
+            <button className="btn2" onClick={() => exporterCodesWord([[nom, eleves]], `codes-francais-${nom.replace(/[^\w-]+/g, "_")}.docx`)}>
+              Codes et noms (Word)
             </button>
             <button className="btn2"
               style={confirmSuppr ? { borderColor: "var(--rouge)", color: "var(--rouge)" } : undefined}
@@ -833,7 +844,7 @@ function LigneEleve({ e, onChange, lignesEleve }) {
 }
 
 function exporterCodes(nom, eleves) {
-  const texte = eleves.map((e) => e.code).join("\n");
+  const texte = eleves.map((e) => (e.nom ? `${e.nom}\t${e.code}` : e.code)).join("\n");
   navigator.clipboard?.writeText(texte);
 }
 
