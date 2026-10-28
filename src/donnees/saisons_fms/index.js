@@ -10,8 +10,9 @@ import f2 from "./f2.js";
 import f3 from "./f3.js";
 import f4 from "./f4.js";
 import f5 from "./f5.js";
+import f6 from "./f6.js";
 
-const SEMESTRES = { 1: f1, 2: f2, 3: f3, 4: f4, 5: f5 };
+const SEMESTRES = { 1: f1, 2: f2, 3: f3, 4: f4, 5: f5, 6: f6 };
 
 export const SAISONS_FMS = Object.fromEntries(
   Object.entries(SEMESTRES).map(([n, s]) => [n, { ...s, motsAjouts: s.motsAjouts || [] }]));
