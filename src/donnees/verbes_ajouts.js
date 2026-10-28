@@ -1,6 +1,9 @@
 // Verbes ajoutés lors de la refonte 2026. Même format que verbes.js.
 // Les réguliers passent par le conjugueur ; les irréguliers sont écrits à la main.
-import { er, ir, re, irr } from "./conjugueur.js";
+import { er, ir, re, irr, prefixe } from "./conjugueur.js";
+import { VERBES } from "./verbes.js";
+
+const base = (inf) => VERBES.find((v) => v.inf === inf);
 
 const IRREGULIERS = [
   {
@@ -404,5 +407,65 @@ const S7 = [
   }),
 ];
 
-export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5, ...S6, ...S7];
+const interdire = (() => {
+  const v = prefixe(base("dire"), "inter", "interdire", "verbieten", { participe: "interdit" });
+  v.present = [...v.present]; v.present[4] = "interdisez";
+  v.imperatif = [...v.imperatif]; v.imperatif[2] = "interdisez";
+  return v;
+})();
+
+const S8 = [
+  prefixe(base("lire"), "é", "élire", "wählen (Person)"),
+  prefixe(base("lire"), "re", "relire", "nochmals lesen"),
+  interdire,
+  re("répondre", "antworten"),
+  ir("investir", "investieren"),
+  er("légiférer", "Gesetze erlassen"),
+  er("négocier", "verhandeln"),
+  er("réformer", "reformieren"),
+  er("encadrer", "regeln, betreuen"),
+  er("réglementer", "regulieren"),
+  er("arbitrer", "abwägen, schlichten"),
+  er("autoriser", "erlauben"),
+  er("consister", "bestehen (in)"),
+  er("participer", "teilnehmen"),
+  er("profiter", "profitieren"),
+  er("financer", "finanzieren"),
+  er("doubler", "verdoppeln"),
+  er("varier", "variieren"),
+  er("corriger", "korrigieren"),
+  er("résumer", "zusammenfassen"),
+  er("paraphraser", "paraphrasieren"),
+  er("argumenter", "argumentieren"),
+  er("justifier", "begründen"),
+  er("imiter", "nachahmen"),
+  er("hériter", "erben"),
+  er("influencer", "beeinflussen"),
+  er("démasquer", "entlarven"),
+  er("flatter", "schmeicheln"),
+  er("soulager", "lindern"),
+  er("se tromper", "sich irren"),
+  irr({
+    inf: "s'abstenir", de: "sich enthalten", aux: "être", participe: "abstenu",
+    present: ["abstiens", "abstiens", "abstient", "abstenons", "abstenez", "abstiennent"],
+    imperatif: ["abstiens", "abstenons", "abstenez"],
+    imparfait: ["abstenais", "abstenais", "abstenait", "abstenions", "absteniez", "abstenaient"],
+    futur: ["abstiendrai", "abstiendras", "abstiendra", "abstiendrons", "abstiendrez", "abstiendront"],
+    conditionnel: ["abstiendrais", "abstiendrais", "abstiendrait", "abstiendrions", "abstiendriez", "abstiendraient"],
+    subjonctif: ["abstienne", "abstiennes", "abstienne", "abstenions", "absteniez", "abstiennent"],
+    participepresent: ["abstenant"],
+  }),
+  irr({
+    inf: "consentir", de: "einwilligen", aux: "avoir", participe: "consenti",
+    present: ["consens", "consens", "consent", "consentons", "consentez", "consentent"],
+    imperatif: ["consens", "consentons", "consentez"],
+    imparfait: ["consentais", "consentais", "consentait", "consentions", "consentiez", "consentaient"],
+    futur: ["consentirai", "consentiras", "consentira", "consentirons", "consentirez", "consentiront"],
+    conditionnel: ["consentirais", "consentirais", "consentirait", "consentirions", "consentiriez", "consentiraient"],
+    subjonctif: ["consente", "consentes", "consente", "consentions", "consentiez", "consentent"],
+    participepresent: ["consentant"],
+  }),
+];
+
+export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5, ...S6, ...S7, ...S8];
 export { er, ir };

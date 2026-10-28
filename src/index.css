@@ -811,11 +811,11 @@ body { background: #F4F5F7; }
 .rond.l3 { --ligne: #837902; --ligne-texte: #fff; }    .rond.l4 { --ligne: #CF009E; --ligne-texte: #fff; }
 .rond.l5 { --ligne: #FF7E2E; --ligne-texte: #101E31; } .rond.l6 { --ligne: #6ECA97; --ligne-texte: #101E31; }
 .rond.l7 { --ligne: #FA9ABA; --ligne-texte: #101E31; } .rond.l8 { --ligne: #E19BDF; --ligne-texte: #101E31; }
-.fle .rond.choix { width: 42px; height: 42px; font-size: 18px; transition: transform .15s; opacity: .9; }
+.fle .rond.choix { width: min(42px, calc((min(100vw, 560px) - 44px - 7 * 6px) / 8)); height: auto; aspect-ratio: 1; font-size: 18px; transition: transform .15s; opacity: .9; }
 .fle .rond.choix:hover { transform: scale(1.06); opacity: 1; }
 .fle .rond.choix.on { box-shadow: 0 0 0 3px var(--papier), 0 0 0 6px var(--encre); opacity: 1; }
 .fle .rond.choix:disabled { opacity: .25; cursor: default; transform: none; }
-.saisonChoix { flex-wrap: wrap; gap: 10px; }
+.saisonChoix { flex-wrap: nowrap; justify-content: space-between; gap: 6px; padding: 6px; }
 
 /* le code de l'élève, comme un ticket */
 .ticketMini {

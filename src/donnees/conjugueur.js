@@ -29,7 +29,9 @@ export function er(infComplet, de, o = {}) {
   const r = inf.slice(0, -2);
   // radicaux : fort (je, tu, il, ils) et faible (nous, vous)
   let fort = r, faible = r, futur = inf;
-  const m = r.match(/^(.*)([eé])([^aeiouyéè]+)$/);
+  const m0 = r.match(/^(.*)([eé])([^aeiouyéè]+)$/);
+  // e/é + une seule consonne (ou ch, gn, qu, gu, consonne + r/l) : lever, céder, régner, pénétrer
+  const m = m0 && /^([^aeiouyéè]|ch|gn|qu|gu|[bcdfgptv][rl])$/.test(m0[3]) ? m0 : null;
   if (/yer$/.test(inf)) {
     fort = r.slice(0, -1) + "i";
     futur = o.futur ? o.futur : /ayer$/.test(inf) ? inf : r.slice(0, -1) + "ier";
