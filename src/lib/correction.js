@@ -63,7 +63,8 @@ function formes(champ) {
  * @param {string} attendu   la réponse de référence
  * @param {string[]} [aussi] autres formulations acceptées
  */
-export function evalue(saisie, attendu, aussi = []) {
+export function evalue(saisie, attendu, aussi = [], { phrase = false } = {}) {
+  if (phrase) return evaluePhrase(saisie, [attendu, ...aussi]);
   const s = nettoie(saisie);
   if (!s) return "faux";
 
@@ -119,4 +120,29 @@ export function diff(saisie, correct) {
   }
   while (i < n) { push(a[i], "trop"); i++; }
   return out;
+}
+
+/* Phrases entières (grammaire, tournures, traductions).
+
+   Ici, la virgule fait partie de la phrase : elle ne sépare pas des réponses
+   possibles. On compare la phrase entière, en ignorant ce qui ne relève pas de
+   la langue enseignée : les majuscules, la ponctuation (virgules comprises —
+   en S1, on n'enlève pas un point pour une virgule), les espaces en trop et
+   la forme de l'apostrophe. */
+const neutre = (s) =>
+  sansEszett(s).toLowerCase()
+    .replace(/[’']/g, "'")
+    .replace(/[.,!?;:«»"()…]/g, " ")
+    .replace(/\s*'\s*/g, "'")
+    .replace(/\s*-\s*/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+
+function evaluePhrase(saisie, attendues) {
+  const s = neutre(saisie || "");
+  if (!s) return "faux";
+  const formes = attendues.filter(Boolean).flatMap((a) => developper(a)).map(neutre);
+  if (formes.includes(s)) return "exact";
+  if (formes.map(sansAccents).includes(sansAccents(s))) return "proche";
+  return "faux";
 }

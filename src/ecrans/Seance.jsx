@@ -11,7 +11,7 @@ import { Rail, Ligne } from "./Commun.jsx";
 import { Ecouter, BarreAccents } from "./Outils.jsx";
 import { lire, taire, sonDisponible } from "../lib/voix.js";
 
-export default function Seance({ mode, filtre = {}, semestre, code, progression, setProgression, motsValides = {}, onFin, onLancerRattrapage }) {
+export default function Seance({ mode, filtre = {}, semestre, code, progression, setProgression, motsValides = {}, onFin, onLancerRattrapage, onTermine }) {
   const { unite, tempsCle, semestreCible, exercice } = filtre;
   const exo = exercice ? exercicePar(exercice) : null;
 
@@ -20,6 +20,8 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     // — pas sur une sélection recalculée : composer() choisirait selon les
     // dates d'échéance, ce qui n'a aucun sens juste après une faute.
     if (mode === "rattrapage") return [...(filtre.items || [])].sort(() => Math.random() - 0.5);
+    // séances composées à l'avance : unité, séance du jour, défi
+    if (filtre.bassin) return filtre.bassin;
 
     if (mode === "adaptatif") {
       const tout = itemsCumules(semestre).filter((i) => i.module !== "approfondissement");
@@ -55,7 +57,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     adaptatif: "session adaptée à vous",
   };
   const etiquette =
-    (exo && exo.nom.toLowerCase()) || unite || tempsCle ||
+    filtre.titre || (exo && exo.nom.toLowerCase()) || unite || tempsCle ||
     (semestreCible ? `semestre ${semestreCible}` : NOM_MODE[mode] || mode);
 
   const vocabDuSemestre = itemsDe(semestre).lexique;
@@ -68,6 +70,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
 
   const [k, setK] = useState(0);
   const [saisie, setSaisie] = useState("");
+  const [choisis, setChoisis] = useState([]); // étiquettes posées, pour « ordre » (indices)
   const [retour, setRetour] = useState(null);
   const [flash, setFlash] = useState(null);
   const [justes, setJustes] = useState(0);
@@ -98,7 +101,10 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
         if (extra?.length) return { ...q, aussi: [...(q.aussi || []), ...extra] };
         return q;
       }
-      return question(item, progression[item.cle], vocabDuSemestre, semestre, mode);
+      const q = question(item, progression[item.cle], vocabDuSemestre, semestre, mode);
+      const extra = motsValides[item.cle];
+      if (extra?.length && q.type !== "qcm") return { ...q, aussi: [...(q.aussi || []), ...extra] };
+      return q;
     },
     [item] // eslint-disable-line
   );
@@ -123,15 +129,18 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
   useEffect(() => () => taire(), []);
 
   if (!item) return <Fin justes={justes} total={bassin.length} rates={rates} onFin={onFin}
-    onRattrapage={(items) => onLancerRattrapage(items)} />;
+    onRattrapage={(items) => onLancerRattrapage(items)} onTermine={onTermine} defi={mode === "defi"} />;
 
   const valider = (reponse) => {
     if (retour) return;
-    const verdict =
+    let verdict =
       q.type === "qcm"
         ? reponse === q.reponse ? "exact" : "faux"
-        : evalue(reponse, q.reponse, q.aussi);
-    const juste = verdict !== "faux";
+        : evalue(reponse, q.reponse, q.aussi, { phrase: q.phrase });
+    // Les accents : tolérés (« presque ») en S1, comptés comme faute ensuite.
+    const accentFaute = verdict === "proche" && semestre >= 2;
+    const juste = verdict !== "faux" && !accentFaute;
+    if (accentFaute) verdict = "accent";
 
     const etat = apresReponse(progression[item.cle], juste);
     const suivante = { ...progression, [item.cle]: etat };
@@ -147,13 +156,14 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
     setTimeout(() => setFlash(null), 500);
   };
 
-  const suivant = () => { setRetour(null); setSaisie(""); setK(k + 1); };
+  const suivant = () => { setRetour(null); setSaisie(""); setChoisis([]); setK(k + 1); };
+  const phraseOrdre = q.type === "ordre" ? choisis.map((i) => q.mots[i]).join(" ") : "";
 
   return (
     <>
       <div className="bar">
         <div className="wrap barIn">
-          <button className="lien" onClick={onFin}>← Arrêter</button>
+          <button className="lien" onClick={() => onFin()}>← Arrêter</button>
           <span className="sur">{etiquette}</span>
           <span className="mono" style={{ fontSize: 12.5, color: "var(--ardoise)" }}>
             {k + 1} / {bassin.length}
@@ -187,7 +197,7 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
               <Ecouter texte={q.dictee} lent libelle="Plus lentement" />
             </div>
           ) : (
-            <div className="dsp questionMot">
+            q.invite && <div className={"dsp questionMot" + (q.phraseLongue ? " questionPhrase" : "")}>
               {q.invite}
               {son && item.module === "lexique" && !q.reponse.includes(q.invite) && (
                 <Ecouter texte={q.invite} />
@@ -199,7 +209,9 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
             <div className="boiteL" style={{ marginTop: 6 }}>{q.astuce}</div>
           )}
 
-          {q.type === "qcm" ? (
+          {q.type === "ordre" ? (
+            <Ordre q={q} choisis={choisis} setChoisis={setChoisis} retour={retour} />
+          ) : q.type === "qcm" ? (
             <div className="qcm" style={{ marginTop: 18 }}>
               {q.options.map((o) => (
                 <button
@@ -230,12 +242,14 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
               }}
             />
           )}
-          {!retour && q.type !== "qcm" && (
+          {!retour && q.type === "saisie" && (
             <BarreAccents champRef={champ} valeur={saisie} onChange={setSaisie} />
           )}
 
           {!retour && q.type !== "qcm" && (
-            <button className="btn" style={{ marginTop: 12 }} onClick={() => valider(saisie)}>
+            <button className="btn" style={{ marginTop: 12 }}
+              disabled={q.type === "ordre" && choisis.length !== q.mots.length}
+              onClick={() => valider(q.type === "ordre" ? phraseOrdre : saisie)}>
               Vérifier
             </button>
           )}
@@ -264,20 +278,23 @@ export default function Seance({ mode, filtre = {}, semestre, code, progression,
 }
 
 function Correction({ retour, q, item, exo, code }) {
-  const bon = retour.verdict !== "faux";
-  const attendu = q.reponse.split(/[,·]/)[0].trim();
+  const bon = retour.verdict !== "faux" && retour.verdict !== "accent";
+  const attendu = q.phrase ? q.reponse : q.reponse.split(/[,·]/)[0].trim();
   const [propose, setPropose] = useState(false);
   const [envoye, setEnvoye] = useState(false);
 
   // Le signalement n'a de sens que pour synonymes et contraires : ce sont
   // les deux exercices où plusieurs réponses différentes peuvent être
   // également valables, et où la fiche n'en liste souvent qu'une seule.
+  // Même chose pour les phrases à traduire ou à transformer : il existe
+  // souvent une autre formulation correcte que la fiche ne prévoit pas.
   const peutProposer =
-    !bon && retour.reponse && ["synonyme", "contraire"].includes(exo?.cle);
+    !bon && retour.reponse && (["synonyme", "contraire"].includes(exo?.cle) ||
+      (q.type === "saisie" && ["phrase", "grammaire"].includes(item.module)));
 
   const envoyerProposition = async () => {
     setPropose(true);
-    await proposerMot(code, item.cle, retour.reponse, item.fr);
+    await proposerMot(code, item.cle, retour.reponse, item.fr || q.reponse);
     setEnvoye(true);
   };
 
@@ -291,11 +308,17 @@ function Correction({ retour, q, item, exo, code }) {
           {retour.verdict === "exact"
             ? "Juste !"
             : retour.verdict === "proche"
-            ? "Juste ! Attention à l'orthographe"
+            ? "Presque : attention aux accents"
+            : retour.verdict === "accent"
+            ? "Faux : il manque un accent"
             : "Faux"}
         </span>
         <span className="boiteL">ce mot passe dans la boîte {retour.boite}</span>
       </div>
+
+      {q.explication && (
+        <div className="explication">{q.explication}</div>
+      )}
 
       {retour.verdict !== "exact" && (
         <>
@@ -364,6 +387,17 @@ function Correction({ retour, q, item, exo, code }) {
         </div>
       )}
 
+      {item.module === "tournure" && (
+        <div style={{ marginTop: 14, display: "grid", gap: 6 }}>
+          <Ligne libelle="Situation" valeur={item.situation} />
+          <Ligne libelle="En allemand" valeur={item.de} />
+        </div>
+      )}
+
+      {item.module === "phrase" && q.type === "ordre" && (
+        <div style={{ marginTop: 14 }}><Ligne libelle="En allemand" valeur={item.de} /></div>
+      )}
+
       {item.module === "verbes" && (
         <div style={{ marginTop: 14 }}>
           <div className="sur" style={{ marginBottom: 6 }}>
@@ -400,8 +434,54 @@ function Correction({ retour, q, item, exo, code }) {
   );
 }
 
-function Fin({ justes, total, rates, onFin, onRattrapage }) {
+/* Les étiquettes à remettre dans l'ordre. Un clic pose le mot dans la
+   phrase, un clic dans la phrase le retire. */
+function Ordre({ q, choisis, setChoisis, retour }) {
+  return (
+    <div style={{ marginTop: 16 }}>
+      <div className={"ordrePhrase" + (retour ? " fige" : "")} aria-live="polite">
+        {choisis.length === 0 && <span className="ordreVide">Touchez les mots dans le bon ordre</span>}
+        {choisis.map((i, k) => (
+          <button key={k} className="etiquette posee" disabled={Boolean(retour)}
+            onClick={() => setChoisis(choisis.filter((_, j) => j !== k))}>
+            {q.mots[i]}
+          </button>
+        ))}
+      </div>
+      {!retour && (
+        <div className="ordreReserve">
+          {q.mots.map((m, i) => (
+            <button key={i} className="etiquette" disabled={choisis.includes(i)}
+              onClick={() => setChoisis([...choisis, i])}>
+              {m}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Fin({ justes, total, rates, onFin, onRattrapage, onTermine, defi }) {
   const p = total ? Math.round((justes / total) * 100) : 0;
+  // signalé une seule fois, au premier affichage de l'écran de fin
+  useEffect(() => { onTermine && onTermine({ justes, total }); }, []); // eslint-disable-line
+  if (defi) {
+    return (
+      <div className="main wrap" style={{ paddingTop: 60, maxWidth: 460 }}>
+        <p className="note" style={{ margin: 0 }}>Test du défi terminé</p>
+        <div className="dsp" style={{ fontSize: 52, margin: "10px 0 2px" }}>{p} %</div>
+        <p className="note" style={{ marginBottom: 26 }}>
+          {p >= 70
+            ? "Réussi. Il reste à écrire votre texte : c'est lui que votre enseignant lira."
+            : "Pas encore. Revoyez les étapes de l'unité, puis retentez le défi : il faut 70 %."}
+        </p>
+        <button className="btn" onClick={() => onFin({ justes, total, part: p })}>
+          {p >= 70 ? "Écrire mon texte" : "Retour à l'unité"}
+        </button>
+      </div>
+    );
+  }
   const uniques = [...new Map(rates.map((i) => [i.cle, i])).values()]; // un mot raté deux fois ne compte qu'une fois
   return (
     <div className="main wrap" style={{ paddingTop: 60, maxWidth: 460 }}>
@@ -422,7 +502,7 @@ function Fin({ justes, total, rates, onFin, onRattrapage }) {
           Refaire {uniques.length === 1 ? "le mot raté" : `les ${uniques.length} mots ratés`}
         </button>
       )}
-      <button className="btn" onClick={onFin}>Retour à l'accueil</button>
+      <button className="btn" onClick={() => onFin()}>Continuer</button>
     </div>
   );
 }

@@ -23,7 +23,47 @@ export const FORMATS = {
   special: { longueur: 12, nouveaux: 4 },
   rattrapage: { longueur: 99, nouveaux: 0 },
   adaptatif: { longueur: 15, nouveaux: 2 },
+  unite: { longueur: 12, nouveaux: 6 },
+  jour: { longueur: 12, nouveaux: 4 },
+  defi: { longueur: 15, nouveaux: 15 },
 };
+
+/* La séance « Aujourd'hui » : ce qui est dû dans tout ce qui a déjà été
+   rencontré, plus quelques nouveautés de l'unité en cours, dans l'ordre de
+   l'unité (les mots avant les exercices qui les utilisent). */
+export function composerJour(nouveautes, rencontres, progression) {
+  const { longueur, nouveaux: maxNouveaux } = FORMATS.jour;
+  const neufs = nouveautes.filter((i) => jamaisVu(progression[i.cle])).slice(0, maxNouveaux);
+  const dus = rencontres
+    .filter((i) => estDu(progression[i.cle]) && categorie(progression[i.cle]) !== "acquis")
+    .sort((a, b) => progression[a.cle].du - progression[b.cle].du);
+  const enCours = melange(rencontres.filter((i) =>
+    !estDu(progression[i.cle]) && categorie(progression[i.cle]) === "vu"));
+  const choisis = [...neufs];
+  for (const groupe of [dus, enCours, nouveautes]) {
+    for (const i of groupe) {
+      if (choisis.length >= longueur) break;
+      if (!choisis.includes(i)) choisis.push(i);
+    }
+  }
+  return melange(choisis);
+}
+
+/* Le défi d'une unité : un échantillon de tout, sans tenir compte des
+   échéances — c'est un contrôle, pas une révision. */
+export function composerDefi(u) {
+  const tirer = (liste, n) => melange(liste).slice(0, n);
+  const choisis = [
+    ...tirer(u.lexique, 6),
+    ...tirer(u.verbes, 2),
+    ...tirer(u.grammaire, 3),
+    ...tirer(u.tournures, 2),
+    ...tirer(u.phrases, 2),
+  ];
+  const reste = melange([...u.lexique, ...u.verbes].filter((i) => !choisis.includes(i)));
+  while (choisis.length < FORMATS.defi.longueur && reste.length) choisis.push(reste.pop());
+  return melange(choisis);
+}
 
 /* Une séance adaptative n'est pas juste « ce qui est dû » : elle force la
    moitié de la séance à venir des domaines les plus faibles de l'élève,

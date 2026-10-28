@@ -1,9 +1,18 @@
 {
+  "id": "/",
   "name": "Français — Gymnasium Oberwil",
   "short_name": "Français",
+  "description": "Vocabulaire, verbes et phrases du cours de français, un peu chaque jour.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#FBFAF7",
-  "theme_color": "#16233A",
-  "lang": "fr"
+  "orientation": "portrait",
+  "background_color": "#F4F5F7",
+  "theme_color": "#101E31",
+  "lang": "fr",
+  "icons": [
+    { "src": "/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }

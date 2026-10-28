@@ -4,7 +4,9 @@ import {
   listerSuivi, ajouterCodes, activerCode, renommerCode, supprimerCodes,
   definirSemestreMax, listerProgressionClasse, enLigne,
   listerSuggestions, validerSuggestion, rejeterSuggestion,
+  listerProductions, commenterProduction, chargerFichesCours, ajouterFicheCours, retirerFicheCours,
 } from "../lib/store.js";
+import { UNITES_S1 } from "../donnees/saisons/s1.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
 import { itemsCumules, choisirFiliere } from "../lib/items.js";
 import { categorie } from "../lib/leitner.js";
@@ -274,6 +276,8 @@ function TableauDeBord() {
   return (
     <>
       <Suggestions />
+      <Productions eleves={lignes} />
+      <LexiqueCours />
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <p className="note" style={{ margin: 0 }}>
@@ -738,4 +742,185 @@ function LigneEleve({ e, onChange, lignesEleve }) {
 function exporterCodes(nom, eleves) {
   const texte = eleves.map((e) => e.code).join("\n");
   navigator.clipboard?.writeText(texte);
+}
+
+/* ─────────── Textes des défis ─────────── */
+
+const NOM_UNITE = Object.fromEntries(UNITES_S1.map((u) => [u.id, `S1 · ${u.numero} ${u.titre}`]));
+
+/** Les textes envoyés à la fin des défis. Par défaut, seulement ceux qui
+    n'ont pas encore été lus ; un commentaire les marque comme lus et
+    apparaît chez l'élève, dans l'unité concernée. */
+function Productions({ eleves }) {
+  const [lignes, setLignes] = useState(null);
+  const [erreur, setErreur] = useState(null);
+  const [tout, setTout] = useState(false);
+  const [classe, setClasse] = useState("");
+  const [ouvert, setOuvert] = useState(null);
+  const [brouillon, setBrouillon] = useState("");
+  const [attente, setAttente] = useState(false);
+
+  const charger = async () => {
+    const r = await listerProductions();
+    if (r.erreur) setErreur(r.erreur); else { setLignes(r.lignes); setErreur(null); }
+  };
+  useEffect(() => { charger(); }, []);
+
+  const parCode = useMemo(() => Object.fromEntries((eleves || []).map((e) => [e.code, e])), [eleves]);
+  const classes = useMemo(() => [...new Set((eleves || []).map((e) => e.classe))].sort(), [eleves]);
+
+  if (erreur) {
+    return erreur.includes("does not exist") || erreur.includes("schema cache") ? (
+      <div className="carte" style={{ marginBottom: 20 }}>
+        <p className="note" style={{ margin: 0 }}>
+          Pour recevoir les textes des élèves, exécutez <code>supabase/refonte2026.sql</code> dans
+          Supabase → SQL Editor.
+        </p>
+      </div>
+    ) : <p className="note" style={{ color: "var(--rouge)" }}>{erreur}</p>;
+  }
+  if (!lignes) return null;
+
+  const visibles = lignes
+    .filter((p) => tout || p.statut === "nouvelle")
+    .filter((p) => !classe || parCode[p.code]?.classe === classe);
+  const nouvelles = lignes.filter((p) => p.statut === "nouvelle").length;
+
+  const enregistrer = async (p) => {
+    setAttente(true);
+    const r = await commenterProduction(p.id, brouillon);
+    setAttente(false);
+    if (r.erreur) { setErreur(r.erreur); return; }
+    setOuvert(null); setBrouillon("");
+    charger();
+  };
+
+  return (
+    <div className="carte" style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+        <h2 className="h2" style={{ margin: 0 }}>Textes des élèves</h2>
+        <span className="note">{nouvelles} à lire</span>
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "12px 0" }}>
+        <select className="champ" style={{ fontSize: 14, padding: "8px 10px", width: "auto" }}
+          value={classe} onChange={(e) => setClasse(e.target.value)}>
+          <option value="">Toutes les classes</option>
+          {classes.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <label className="note" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <input type="checkbox" checked={tout} onChange={(e) => setTout(e.target.checked)} />
+          Afficher aussi les textes déjà lus
+        </label>
+      </div>
+      {visibles.length === 0 && <p className="note">Rien à lire pour l'instant.</p>}
+      <div style={{ display: "grid", gap: 10 }}>
+        {visibles.map((p) => {
+          const e = parCode[p.code];
+          return (
+            <div key={p.id} style={{ border: "1px solid var(--trait)", borderRadius: 12, padding: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", fontSize: 13.5 }}>
+                <b>{e?.nom || p.code}{e ? ` (${e.classe})` : ""}</b>
+                <span className="note">{NOM_UNITE[p.unite] || p.unite} · {new Date(p.cree).toLocaleDateString("fr-CH")}</span>
+              </div>
+              <p style={{ whiteSpace: "pre-wrap", fontSize: 15, lineHeight: 1.6, margin: "10px 0" }}>{p.texte}</p>
+              {p.commentaire && ouvert !== p.id && (
+                <p className="note" style={{ margin: "0 0 8px" }}>Votre commentaire : {p.commentaire}</p>
+              )}
+              {ouvert === p.id ? (
+                <>
+                  <textarea className="champ" rows={4} style={{ fontSize: 15 }} value={brouillon}
+                    placeholder="Un retour court : ce qui est réussi, une chose à corriger."
+                    onChange={(ev) => setBrouillon(ev.target.value)} />
+                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                    <button className="btn" style={{ width: "auto" }} disabled={attente} onClick={() => enregistrer(p)}>
+                      Enregistrer et marquer comme lu
+                    </button>
+                    <button className="btn2" onClick={() => setOuvert(null)}>Annuler</button>
+                  </div>
+                </>
+              ) : (
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button className="btn2" onClick={() => { setOuvert(p.id); setBrouillon(p.commentaire || ""); }}>
+                    {p.commentaire ? "Modifier le commentaire" : "Commenter"}
+                  </button>
+                  {p.statut === "nouvelle" && (
+                    <button className="lien" onClick={async () => { await commenterProduction(p.id, ""); charger(); }}>
+                      Marquer comme lu
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Lexique du cours ─────────── */
+
+/** Les mots que vous ajoutez vous-même — typiquement le vocabulaire du livre
+    lu en classe. Ils rejoignent l'unité choisie chez tous les élèves, à leur
+    prochaine connexion, sans redéploiement. */
+function LexiqueCours() {
+  const [lignes, setLignes] = useState(null);
+  const [ouvert, setOuvert] = useState(false);
+  const [f, setF] = useState({ unite: "S1-U7", fr: "", de: "", exemple: "", cat: "N" });
+  const [erreur, setErreur] = useState(null);
+
+  const charger = async () => setLignes(await chargerFichesCours());
+  useEffect(() => { charger(); }, []);
+
+  const ajouter = async () => {
+    const r = await ajouterFicheCours({ ...f, fr: f.fr.trim(), de: f.de.trim(), exemple: f.exemple.trim() || null });
+    if (r.erreur) { setErreur(r.erreur); return; }
+    setErreur(null);
+    setF({ ...f, fr: "", de: "", exemple: "" });
+    charger();
+  };
+
+  return (
+    <div className="carte" style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
+        <h2 className="h2" style={{ margin: 0 }}>Lexique du cours</h2>
+        <button className="lien" onClick={() => setOuvert(!ouvert)}>{ouvert ? "Fermer" : `${lignes?.length || 0} mots · gérer`}</button>
+      </div>
+      {ouvert && (
+        <>
+          <p className="note" style={{ marginTop: 8 }}>
+            Ajoutez le vocabulaire de votre lecture (par exemple le Maigret). Il apparaît dans l'unité choisie,
+            pour toutes les classes, à la prochaine connexion des élèves.
+          </p>
+          <div style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 1fr" }}>
+            <select className="champ" style={{ fontSize: 14, gridColumn: "1 / -1" }} value={f.unite}
+              onChange={(e) => setF({ ...f, unite: e.target.value })}>
+              {UNITES_S1.map((u) => <option key={u.id} value={u.id}>{NOM_UNITE[u.id]}</option>)}
+            </select>
+            <input className="champ" style={{ fontSize: 15 }} placeholder="français (avec l'article)" value={f.fr}
+              onChange={(e) => setF({ ...f, fr: e.target.value })} />
+            <input className="champ" style={{ fontSize: 15 }} placeholder="allemand" value={f.de}
+              onChange={(e) => setF({ ...f, de: e.target.value })} />
+            <input className="champ" style={{ fontSize: 15, gridColumn: "1 / -1" }} placeholder="exemple (facultatif)"
+              value={f.exemple} onChange={(e) => setF({ ...f, exemple: e.target.value })} />
+            <select className="champ" style={{ fontSize: 14 }} value={f.cat} onChange={(e) => setF({ ...f, cat: e.target.value })}>
+              <option value="N">nom</option><option value="V">verbe</option><option value="A">adjectif</option>
+              <option value="L">expression</option><option value="C">mot de liaison</option>
+            </select>
+            <button className="btn" disabled={!f.fr.trim() || !f.de.trim()} onClick={ajouter}>Ajouter</button>
+          </div>
+          {erreur && <p className="note" style={{ color: "var(--rouge)" }}>{erreur}</p>}
+          <div style={{ display: "grid", gap: 6, marginTop: 12 }}>
+            {(lignes || []).map((l) => (
+              <div key={l.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 14 }}>
+                <span><b>{l.fr}</b> · {l.de} <span className="note">({NOM_UNITE[l.unite] || l.unite})</span></span>
+                <button className="lien" style={{ color: "var(--rouge)" }}
+                  onClick={async () => { await retirerFicheCours(l.id); charger(); }}>Retirer</button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }

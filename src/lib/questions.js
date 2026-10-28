@@ -12,6 +12,7 @@
 import { NOM_CATEGORIE } from "./items.js";
 import { palier, trouer } from "./paliers.js";
 import { texteADicter } from "./voix.js";
+import { TOURNURES_S1 } from "../donnees/saisons/s1.js";
 
 /* ── conjugaison simple ── */
 function avecPronom(forme, pronom) {
@@ -30,7 +31,6 @@ const ARTICLE = {
   conditionnel: "au conditionnel présent",
   subjonctif: "au subjonctif présent",
   participepresent: "au participe présent",
-  subjonctif: "au subjonctif",
 };
 
 /* L'auxiliaire, au temps qu'exige le temps composé :
@@ -100,8 +100,81 @@ function questionComposee(item) {
   };
 }
 
+/* ── grammaire, tournures, phrases (saisons refondues) ── */
+const melange = (a) => [...a].sort(() => Math.random() - 0.5);
+
+/** Découpe une phrase en étiquettes ; la ponctuation isolée (« ? », « ! »)
+    reste collée au mot qui la précède, comme on l'écrirait. */
+export function etiquettes(phrase) {
+  const brut = phrase.trim().split(/\s+/);
+  const out = [];
+  for (const m of brut) {
+    if (/^[?!:;»]+$/.test(m) && out.length) out[out.length - 1] += " " + m;
+    else out.push(m);
+  }
+  return out;
+}
+
+function questionGrammaire(item) {
+  if (item.type === "choix") {
+    return {
+      type: "qcm", consigne: item.pointTitre, invite: item.phrase, phraseLongue: true,
+      reponse: item.reponse, aussi: [], options: melange(item.options), explication: item.explication,
+    };
+  }
+  if (item.type === "ordre") {
+    return {
+      type: "ordre", consigne: "Remettez les mots dans l'ordre", invite: null,
+      mots: melange(etiquettes(item.reponse)), reponse: item.reponse, aussi: item.aussi || [],
+      explication: item.explication,
+    };
+  }
+  return {
+    type: "saisie", consigne: item.consigne, invite: item.phrase, phraseLongue: true,
+    placeholder: item.reponse.split(" ").length > 2 ? "écrivez la phrase entière" : "votre réponse",
+    reponse: item.reponse, aussi: item.aussi || [], explication: item.explication,
+  };
+}
+
+function questionTournure(item, p) {
+  // d'abord reconnaître la bonne réplique dans une situation, puis la compléter
+  // les leurres viennent de la même unité : même thème, fonctions différentes
+  const voisins = TOURNURES_S1.filter((t) => t.unite === item.unite);
+  if (!p || p.boite <= 2) {
+    const leurres = melange(voisins.filter((v) => v.id !== item.id)).slice(0, 2).map((v) => v.fr);
+    return {
+      type: "qcm", consigne: "Que dites-vous ?", invite: item.situation, phraseLongue: true,
+      reponse: item.fr, aussi: [], options: melange([item.fr, ...leurres]),
+    };
+  }
+  const troue = item.fr.replace(item.trou, "………");
+  return {
+    type: "saisie", consigne: "Complétez la tournure", invite: troue, phraseLongue: true,
+    aide: `${item.de} · ${item.situation}`, placeholder: "le mot qui manque",
+    reponse: item.trou, aussi: [],
+  };
+}
+
+function questionPhrase(item, p) {
+  if (!p || p.boite <= 1) {
+    return {
+      type: "ordre", consigne: "Traduisez en remettant les mots dans l'ordre", invite: item.de, phraseLongue: true,
+      mots: melange(etiquettes(item.fr)), reponse: item.fr, aussi: item.aussi || [],
+    };
+  }
+  return {
+    type: "saisie", consigne: "Traduisez en français", invite: item.de, phraseLongue: true,
+    placeholder: "écrivez la phrase en français", reponse: item.fr, aussi: item.aussi || [],
+  };
+}
+
 /* ── point d'entrée ── */
 export function question(item, p, vocabDuSemestre, semestreCourant, mode) {
+  // phrase: true → la correction compare des phrases entières (voir correction.js)
+  if (item.module === "grammaire") return { ...questionGrammaire(item), phrase: true };
+  if (item.module === "tournure") return { ...questionTournure(item, p), phrase: true };
+  if (item.module === "phrase") return { ...questionPhrase(item, p), phrase: true };
+
   /* Dictée : on entend, on écrit. C'est le seul exercice qui travaille le lien
      entre le son et l'orthographe — celui qui manque le plus à des
      germanophones, pour qui « le vent » et « le vin » se confondent. */

@@ -14,7 +14,7 @@ import { IconCible, IconLivre, IconVerbe, IconMelange, IconEtoile, IconAlerte,
 
 const SEUIL_EXAMEN = 85;
 
-export default function Accueil({ code, semestre, setSemestre, semestreMax, progression, onLancer, onConsulter, onBadges, onAide, onExamen, onQuitter }) {
+export default function Accueil({ code, semestre, setSemestre, semestreMax, progression, onLancer, onConsulter, onBadges, onAide, onExamen, onQuitter, onRetour }) {
   const [ouvert, setOuvert] = useState(null); // "lexique" | "verbes" | "bilan"
   const [selLex, setSelLex] = useState([]);   // thèmes cochés en attente de lancement
   const [selVerb, setSelVerb] = useState([]); // temps cochés en attente de lancement
@@ -73,7 +73,7 @@ export default function Accueil({ code, semestre, setSemestre, semestreMax, prog
     };
   }, [domaines, dus, acquisMots, lexique.length]);
 
-  const [toutAfficher, setToutAfficher] = useState(false);
+  const [toutAfficher, setToutAfficher] = useState(Boolean(onRetour));
   const bascule = (k) => setOuvert(ouvert === k ? null : k);
   const compte = (items) => items.filter((i) => categorie(progression[i.cle]) === "acquis").length;
 
@@ -88,6 +88,7 @@ export default function Accueil({ code, semestre, setSemestre, semestreMax, prog
               <span className="etiquetteFiliere">{filiereActive().nom}</span>
             </span>
             <div style={{ display: "flex", gap: 4 }}>
+              {onRetour && <button className="lienClair" onClick={onRetour}>← Saison</button>}
               <button className="lienClair" onClick={onAide}>Aide</button>
               <button className="lienClair" onClick={onQuitter}>Quitter</button>
             </div>

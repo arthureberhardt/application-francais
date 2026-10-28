@@ -279,3 +279,96 @@ export async function chargerSynonymesValides() {
   for (const l of data) (out[l.cle] = out[l.cle] || []).push(l.mot);
   return out;
 }
+
+/* ─────────── Refonte 2026 : séances, objectif de classe, productions ─────────── */
+
+/* Les jours travaillés sont gardés sur l'appareil (pour la série) et, en
+   ligne, comptés dans « activite » pour l'objectif collectif de la classe.
+   Rien de nominatif : un code, un jour, un nombre de séances. */
+const cleJours = (code) => `fle:jours:${code}`;
+const aujourdhuiISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+export function lireJours(code) {
+  try { return new Set(JSON.parse(localStorage.getItem(cleJours(code)) || "[]")); } catch { return new Set(); }
+}
+export async function noterSeance(code, questions) {
+  const jours = lireJours(code);
+  jours.add(aujourdhuiISO());
+  try { localStorage.setItem(cleJours(code), JSON.stringify([...jours].sort().slice(-120))); } catch {}
+  if (!enLigne) return;
+  const { error } = await sb.rpc("noter_seance", { p_code: code, p_questions: questions });
+  if (error) console.error("Séance non comptée :", error.message);
+}
+
+/** L'objectif de la classe : null si la base n'est pas branchée ou si la
+    fonction n'existe pas encore (avant refonte2026.sql). */
+export async function objectifClasse(code) {
+  if (!enLigne) return null;
+  const { data, error } = await sb.rpc("objectif_classe", { p_code: code });
+  if (error || !data || !data.length) return null;
+  return data[0];
+}
+
+/* Les jours où l'élève a travaillé, d'après le serveur — pour que la série
+   suive d'un appareil à l'autre. */
+export async function joursServeur(code) {
+  if (!enLigne) return [];
+  const { data, error } = await sb.rpc("mes_jours", { p_code: code });
+  if (error || !data) return [];
+  return data.map((l) => l.jour);
+}
+
+export async function envoyerProduction(code, unite, consigne, texte) {
+  if (!enLigne) return { erreur: "hors ligne" };
+  const { error } = await sb.from("productions").insert({ code, unite, consigne, texte });
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}
+
+export async function mesProductions(code) {
+  if (!enLigne) return [];
+  const { data, error } = await sb.rpc("mes_productions", { p_code: code });
+  if (error || !data) return [];
+  return data;
+}
+
+export async function listerProductions() {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { data, error } = await sb.from("productions").select("*").order("cree", { ascending: false }).limit(400);
+  if (error) return { erreur: error.message };
+  return { lignes: data };
+}
+
+export async function commenterProduction(id, commentaire) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { error } = await sb.from("productions")
+    .update({ commentaire: commentaire.trim() || null, statut: "lue", lue: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}
+
+/* Le lexique ajouté par l'enseignant (lectures en cours). Lisible par tous :
+   c'est du contenu de cours, pas une donnée d'élève. */
+export async function chargerFichesCours() {
+  if (!enLigne) return [];
+  const { data, error } = await sb.from("fiches_cours").select("*").eq("actif", true).order("id");
+  if (error || !data) return [];
+  return data;
+}
+
+export async function ajouterFicheCours(f) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { error } = await sb.from("fiches_cours").insert(f);
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}
+
+export async function retirerFicheCours(id) {
+  if (!sb) return { erreur: "Supabase n'est pas configuré." };
+  const { error } = await sb.from("fiches_cours").update({ actif: false }).eq("id", id);
+  if (error) return { erreur: error.message };
+  return { ok: true };
+}

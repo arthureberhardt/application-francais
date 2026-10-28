@@ -10,7 +10,35 @@ Répétition espacée par **système de Leitner à cinq boîtes**.
 
 ---
 
-## 1 · Faire tourner l'application sur votre ordinateur
+## ## Refonte 2026 — ce qui change
+
+L'application est organisée en **saisons** (une par semestre), chacune découpée en **unités** qui suivent le cours. La saison 1 est entièrement refondue ; les autres gardent pour l'instant leurs thèmes de vocabulaire.
+
+- **Accueil** : la *séance du jour* (12 questions, environ 5 minutes : révisions dues + suite de l'unité en cours), la série de jours (un oubli par semaine est pardonné), l'objectif collectif de la classe, puis la saison dessinée comme une ligne de métro.
+- **Unité** : six étapes — Découvrir, S'entraîner, Grammaire (règle en français simple + exercices), Tournures, Construire des phrases, Défi (test, puis un court texte envoyé à l'enseignant).
+- **Saison 1** : 8 unités (dont « Les bases », facultative), 271 mots actifs, 31 verbes, 128 exercices de grammaire, 70 tournures, 62 phrases, 7 défis. Contenu dans `src/donnees/saisons/`.
+- **Accents** : une réponse sans accent est « presque juste » en S1, comptée fausse à partir de S2.
+- **Espace enseignant** : lecture et commentaire des textes des défis (le commentaire apparaît chez l'élève), ajout du lexique du cours (par exemple celui du roman lu en classe).
+- **Installation** : icônes, service worker (l'application s'ouvre même sans réseau) et écran d'aide à l'installation pour iPhone, Android et ordinateur.
+
+### À faire une fois dans Supabase
+
+SQL Editor → New query → coller le contenu de `supabase/refonte2026.sql` → Run. Le fichier peut être relancé sans risque. Sans lui, l'application fonctionne, mais sans objectif de classe, sans envoi des textes et sans lexique du cours.
+
+### Où se trouve le nouveau contenu
+
+```
+src/donnees/
+  mots_ajouts.js        fiches nouvelles (N1-…)
+  verbes_ajouts.js      verbes ajoutés (voir)
+  saisons/s1_mots.js    les mots de chaque unité de S1 + exemples réécrits au présent
+  saisons/s1.js         unités, grammaire, tournures, phrases, défis de S1
+src/lib/saison.js       unités, étapes, avancement
+src/lib/serie.js        la série de jours
+src/ecrans/Saison.jsx, Unite.jsx, Decouvrir.jsx, Regle.jsx, Production.jsx, Installer.jsx
+```
+
+1 · Faire tourner l'application sur votre ordinateur
 
 Vous avez besoin de **Node.js**. Vérifiez s'il est déjà installé : ouvrez un
 terminal dans VS Code (menu Terminal → Nouveau terminal) et tapez
