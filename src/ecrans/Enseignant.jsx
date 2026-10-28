@@ -853,7 +853,7 @@ function exporterCodes(nom, eleves) {
 /* Toutes les stations des saisons rédigées : unités et stations de lecture. */
 const REGISTRES = [["", SAISONS], ["FMS ", SAISONS_FMS]];
 const STATIONS_TOUTES = REGISTRES.flatMap(([pre, R]) => Object.values(R).flatMap((sa) => [
-  ...sa.unites.map((u) => ({ id: u.id, nom: `${pre}S${sa.numero} · ${u.numero} ${u.titre}` })),
+  ...sa.unites.map((u) => ({ id: u.id, nom: `${pre}S${sa.numero} · ${u.numero} ${u.titre}${u.theme ? ` (${u.theme})` : ""}` })),
   ...(sa.lecture?.stations || []).map((st) => ({ id: st.id, nom: `${pre}S${sa.numero} · lecture ${st.numero} ${st.titre}` })),
 ]));
 const NOM_UNITE = {

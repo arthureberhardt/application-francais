@@ -30,6 +30,7 @@ import s6 from "./s6.js";
 import s7 from "./s7.js";
 import s8 from "./s8.js";
 import { COMPLEMENTS } from "./complements.js";
+import { nommer } from "../noms_stations.js";
 import { CONSTRUCTIONS } from "./constructions.js";
 import { LECTURES_PLUS } from "./lectures/index.js";
 
@@ -78,7 +79,8 @@ function completer(s) {
       return { ...st, mots: [...(st.mots || []), ...a.mots], grammaire: [...(st.grammaire || []), ...a.points] };
     }),
   };
-  return { ...s, grammaire, tournures, phrases, textes, motsAjouts, unites, lecture };
+  return { ...s, grammaire, tournures, phrases, textes, motsAjouts, unites: unites.map(nommer),
+    lecture: lecture && { ...lecture, stations: lecture.stations.map(nommer) } };
 }
 
 export const SAISONS = Object.fromEntries(

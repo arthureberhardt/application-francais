@@ -195,6 +195,7 @@ function Station({ u, e, courante, cible, onClick, lecture }) {
             </span>
           </span>
           <span className="stationSous">
+            {u.theme && <span className="stationTheme">{u.theme}</span>}
             {u.facultative ? "Facultatif · " : ""}
             {lecture && u.semaines ? `Semaines ${u.semaines} : ` : ""}
             {e.valide

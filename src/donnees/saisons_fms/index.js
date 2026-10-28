@@ -13,6 +13,7 @@ import f5 from "./f5.js";
 import f6 from "./f6.js";
 
 import DIX from "./dix.js";
+import { nommer } from "../noms_stations.js";
 
 const SEMESTRES = { 1: f1, 2: f2, 3: f3, 4: f4, 5: f5, 6: f6 };
 
@@ -32,8 +33,8 @@ function completer(s) {
     });
     return { ...u, mots: [...(u.mots || []), ...mots] };
   };
-  const unites = s.unites.map(ajouter);
-  const lecture = s.lecture && { ...s.lecture, stations: s.lecture.stations.map(ajouter) };
+  const unites = s.unites.map(ajouter).map(nommer);
+  const lecture = s.lecture && { ...s.lecture, stations: s.lecture.stations.map(ajouter).map(nommer) };
   return { ...s, unites, lecture, tournures, phrases, motsAjouts };
 }
 

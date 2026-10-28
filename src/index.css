@@ -823,3 +823,5 @@ body { margin: 0; background: #F2F2EE; }
 .blocChoixNote { font-weight: 500; color: var(--ardoise); font-size: 14px; }
 .lancerChoix { position: sticky; bottom: 0; background: linear-gradient(transparent, var(--papier) 30%); padding: 20px 0 calc(16px + env(safe-area-inset-bottom)); }
 .lancerChoix .btn { width: 100%; }
+.stationTheme { display: block; font-weight: 600; color: var(--encre-2); font-size: 14px; margin-bottom: 1px; }
+.plaqueTheme { display: block; margin-top: 4px; font-size: 14px; opacity: .8; font-weight: 500; letter-spacing: 0; }

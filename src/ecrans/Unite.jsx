@@ -42,6 +42,7 @@ export default function Unite({ unite: u, code, progression, decouverts, onEtape
                   : u.facultative ? "Unité facultative" : u.complete ? `Semestre ${u.semestre}, unité ${u.numero}${u.semaines ? `, semaines ${u.semaines}` : ""}` : "Thème"}
               </span>
               <h1 className="plaqueNom">{u.titre}</h1>
+              {u.theme && <span className="plaqueTheme">{u.theme}</span>}
             </span>
           </div>
           <div className="uniteJauge" aria-hidden="true"><span style={{ width: `${a.valide ? 100 : part}%` }} /></div>
