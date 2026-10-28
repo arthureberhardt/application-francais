@@ -492,6 +492,9 @@ const FMS = [
   er("nettoyer", "putzen"),
   re("vendre", "verkaufen"),
   er("contacter", "kontaktieren"),
+  ir("se réjouir", "sich freuen"),
+  er("s'inquiéter", "sich Sorgen machen"),
+  er("rédiger", "verfassen"),
 ];
 
 export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5, ...S6, ...S7, ...S8, ...FMS];
