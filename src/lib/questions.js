@@ -13,6 +13,7 @@ import { NOM_CATEGORIE } from "./items.js";
 import { palier, trouer } from "./paliers.js";
 import { texteADicter } from "./voix.js";
 import { SAISONS } from "../donnees/saisons/index.js";
+import { SAISONS_FMS } from "../donnees/saisons_fms/index.js";
 import { EXERCICES } from "./exercices.js";
 import { VERBE_PAR_INF } from "../donnees/index.js";
 import { sonDisponible } from "./voix.js";
@@ -181,7 +182,7 @@ function questionGrammaire(item) {
   };
 }
 
-const TOURNURES = Object.values(SAISONS).flatMap((s) => s.tournures || []);
+const TOURNURES = [...Object.values(SAISONS), ...Object.values(SAISONS_FMS)].flatMap((s) => s.tournures || []);
 
 function questionTournure(item, p) {
   // d'abord reconnaître la bonne réplique dans une situation, puis la compléter

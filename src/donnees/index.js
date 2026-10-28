@@ -17,11 +17,14 @@ import { MOTS_AJOUTS } from "./mots_ajouts.js";
 import { VERBES as VERBES_BASE } from "./verbes.js";
 import { VERBES_AJOUTS } from "./verbes_ajouts.js";
 import { SAISONS } from "./saisons/index.js";
+import { SAISONS_FMS } from "./saisons_fms/index.js";
+
+const TOUTES = [...Object.values(SAISONS), ...Object.values(SAISONS_FMS)];
 
 // Les surcharges remplacent l'exemple (et parfois la traduction) de fiches
 // reprises dans une saison : un exemple adapté au niveau sert toutes les filières.
-const SURCHARGES = Object.assign({}, ...Object.values(SAISONS).map((s) => s.surcharges || {}));
-const AJOUTS_SAISONS = Object.values(SAISONS).flatMap((s) => s.motsAjouts || []);
+const SURCHARGES = Object.assign({}, ...TOUTES.map((s) => s.surcharges || {}));
+const AJOUTS_SAISONS = TOUTES.flatMap((s) => s.motsAjouts || []);
 // La Suisse n'écrit pas « ß » : on affiche « ss » partout (heissen, gross).
 const suisse = (m) => (m.de && m.de.includes("ß") ? { ...m, de: m.de.replace(/ß/g, "ss") } : m);
 export const MOTS = [...MOTS_BASE, ...MOTS_AJOUTS, ...AJOUTS_SAISONS].map((m) =>
@@ -31,11 +34,11 @@ export const VERBES = [...VERBES_BASE, ...VERBES_AJOUTS].map(suisse);
 export const VERBE_PAR_INF = Object.fromEntries(VERBES.map((v) => [v.inf, v]));
 export { TEMPS } from "./temps.js";
 
-/* Les saisons rédigées font foi pour le gymnase : leurs mots et leurs verbes
+/* Les saisons rédigées font foi pour leur filière : leurs mots et leurs verbes
    remplacent ceux du semestre, et sont retirés des autres semestres. Ce qui
    n'a trouvé place dans aucune unité reste en reconnaissance dans son
    semestre d'origine : aucune fiche ne disparaît. */
-function appliquerSaisons(filiere) {
+function appliquerSaisons(filiere, SAISONS) {
   const idsSaison = (s) => [
     ...s.unites.flatMap((u) => [...(u.mots || []), ...Object.values(u.fils || {}).flat()]),
     ...(s.lecture?.stations || []).flatMap((st) => [...(st.notions || []), ...(st.mots || [])]),
@@ -66,7 +69,8 @@ function appliquerSaisons(filiere) {
   }
   return filiere;
 }
-appliquerSaisons(gymnase);
+appliquerSaisons(gymnase, SAISONS);
+appliquerSaisons(fms, SAISONS_FMS);
 
 export const FILIERES = [gymnase, fms];
 export const filierePar = (cle) => FILIERES.find((f) => f.cle === cle) || gymnase;

@@ -9,6 +9,7 @@ import {
 } from "../lib/store.js";
 import { stationsDe, stationValidee, tousItems } from "../lib/saison.js";
 import { SAISONS } from "../donnees/saisons/index.js";
+import { SAISONS_FMS } from "../donnees/saisons_fms/index.js";
 import { FILIERES, PAR_ID, TEMPS } from "../donnees/index.js";
 import { itemsCumules, choisirFiliere } from "../lib/items.js";
 import { categorie } from "../lib/leitner.js";
@@ -618,8 +619,8 @@ function Stations({ nom, eleves, lignesParCode, charge }) {
   const [sem, setSem] = useState(max);
   const [cibles, setCibles] = useState({});
   const [erreur, setErreur] = useState(null);
-  const stations = stationsDe(sem);
   const filiere = choisirFiliere(eleves[0]?.filiere || "gymnase");
+  const stations = stationsDe(sem);
 
   useEffect(() => {
     listerCibles().then((r) => {
@@ -839,14 +840,15 @@ function exporterCodes(nom, eleves) {
 /* ─────────── Textes des défis ─────────── */
 
 /* Toutes les stations des saisons rédigées : unités et stations de lecture. */
-const STATIONS_TOUTES = Object.values(SAISONS).flatMap((sa) => [
-  ...sa.unites.map((u) => ({ id: u.id, nom: `S${sa.numero} · ${u.numero} ${u.titre}` })),
-  ...(sa.lecture?.stations || []).map((st) => ({ id: st.id, nom: `S${sa.numero} · lecture ${st.numero} ${st.titre}` })),
-]);
+const REGISTRES = [["", SAISONS], ["FMS ", SAISONS_FMS]];
+const STATIONS_TOUTES = REGISTRES.flatMap(([pre, R]) => Object.values(R).flatMap((sa) => [
+  ...sa.unites.map((u) => ({ id: u.id, nom: `${pre}S${sa.numero} · ${u.numero} ${u.titre}` })),
+  ...(sa.lecture?.stations || []).map((st) => ({ id: st.id, nom: `${pre}S${sa.numero} · lecture ${st.numero} ${st.titre}` })),
+]));
 const NOM_UNITE = {
   ...Object.fromEntries(STATIONS_TOUTES.map((x) => [x.id, x.nom])),
-  ...Object.fromEntries(Object.values(SAISONS).flatMap((sa) => Object.entries(sa.evaluations || {})
-    .map(([id, ev]) => [`eval:${id}`, `S${sa.numero} · évaluation : ${ev.titre}`]))),
+  ...Object.fromEntries(REGISTRES.flatMap(([pre, R]) => Object.values(R).flatMap((sa) => Object.entries(sa.evaluations || {})
+    .map(([id, ev]) => [`eval:${id}`, `${pre}S${sa.numero} · évaluation : ${ev.titre}`])))),
 };
 
 /** Les textes envoyés à la fin des défis. Par défaut, seulement ceux qui

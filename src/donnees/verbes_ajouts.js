@@ -467,5 +467,31 @@ const S8 = [
   }),
 ];
 
-export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5, ...S6, ...S7, ...S8];
+/* FMS : verbes du quotidien et des métiers (cuisine, santé, éducation). */
+const FMS = [
+  er("dessiner", "zeichnen"),
+  er("expliquer", "erklären"),
+  er("rassurer", "beruhigen"),
+  er("accompagner", "begleiten"),
+  er("réparer", "reparieren"),
+  er("jeter", "wegwerfen", { double: true }),
+  er("présenter", "vorstellen"),
+  er("couper", "schneiden"),
+  er("mélanger", "mischen"),
+  er("mesurer", "messen"),
+  er("garder", "hüten, behalten"),
+  er("s'occuper", "sich kümmern (um)"),
+  er("consoler", "trösten"),
+  er("calmer", "beruhigen"),
+  er("enseigner", "unterrichten"),
+  prefixe(base("écrire"), "d", "décrire", "beschreiben"),
+  er("se brosser", "sich bürsten"),
+  er("payer", "bezahlen"),
+  er("coûter", "kosten"),
+  er("ranger", "aufräumen"),
+  er("nettoyer", "putzen"),
+  re("vendre", "verkaufen"),
+];
+
+export const VERBES_AJOUTS = [...IRREGULIERS, ...S2, ...S3, ...S4, ...S5, ...S6, ...S7, ...S8, ...FMS];
 export { er, ir };

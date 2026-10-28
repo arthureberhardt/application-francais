@@ -19,6 +19,7 @@
 
 import { PAR_ID, VERBE_PAR_INF } from "../donnees/index.js";
 import { SAISONS } from "../donnees/saisons/index.js";
+import { SAISONS_FMS } from "../donnees/saisons_fms/index.js";
 import { TEMPS_PAR_CLE } from "../donnees/temps.js";
 import { itemsDe, infosSemestre, cleVerbe, PERSONNES, PRONOMS, PERS_IMPERATIF, filiereActive } from "./items.js";
 import { categorie } from "./leitner.js";
@@ -53,7 +54,8 @@ export const definirFichesCours = (lignes) => { FICHES_COURS = lignes || []; CAC
 const ALIAS_STATION = { "S1-U7": "S1-L1" };
 
 let CACHE = {};
-export const saisonDe = (sem) => (filiereActive().cle === "gymnase" ? SAISONS[sem] || null : null);
+const REGISTRES = { gymnase: SAISONS, fms: SAISONS_FMS };
+export const saisonDe = (sem) => (REGISTRES[filiereActive().cle] || {})[sem] || null;
 
 /* ─────────── construction des éléments ─────────── */
 function itemMot(id, sem, uniteId, fil) {
@@ -191,10 +193,11 @@ function unitesProvisoires(sem) {
 }
 
 function construire(sem) {
-  if (CACHE[sem]) return CACHE[sem];
+  const k = `${filiereActive().cle}:${sem}`;
+  if (CACHE[k]) return CACHE[k];
   const saison = saisonDe(sem);
-  CACHE[sem] = saison ? construireSaison(saison, sem) : { unites: unitesProvisoires(sem), lecture: null };
-  return CACHE[sem];
+  CACHE[k] = saison ? construireSaison(saison, sem) : { unites: unitesProvisoires(sem), lecture: null };
+  return CACHE[k];
 }
 
 export const unitesDe = (sem) => construire(sem).unites;
