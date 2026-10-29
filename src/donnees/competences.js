@@ -90,7 +90,9 @@ const FMS = {
     k("CF3-PROJETS", "Projets et souhaits", "Parler de son avenir et de son métier : futur et conditionnel.", {
       unites: ["F3-U1", "F3-U2", "F3-U6"], points: ["G3-FUTF", "G3-CONDP", "G3-FUTE"], temps: ["futur", "conditionnel"] }),
     k("CF3-AVIS", "L'avis justifié", "Donner et justifier son avis, conseiller.", {
-      unites: ["F3-U4", "F3-L4"], points: ["G3-CONSEIL", "LF3-AVIS"], evaluations: ["F3-EV-COCE"] }),
+      unites: ["F3-U4"], points: ["G3-CONSEIL"], evaluations: ["F3-EV-COCE"] }),
+    k("CF3-RESUME", "Le résumé", "Résumer « Frères de sang » : les cinq questions, le présent, l'essentiel.", {
+      unites: ["F3-L1", "F3-L2", "F3-L3", "F3-L4"], points: ["LF3-RESUME", "LF3-AVANT", "LF3-PORTRAIT"], evaluations: ["F3-EV-RESUME"] }),
   ],
   4: [
     k("CF4-HYPOTHESE", "L'hypothèse", "Imaginer et conseiller : si + imparfait → conditionnel.", {

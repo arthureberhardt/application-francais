@@ -46,7 +46,7 @@ export const NOMS_STATIONS = {
   /* ── FMS S3 ── */
   "F3-U0": "Fondations", "F3-U1": "Métiers", "F3-U2": "Stage", "F3-U3": "Fourneaux", "F3-U4": "Bien-Être",
   "F3-U5": "Messagerie", "F3-U6": "Avenir",
-  "F3-L1": "Rideau", "F3-L2": "Répétition", "F3-L3": "Marée Haute", "F3-L4": "Applaudissements",
+  "F3-L1": "Polar", "F3-L2": "Sans-Souci", "F3-L3": "Loyauté", "F3-L4": "L'Essentiel",
   /* ── FMS S4 ── */
   "F4-U1": "Francophonie", "F4-U2": "Réseau", "F4-U3": "Atelier", "F4-U4": "Hypothèse", "F4-U5": "Réconciliation",
   "F4-U6": "Climat",

@@ -1,9 +1,12 @@
 /* FMS S3 — Se projeter, travailler (A2+).
    Le futur simple et le conditionnel de politesse, tournés vers les métiers
    (santé, social, pédagogie, arts), le stage, la cuisine et le bien-être.
-   Ligne de lecture : « En attendant la vague » (théâtre, écologie). */
+   Ligne de lecture : « Frères de sang » (Mikaël Ollivier), voir f3_freres.js. */
 
 import { reprendre, c, s, o, t, p, x, f, carnet } from "./aides.js";
+import {
+  MOTS_FRERES, GRAMMAIRE_FRERES, TOURNURES_FRERES, PHRASES_FRERES, TEXTES_FRERES, EVALUATION_FRERES, LECTURE_FRERES,
+} from "./f3_freres.js";
 
 /* ─────────── fiches nouvelles ─────────── */
 const MOTS_AJOUTS = [
@@ -28,11 +31,7 @@ const MOTS_AJOUTS = [
   f("F3-022", "la pâte", "der Teig", "N", "Alimentation", "Laissez reposer la pâte pendant une heure.", { piege: "les pâtes (pl.) = die Teigwaren ; la pâte = der Teig." }),
   f("F3-023", "faire cuire", "kochen (lassen), garen", "L", "Alimentation", "Faites cuire les pommes de terre vingt minutes."),
   f("F3-024", "la pomme de terre", "die Kartoffel", "N", "Alimentation", "J'épluche les pommes de terre."),
-  /* Lecture · En attendant la vague */
-  f("F3-040", "la vague", "die Welle", "N", "Environnement", "La vague arrive sur la plage."),
-  f("F3-041", "la mer", "das Meer", "N", "Environnement", "Le niveau de la mer monte.", { piege: "la mer (das Meer), la mère (die Mutter), le maire (der Bürgermeister) : même prononciation !" }),
-  f("F3-042", "jouer une scène", "eine Szene spielen", "L", "Spectacle", "En groupe, nous jouons une scène de la pièce."),
-  f("F3-043", "le ton", "der Ton(fall)", "N", "Spectacle", "Lisez cette réplique sur un ton fâché."),
+  ...MOTS_FRERES,
 ];
 
 /* ─────────── unités ─────────── */
@@ -242,50 +241,7 @@ const GRAMMAIRE = [
   },
   reprendre("G3-FUTE", "F3-U6"),
   reprendre("G4-SI1", "F3-U6"),
-  {
-    id: "LF3-THEATRE", unite: "F3-L1", titre: "Lire une pièce de théâtre",
-    explication: [
-      "Une pièce est écrite pour être **jouée** : elle est faite de **répliques** (ce que disent les personnages) et de **didascalies** (les indications en italique : gestes, ton, décor).",
-      "Une pièce est divisée en **actes** et en **scènes**. Une nouvelle scène commence souvent quand un personnage entre ou sort.",
-      "Au début, la **liste des personnages** aide à se repérer. Le nom du personnage est écrit avant chaque réplique.",
-      "Au théâtre, il n'y a pas de narrateur : tout passe par les **dialogues**.",
-    ],
-    exercices: [
-      c("lf3t-01", "« (Elle ouvre la fenêtre, en colère.) » C'est…", ["une didascalie", "une réplique", "un titre"], "une didascalie"),
-      c("lf3t-02", "« LÉA. — Tu ne comprends rien ! » C'est…", ["une réplique", "une didascalie", "un résumé"], "une réplique"),
-      c("lf3t-03", "Une pièce est divisée en…", ["actes et scènes", "chapitres et pages", "strophes et vers"], "actes et scènes"),
-      c("lf3t-04", "Au théâtre, l'histoire passe surtout par…", ["les dialogues", "le narrateur", "les descriptions"], "les dialogues"),
-      c("lf3t-05", "Les gens qui jouent les personnages sont…", ["les comédiens", "les lecteurs", "les auteurs"], "les comédiens"),
-      c("lf3t-06", "Le lieu représenté sur la scène, c'est…", ["le décor", "le costume", "le public"], "le décor"),
-      s("lf3t-07", "Complétez.", "Les indications en italique s'appellent les ___.", "didascalies"),
-      s("lf3t-08", "Complétez.", "Une ___ commence souvent quand un personnage entre.", "scène"),
-      s("lf3t-09", "Complétez.", "Ce que dit un personnage, c'est une ___.", "réplique"),
-      o("lf3t-10", "La pièce est divisée en trois actes."),
-    ],
-  },
-  reprendre("L3-REPLIQUE", "F3-L2"),
-  reprendre("L3-THEME", "F3-L3"),
-  {
-    id: "LF3-AVIS", unite: "F3-L4", titre: "Donner son avis sur une pièce",
-    explication: [
-      "On sépare **ce que dit la pièce** (le sujet, le message) et **ce qu'on en pense** (son avis).",
-      "Pour donner son avis : **J'ai trouvé la pièce** émouvante / drôle / ennuyeuse… **parce que**… · **Ce qui m'a plu**, c'est… · **Ce qui m'a moins plu**, c'est…",
-      "Un avis **nuancé** a un point positif et un point négatif : *Les dialogues sont drôles, **mais** la fin est un peu rapide.*",
-      "On justifie avec un **exemple** de la pièce : une scène, une réplique, un personnage.",
-    ],
-    exercices: [
-      c("lf3a-01", "Ce qui m'a ___, c'est le personnage de la grand-mère.", ["plu", "plaît", "plait"], "plu"),
-      c("lf3a-02", "Un avis nuancé contient…", ["un point positif et un point négatif", "seulement des compliments", "un résumé de la pièce"], "un point positif et un point négatif"),
-      c("lf3a-03", "J'ai trouvé la pièce ___ : j'ai pleuré à la fin.", ["émouvante", "ennuyeuse", "comique"], "émouvante"),
-      c("lf3a-04", "Je me suis ___ : il ne se passait rien.", ["ennuyé", "amusé", "intéressé"], "ennuyé"),
-      c("lf3a-05", "Pour justifier un avis, on donne…", ["un exemple de la pièce", "le prix du billet", "le nom de l'auteur"], "un exemple de la pièce"),
-      c("lf3a-06", "« Les dialogues sont drôles, ___ la fin est triste. »", ["mais", "donc", "parce que"], "mais"),
-      s("lf3a-07", "Complétez.", "J'ai ___ la pièce drôle et originale.", "trouvé"),
-      s("lf3a-08", "Complétez.", "Je ___ cette pièce à tous les jeunes.", "recommande"),
-      o("lf3a-09", "Ce qui m'a plu, c'est la fin de la pièce."),
-      o("lf3a-10", "J'ai trouvé les dialogues drôles, mais un peu longs."),
-    ],
-  },
+  ...GRAMMAIRE_FRERES,
 ];
 
 /* ─────────── tournures ─────────── */
@@ -344,41 +300,7 @@ const TOURNURES = [
   t("TF36-07", "F3-U6", "On verra bien !", "Wir werden sehen!", "Vous restez ouvert(e).", "verra"),
   t("TF36-08", "F3-U6", "Étape par étape, j'y arriverai.", "Schritt für Schritt werde ich es schaffen.", "Vous êtes déterminé(e).", "arriverai"),
 
-  t("TF3L1-01", "F3-L1", "C'est une pièce de théâtre sur…", "Es ist ein Theaterstück über…", "Vous présentez la pièce.", "pièce"),
-  t("TF3L1-02", "F3-L1", "La pièce se passe au bord de la mer.", "Das Stück spielt am Meer.", "Vous présentez le lieu.", "bord"),
-  t("TF3L1-03", "F3-L1", "Les personnages principaux sont…", "Die Hauptfiguren sind…", "Vous présentez les personnages.", "principaux"),
-  t("TF3L1-04", "F3-L1", "Le titre me fait penser à…", "Der Titel lässt mich an… denken.", "Vous parlez du titre.", "titre"),
-  t("TF3L1-05", "F3-L1", "La première scène commence par…", "Die erste Szene beginnt mit…", "Vous décrivez le début.", "scène"),
-  t("TF3L1-06", "F3-L1", "Dans la didascalie, on apprend que…", "In der Regieanweisung erfährt man, dass…", "Vous lisez une indication.", "didascalie"),
-  t("TF3L1-07", "F3-L1", "Au théâtre, il n'y a pas de narrateur.", "Im Theater gibt es keinen Erzähler.", "Vous comparez avec un roman.", "narrateur"),
-  t("TF3L1-08", "F3-L1", "Je n'ai pas l'habitude de lire du théâtre.", "Ich bin es nicht gewohnt, Theater zu lesen.", "Vous donnez une impression.", "habitude"),
-
-  t("TF3L2-01", "F3-L2", "Je joue le rôle de…", "Ich spiele die Rolle von…", "Vous jouez une scène.", "rôle"),
-  t("TF3L2-02", "F3-L2", "C'est à toi !", "Du bist dran!", "Vous répétez une scène.", "toi"),
-  t("TF3L2-03", "F3-L2", "Dis cette réplique plus fort.", "Sag diese Replik lauter.", "Vous conseillez un camarade.", "fort"),
-  t("TF3L2-04", "F3-L2", "Sur quel ton faut-il le dire ?", "In welchem Ton muss man es sagen?", "Vous préparez la lecture.", "ton"),
-  t("TF3L2-05", "F3-L2", "J'ai le trac !", "Ich habe Lampenfieber!", "Vous allez jouer devant la classe.", "trac"),
-  t("TF3L2-06", "F3-L2", "On recommence depuis le début ?", "Fangen wir nochmals von vorne an?", "Vous répétez.", "recommence"),
-  t("TF3L2-07", "F3-L2", "Dans cette scène, les personnages se disputent.", "In dieser Szene streiten sich die Figuren.", "Vous résumez une scène.", "disputent"),
-  t("TF3L2-08", "F3-L2", "Cette réplique montre qu'elle est en colère.", "Diese Replik zeigt, dass sie wütend ist.", "Vous expliquez une réplique.", "montre"),
-
-  t("TF3L3-01", "F3-L3", "Le sujet de la pièce, c'est…", "Das Thema des Stücks ist…", "Vous présentez le sujet.", "sujet"),
-  t("TF3L3-02", "F3-L3", "La pièce parle de l'environnement.", "Das Stück handelt von der Umwelt.", "Vous présentez le thème.", "parle"),
-  t("TF3L3-03", "F3-L3", "L'auteur veut nous montrer que…", "Der Autor will uns zeigen, dass…", "Vous expliquez le message.", "montrer"),
-  t("TF3L3-04", "F3-L3", "La pièce dénonce…", "Das Stück prangert… an.", "Vous parlez de la critique.", "dénonce"),
-  t("TF3L3-05", "F3-L3", "Ça me fait réfléchir à…", "Das bringt mich zum Nachdenken über…", "Vous réagissez au message.", "réfléchir"),
-  t("TF3L3-06", "F3-L3", "On doit prendre conscience de…", "Man muss sich… bewusst werden.", "Vous parlez du message.", "conscience"),
-  t("TF3L3-07", "F3-L3", "La vague est un symbole de…", "Die Welle ist ein Symbol für…", "Vous expliquez un symbole.", "symbole"),
-  t("TF3L3-08", "F3-L3", "Je suis d'accord avec ce message, parce que…", "Ich bin mit dieser Botschaft einverstanden, weil…", "Vous donnez votre avis.", "accord"),
-
-  t("TF3L4-01", "F3-L4", "J'ai trouvé la pièce…", "Ich fand das Stück…", "Vous donnez votre avis.", "trouvé"),
-  t("TF3L4-02", "F3-L4", "Ce qui m'a plu, c'est…", "Was mir gefallen hat, ist…", "Vous parlez d'un point positif.", "plu"),
-  t("TF3L4-03", "F3-L4", "Ce qui m'a moins plu, c'est…", "Was mir weniger gefallen hat, ist…", "Vous parlez d'un point négatif.", "moins"),
-  t("TF3L4-04", "F3-L4", "Ma scène préférée, c'est quand…", "Meine Lieblingsszene ist, als…", "Vous choisissez une scène.", "préférée"),
-  t("TF3L4-05", "F3-L4", "Les dialogues sont vivants et drôles.", "Die Dialoge sind lebendig und lustig.", "Vous parlez des dialogues.", "vivants"),
-  t("TF3L4-06", "F3-L4", "C'est mon coup de cœur !", "Das ist mein Favorit!", "Vous adorez la pièce.", "cœur"),
-  t("TF3L4-07", "F3-L4", "Je recommande cette pièce à…", "Ich empfehle dieses Stück…", "Vous recommandez la pièce.", "recommande"),
-  t("TF3L4-08", "F3-L4", "J'aimerais la voir sur scène.", "Ich würde es gern auf der Bühne sehen.", "Vous parlez d'une représentation.", "scène"),
+  ...TOURNURES_FRERES,
 ];
 
 /* ─────────── phrases ─────────── */
@@ -458,41 +380,7 @@ const PHRASES = [
   p("PF36-09", "F3-U6", "Ich werde eine Weltreise machen.", "Je ferai le tour du monde.", ["Je vais faire le tour du monde."]),
   p("PF36-10", "F3-U6", "Sie wünscht sich, Pflegefachfrau zu werden.", "Elle souhaite devenir infirmière."),
 
-  p("PF3L1-01", "F3-L1", "Es ist ein Theaterstück über das Meer.", "C'est une pièce de théâtre sur la mer."),
-  p("PF3L1-02", "F3-L1", "Das Stück hat drei Akte.", "La pièce a trois actes.", ["La pièce est en trois actes."]),
-  p("PF3L1-03", "F3-L1", "Die Schauspieler tragen Kostüme.", "Les comédiens portent des costumes."),
-  p("PF3L1-04", "F3-L1", "Das Bühnenbild stellt einen Strand dar.", "Le décor représente une plage."),
-  p("PF3L1-05", "F3-L1", "Die Welle kommt näher.", "La vague approche.", ["La vague arrive."]),
-  p("PF3L1-06", "F3-L1", "Im Theater gibt es keinen Erzähler.", "Au théâtre, il n'y a pas de narrateur."),
-  p("PF3L1-07", "F3-L1", "Die erste Szene ist sehr kurz.", "La première scène est très courte."),
-  p("PF3L1-08", "F3-L1", "Ich lese zum ersten Mal ein Theaterstück.", "Je lis une pièce de théâtre pour la première fois."),
-
-  p("PF3L2-01", "F3-L2", "Ich spiele die Rolle der Mutter.", "Je joue le rôle de la mère."),
-  p("PF3L2-02", "F3-L2", "Lies diese Replik mit einem traurigen Ton.", "Lis cette réplique sur un ton triste."),
-  p("PF3L2-03", "F3-L2", "Ich habe Lampenfieber.", "J'ai le trac."),
-  p("PF3L2-04", "F3-L2", "In dieser Szene streiten sich die Figuren.", "Dans cette scène, les personnages se disputent."),
-  p("PF3L2-05", "F3-L2", "Wir spielen eine Szene vor der Klasse.", "Nous jouons une scène devant la classe.", ["On joue une scène devant la classe."]),
-  p("PF3L2-06", "F3-L2", "Die Regieanweisung sagt, dass er wütend ist.", "La didascalie dit qu'il est en colère.", ["La didascalie indique qu'il est en colère."]),
-  p("PF3L2-07", "F3-L2", "Sprich lauter, bitte!", "Parle plus fort, s'il te plaît !"),
-  p("PF3L2-08", "F3-L2", "Es ist ein langer Monolog.", "C'est un long monologue."),
-
-  p("PF3L3-01", "F3-L3", "Das Stück handelt von der Umwelt.", "La pièce parle de l'environnement."),
-  p("PF3L3-02", "F3-L3", "Der Autor prangert die Verschmutzung an.", "L'auteur dénonce la pollution."),
-  p("PF3L3-03", "F3-L3", "Das Klima verändert sich.", "Le climat change."),
-  p("PF3L3-04", "F3-L3", "Der Meeresspiegel steigt.", "Le niveau de la mer monte."),
-  p("PF3L3-05", "F3-L3", "Das bringt mich zum Nachdenken.", "Ça me fait réfléchir.", ["Cela me fait réfléchir."]),
-  p("PF3L3-06", "F3-L3", "Wir müssen uns des Problems bewusst werden.", "Nous devons prendre conscience du problème.", ["On doit prendre conscience du problème."]),
-  p("PF3L3-07", "F3-L3", "Die Botschaft des Stücks ist klar.", "Le message de la pièce est clair."),
-  p("PF3L3-08", "F3-L3", "Die Erwärmung ist ein Thema der Gesellschaft.", "Le réchauffement est un sujet de société."),
-
-  p("PF3L4-01", "F3-L4", "Ich fand das Stück berührend.", "J'ai trouvé la pièce émouvante."),
-  p("PF3L4-02", "F3-L4", "Was mir gefallen hat, ist das Ende.", "Ce qui m'a plu, c'est la fin."),
-  p("PF3L4-03", "F3-L4", "Die Dialoge sind lustig, aber ein bisschen lang.", "Les dialogues sont drôles, mais un peu longs."),
-  p("PF3L4-04", "F3-L4", "Am Ende klatscht das Publikum.", "À la fin, le public applaudit."),
-  p("PF3L4-05", "F3-L4", "Ich empfehle dieses Stück allen Jugendlichen.", "Je recommande cette pièce à tous les jeunes."),
-  p("PF3L4-06", "F3-L4", "Es ist ein originelles Stück.", "C'est une pièce originale."),
-  p("PF3L4-07", "F3-L4", "Ich habe mich ein bisschen gelangweilt.", "Je me suis un peu ennuyé.", ["Je me suis un peu ennuyée."]),
-  p("PF3L4-08", "F3-L4", "Die Kritik ist positiv.", "La critique est positive."),
+  ...PHRASES_FRERES,
 ];
 
 /* ─────────── textes à trous ─────────── */
@@ -509,8 +397,7 @@ const TEXTES = [
     "Bonjour Madame Roth, c'est Lena Meier. Je vous {laisse|hinterlassen} un message au sujet du stage. Le rendez-vous de jeudi ? Oui, j'{y|dorthin} serai à dix heures. Les documents ? J'{en|davon} ai trois, je vous les apporte. Vous pouvez me {rappeler|zurückrufen} au 079 123 45 67. Meilleures {salutations|Grüsse}."),
   x("XF36-01", "F3-U6", "Mes projets", "Complétez (si + présent → futur).",
     "Si je {réussis|réussir, Präsens} mon diplôme, je {ferai|faire, Futur} une formation d'éducatrice. Si j'ai de l'argent, je {voyagerai|voyager, Futur} en Amérique du Sud. Mon rêve, c'est {d'ouvrir|de + ouvrir} une crèche. Étape par étape, j'y {arriverai|arriver, Futur} !"),
-  x("XF3L3-01", "F3-L3", "Le message de la pièce", "Complétez avec les mots du message.",
-    "La pièce {parle|handelt} de l'environnement. Le {sujet|Thema} principal, c'est la montée de la mer. L'auteur {dénonce|prangert an} l'indifférence des adultes. La vague est un {symbole|Symbol} du danger. Ce message me fait {réfléchir|nachdenken}."),
+  ...TEXTES_FRERES,
 ];
 
 /* ─────────── défis ─────────── */
@@ -581,82 +468,11 @@ const EVALUATIONS = {
       modele: "À mon avis, les écrans le soir sont un vrai problème…",
     },
   },
-  "F3-EV-VAGUE": {
-    titre: "« En attendant la vague » : questions et résumé d'une scène", type: "Littérature (écrit)", quand: "Fin de la lecture",
-    objectif: "Montrer qu'on a compris la pièce : questions sur les personnages, le sujet et le message, puis résumé d'une scène.",
-    criteres: [
-      { critere: "Compréhension", detail: "Je connais les personnages, le lieu, le sujet et le message de la pièce." },
-      { critere: "Résumé d'une scène", detail: "6 à 8 phrases au présent : qui, où, ce qui se passe, comment la scène finit." },
-      { critere: "Citation", detail: "Je cite une réplique entre guillemets et j'explique ce qu'elle montre." },
-      { critere: "Langue", detail: "Présent correct, mots du théâtre (scène, réplique, didascalie)." },
-    ],
-    modele: {
-      texte: "(Exemple inventé) Dans cette scène, Léa et son grand-père sont sur la plage, le soir. Le grand-père raconte comment la plage était quand il était jeune. Léa ne le croit pas : aujourd'hui, la mer arrive presque jusqu'aux maisons. Le grand-père dit : « Avant, on marchait dix minutes pour arriver à l'eau. » Cette réplique montre que la mer a beaucoup monté. À la fin de la scène, Léa promet de faire quelque chose pour sa plage.",
-      remarques: ["La scène est située : qui, où, quand.", "Une réplique citée et expliquée.", "Le résumé est au présent."],
-    },
-    tournures: ["Dans cette scène, …", "Le personnage dit : « … »", "Cette réplique montre que…", "Le message de la pièce, c'est…"],
-    conseils: ["Faites une fiche des personnages avec un adjectif pour chacun.", "Choisissez deux scènes importantes et résumez-les à l'avance.", "Apprenez trois répliques par cœur."],
-    entrainement: {
-      titre: "Le résumé d'une scène",
-      consigne: "Choisissez une scène de la pièce et résumez-la (6 à 8 phrases), avec une réplique citée.",
-      controle: ["Je situe la scène.", "J'écris au présent.", "Je cite une réplique entre guillemets.", "J'explique ce qu'elle montre."],
-      modele: "(Exemple inventé) Dans cette scène, Léa et son grand-père sont sur la plage…",
-    },
-  },
+  ...EVALUATION_FRERES,
 };
 
 /* ─────────── ligne de lecture ─────────── */
-const LECTURE = {
-  titre: "« En attendant la vague »",
-  sous: "Une pièce de théâtre sur l'écologie · lire, jouer, comprendre le message",
-  stations: [
-    {
-      id: "F3-L1", numero: 1, titre: "Découvrir la pièce", semaines: "1–3", chapitres: "La liste des personnages et la première scène",
-      sous: "Personnages, lieu, didascalies : lire du théâtre.",
-      notions: ["S7-060", "S7-061", "S7-A057", "S4-065"],
-      mots: ["S7-065", "S7-063", "S7-A070", "F3-040", "F3-041"],
-      grammaire: ["LF3-THEATRE"],
-      carnet: carnet(
-        "Présentez le début de la pièce (5 à 7 phrases) : le lieu, les personnages, la situation. Qu'est-ce que le titre vous fait imaginer ?",
-        ["Je présente le lieu et les personnages.", "J'utilise les mots du théâtre (scène, réplique…).", "Je fais une hypothèse sur le titre.", "J'écris au présent."],
-        "(Exemple inventé) La pièce se passe dans un petit village au bord de la mer. Les personnages principaux sont Léa, une adolescente, et son grand-père, un ancien pêcheur. Dans la première scène, ils regardent la mer depuis la fenêtre. Le grand-père est inquiet, mais il ne dit pas pourquoi. Le titre me fait imaginer une catastrophe : une grande vague va peut-être arriver."),
-    },
-    {
-      id: "F3-L2", numero: 2, titre: "Lire une scène à voix haute", semaines: "4–7", chapitres: "Une scène au choix",
-      sous: "Répliques, ton, didascalies : préparer une lecture.",
-      notions: ["S7-064", "S7-A062", "S7-A060", "S7-A059"],
-      mots: ["S7-146", "S7-147", "F3-042", "F3-043"],
-      grammaire: ["L3-REPLIQUE"],
-      carnet: carnet(
-        "Choisissez une scène et préparez-la avec un groupe. Écrivez (5 à 7 phrases) : qui joue quel rôle, sur quel ton dire les répliques importantes, et ce qui a été difficile.",
-        ["Je situe la scène.", "J'explique le ton d'au moins deux répliques.", "J'utilise les mots réplique, didascalie, rôle.", "Je dis ce qui a été facile ou difficile."],
-        "(Exemple inventé) Nous avons choisi la scène 4, quand Léa se dispute avec sa mère. Je joue le rôle de Léa et Tim joue la mère. La didascalie dit que Léa est en colère : je dois parler fort et vite. La réplique « Vous ne faites jamais rien ! » est la plus importante. La mère répond sur un ton fatigué. Le plus difficile, c'est de ne pas rire pendant la dispute !"),
-    },
-    {
-      id: "F3-L3", numero: 3, titre: "Le message de la pièce", semaines: "8–11", chapitres: "Le milieu et la fin",
-      sous: "Sujet, thème, message : ce que l'auteur veut dire.",
-      notions: ["N3-100", "N3-101", "N3-103", "JOU-018"],
-      mots: ["S5-041", "S5-042", "S5-043", "S5-044", "S5-139"],
-      grammaire: ["L3-THEME"],
-      carnet: carnet(
-        "Quel est le message de la pièce ? Que dénonce-t-elle ? Êtes-vous d'accord ? (6 à 8 phrases, avec une réplique citée)",
-        ["J'explique le sujet et le message avec mes mots.", "J'utilise dénoncer ou montrer que.", "Je cite une réplique.", "Je donne mon avis avec parce que."],
-        "(Exemple inventé) La pièce parle de la montée de la mer à cause du réchauffement climatique. L'auteur dénonce l'indifférence des adultes, qui attendent sans rien faire. Le grand-père dit : « On a toujours pensé que la mer nous protégerait. » Cette réplique montre que les gens ne voient pas le danger. Je suis d'accord avec ce message, parce que le climat change aussi en Suisse : les glaciers fondent."),
-    },
-    {
-      id: "F3-L4", numero: 4, titre: "Jouer et donner son avis", semaines: "12–15", chapitres: "La pièce entière",
-      sous: "Jouer une scène, critiquer la pièce.",
-      notions: ["S4-A039", "N3-086"],
-      mots: ["S7-024", "S4-100", "S4-101", "S4-102", "S7-091", "S7-092"],
-      grammaire: ["LF3-AVIS"],
-      evaluation: "F3-EV-VAGUE",
-      carnet: carnet(
-        "Écrivez une courte critique de la pièce (8 à 10 phrases) : de quoi elle parle, ce qui vous a plu, ce qui vous a moins plu, à qui vous la recommandez.",
-        ["Je présente la pièce en deux phrases.", "Je donne un point positif et un point négatif.", "Je justifie avec un exemple.", "Je recommande ou non la pièce."],
-        "(Exemple inventé) « En attendant la vague » est une pièce sur l'écologie et les relations entre les générations. Ce qui m'a plu, c'est le personnage du grand-père : il est drôle et émouvant. Les dialogues sont vivants et faciles à jouer. Ce qui m'a moins plu, c'est la fin, un peu trop rapide. J'ai trouvé le message très actuel. Je recommande cette pièce à tous les jeunes qui s'intéressent au climat."),
-    },
-  ],
-};
+const LECTURE = LECTURE_FRERES;
 
 export default {
   numero: 3,

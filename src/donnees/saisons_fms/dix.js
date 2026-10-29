@@ -176,53 +176,6 @@ export default {
     T("Je ferai tout pour réussir.", "Ich werde alles tun, um es zu schaffen.", "Vous êtes motivé(e).", "réussir"),
     T("Si ça ne marche pas, j'essaierai autre chose.", "Wenn es nicht klappt, versuche ich etwas anderes.", "Vous avez un plan B.", "essaierai"),
   ] },
-  "F3-L1": {
-    mots: [M("la liste des personnages", "das Personenverzeichnis", "N", "La liste des personnages est au début de la pièce.")],
-    tournures: [
-      T("Le rideau se lève sur une plage.", "Der Vorhang geht über einem Strand auf.", "Vous décrivez le début.", "rideau"),
-      T("Il y a cinq personnages dans la pièce.", "Es gibt fünf Figuren im Stück.", "Vous présentez la pièce.", "personnages"),
-    ],
-    phrases: [
-      P("Die Szene spielt am Abend.", "La scène se passe le soir."),
-      P("Die Grossmutter ist die älteste Figur.", "La grand-mère est le personnage le plus âgé."),
-    ],
-  },
-  "F3-L2": {
-    mots: [
-      M("répéter (une scène)", "proben", "V", "Nous répétons la scène trois fois."),
-      M("le public", "das Publikum", "N", "Le public applaudit à la fin."),
-    ],
-    tournures: [
-      T("Regarde le public quand tu parles.", "Schau das Publikum an, wenn du sprichst.", "Vous conseillez un camarade.", "public"),
-      T("On répète encore une fois ?", "Proben wir nochmals?", "Vous préparez la scène.", "répète"),
-    ],
-    phrases: [
-      P("Wir proben die Szene am Mittwoch.", "Nous répétons la scène mercredi.", ["On répète la scène mercredi."]),
-      P("Er hat seinen Text vergessen.", "Il a oublié son texte."),
-    ],
-  },
-  "F3-L3": {
-    mots: [M("la montée des eaux", "der Anstieg des Wasserspiegels", "N", "La montée des eaux menace le village.")],
-    tournures: [
-      T("La pièce montre les conséquences du réchauffement.", "Das Stück zeigt die Folgen der Erwärmung.", "Vous expliquez le thème.", "conséquences"),
-      T("Les adultes ne veulent pas voir le problème.", "Die Erwachsenen wollen das Problem nicht sehen.", "Vous parlez des personnages.", "adultes"),
-    ],
-    phrases: [P("Die Jungen wollen handeln.", "Les jeunes veulent agir.")],
-  },
-  "F3-L4": {
-    mots: [
-      M("la mise en scène", "die Inszenierung", "N", "La mise en scène est très simple."),
-      M("la représentation", "die Aufführung", "N", "La représentation a lieu vendredi soir."),
-    ],
-    tournures: [
-      T("Les comédiens jouent très bien.", "Die Schauspieler spielen sehr gut.", "Vous jugez le jeu.", "jouent"),
-      T("La mise en scène est originale.", "Die Inszenierung ist originell.", "Vous jugez la pièce.", "originale"),
-    ],
-    phrases: [
-      P("Die Aufführung hat eine Stunde gedauert.", "La représentation a duré une heure."),
-      P("Ich habe viel gelacht.", "J'ai beaucoup ri."),
-    ],
-  },
   /* ─── S4 ─── */
   "F4-U1": { tournures: [
     T("C'est la ville où je suis né(e).", "Das ist die Stadt, in der ich geboren bin.", "Vous parlez de vos origines.", "né"),
